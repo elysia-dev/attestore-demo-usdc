@@ -3,20 +3,52 @@
 import type React from "react";
 
 import { useState } from "react";
+import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { issueData } from "../data";
+import { BASE_URL } from "@/constant";
 
 export default function Home() {
   const [issueDate, setIssueDate] = useState("");
   const [certificateNumber, setCertificateNumber] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [result, setResult] = useState<{ error?: string } | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // ZK proof 생성 로직을 여기에 구현
-    console.log("발급일자:", issueDate);
-    console.log("증명서 발급번호:", certificateNumber);
+    setIsLoading(true);
+    setResult(null);
+
+    try {
+      // 날짜 형식을 YYYY-MM-DD로 변환
+      const formattedDate = issueDate.replace(
+        /(\d{4})(\d{2})(\d{2})/,
+        "$1-$2-$3"
+      );
+
+      const response = await axios.post(
+        `${BASE_URL}/api/generate-receipt`,
+        {
+          issuedDate: formattedDate,
+          issueNumber: certificateNumber,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      setResult(response.data);
+      console.log("API Response:", response.data);
+    } catch (error) {
+      console.error("API Error:", error);
+      setResult({ error: "API 호출 중 오류가 발생했습니다." });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleTestDataSelect = (data: {
@@ -48,7 +80,7 @@ export default function Home() {
                 type="text"
                 value={issueDate}
                 onChange={(e) => setIssueDate(e.target.value)}
-                placeholder="증명서 발급일자를 입력하세요."
+                placeholder="증명서 발급일자를 입력하세요. (예: 20250618)"
                 className="h-14 text-base border-gray-300 rounded-lg px-4 placeholder:text-gray-400"
               />
             </div>
@@ -74,12 +106,24 @@ export default function Home() {
               <Button
                 type="submit"
                 className="bg-blue-500 hover:bg-blue-600 text-white font-medium text-lg px-8 py-4 rounded-lg h-auto"
-                disabled={!issueDate || !certificateNumber}
+                disabled={!issueDate || !certificateNumber || isLoading}
               >
-                ZK Proof 생성
+                {isLoading ? "생성 중..." : "ZK Proof 생성"}
               </Button>
             </div>
           </form>
+
+          {/* Result Section */}
+          {result && (
+            <div className="mt-8 p-6 bg-gray-50 rounded-lg">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                API 응답 결과
+              </h3>
+              <pre className="bg-white p-4 rounded border text-sm overflow-auto">
+                {JSON.stringify(result, null, 2)}
+              </pre>
+            </div>
+          )}
         </div>
 
         {/* Test Data Section */}
