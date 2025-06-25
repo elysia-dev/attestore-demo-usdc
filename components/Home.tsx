@@ -64,7 +64,7 @@ export default function Home() {
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-12">
-            Toss 송금인증 ZK Proof 생성
+            송금인증 ZK Proof 생성
           </h1>
 
           <form onSubmit={handleSubmit} className="space-y-8">
