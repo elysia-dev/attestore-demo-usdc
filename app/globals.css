@@ -119,4 +119,14 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* 모든 버튼 요소에 포인터 커서 적용 */
+  button {
+    cursor: pointer;
+  }
+
+  /* disabled 상태일 때는 기본 커서 사용 */
+  button:disabled {
+    cursor: default;
+  }
 }

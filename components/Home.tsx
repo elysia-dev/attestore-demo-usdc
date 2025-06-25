@@ -1,28 +1,387 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import type React from "react";
-
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import {
+  useAccount,
+  useWriteContract,
+  useReadContract,
+  useWaitForTransactionReceipt,
+  useChainId,
+  useDisconnect,
+  useBalance,
+  useSendTransaction,
+  usePublicClient,
+} from "wagmi";
+import {
+  parseEther,
+  formatEther,
+  encodeFunctionData,
+  encodeAbiParameters,
+  parseAbiParameters,
+  parseUnits,
+  formatUnits,
+  keccak256,
+  toBytes,
+  decodeEventLog,
+} from "viem";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { issueData } from "../data";
+import { testData } from "../data";
 import { BASE_URL } from "@/constant";
+import {
+  CONTRACT_ADDRESSES,
+  ZK_MINTER_ABI,
+  MOCK_USDT_ABI,
+  ANVIL_ACCOUNTS,
+} from "@/lib/wagmi";
+import { useContractWrite } from "@/hooks/useContractWrite";
+
+type WorkflowStep = "connect" | "signal" | "transfer" | "proof" | "fulfill";
+
+type ProofResult = {
+  success?: boolean;
+  error?: string;
+  data?: {
+    extractedParameters: {
+      documentTitle: string;
+      receivingBankAccount: string;
+      recipientName: string;
+      senderNickname: string;
+      transactionAmount: string;
+      transactionDate: string;
+    };
+    provider: string;
+    receipt: {
+      request: any;
+      claim: {
+        context: string;
+        epoch: number;
+        identifier: string;
+        owner: string;
+        parameters: string;
+        provider: string;
+        timestampS: number;
+      };
+      signatures: {
+        attestorAddresS: string;
+        claimSignature: any;
+        resultSignature: any;
+      };
+    };
+  };
+};
 
 export default function Home() {
-  const [issueDate, setIssueDate] = useState("");
-  const [certificateNumber, setCertificateNumber] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<{ error?: string } | null>(null);
+  // Wagmi hooks
+  const { address, isConnected } = useAccount();
+  const chainId = useChainId();
+  const { disconnect } = useDisconnect();
+  const publicClient = usePublicClient();
+  const [showAPIResponse, setShowAPIResponse] = useState(true);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // 커스텀 훅 사용
+  const { writeAndWait: signalIntentWrite, isLoading: isSignalIntentLoading } =
+    useContractWrite({
+      onSuccess: (receipt) => {
+        // signalIntent 성공 시 intentId 추출
+        try {
+          const intentSignaledEvent = receipt.logs.find((log: any) => {
+            const intentSignaledTopic = keccak256(
+              toBytes("IntentSignaled(address,address,uint256,uint256)")
+            );
+            return (
+              log.topics[0] === intentSignaledTopic &&
+              log.address.toLowerCase() ===
+                CONTRACT_ADDRESSES.ZK_MINTER.toLowerCase()
+            );
+          });
+
+          if (intentSignaledEvent) {
+            const decodedLog = decodeEventLog({
+              abi: ZK_MINTER_ABI,
+              data: intentSignaledEvent.data,
+              topics: intentSignaledEvent.topics,
+            });
+
+            const { intentId: newIntentId } = decodedLog.args as {
+              to: string;
+              verifier: string;
+              amount: bigint;
+              intentId: bigint;
+            };
+
+            const intentIdNumber = Number(newIntentId);
+            setIntentId(intentIdNumber);
+            setSearchIntentId(intentIdNumber);
+          }
+        } catch (error) {
+          console.error("IntentSignaled 이벤트 파싱 실패:", error);
+        }
+      },
+    });
+
+  const {
+    writeAndWait: fulfillIntentWrite,
+    isLoading: isFulfillIntentLoading,
+  } = useContractWrite({
+    onSuccess: (receipt) => {
+      // fulfillIntent 성공 시 처리
+      try {
+        const intentFulfilledEvent = receipt.logs.find((log: any) => {
+          const intentFulfilledTopic = keccak256(
+            toBytes("IntentFulfilled(bytes32,address,address,address,uint256)")
+          );
+          return (
+            log.topics[0] === intentFulfilledTopic &&
+            log.address.toLowerCase() ===
+              CONTRACT_ADDRESSES.ZK_MINTER.toLowerCase()
+          );
+        });
+
+        if (intentFulfilledEvent) {
+          const decodedLog = decodeEventLog({
+            abi: ZK_MINTER_ABI,
+            data: intentFulfilledEvent.data,
+            topics: intentFulfilledEvent.topics,
+          });
+
+          const { intentHash, verifier, owner, to, amount } =
+            decodedLog.args as {
+              intentHash: string;
+              verifier: string;
+              owner: string;
+              to: string;
+              amount: bigint;
+            };
+
+          setFulfillmentResult({
+            success: true,
+            intentHash,
+            verifier,
+            owner,
+            to,
+            amount,
+            txHash: receipt.transactionHash,
+          });
+        }
+      } catch (error) {
+        console.error("IntentFulfilled 이벤트 파싱 실패:", error);
+      }
+    },
+  });
+  // 로그 정리됨
+
+  // 잔액 조회
+  const { data: ethBalance } = useBalance({
+    address,
+    query: { enabled: !!address && chainId === 31337 },
+  });
+
+  const { data: usdtBalance } = useReadContract({
+    address: CONTRACT_ADDRESSES.MOCK_USDT,
+    abi: MOCK_USDT_ABI,
+    functionName: "balanceOf",
+    args: address ? [address] : undefined,
+    query: { enabled: !!address && chainId === 31337 },
+  });
+
+  // 워크플로우 상태
+  const [currentStep, setCurrentStep] = useState<WorkflowStep>("connect");
+
+  // signalIntent 관련
+  const [toAddress, setToAddress] = useState(
+    "0x189027e3C77b3a92fd01bF7CC4E6a86E77F5034E"
+  );
+  const [amount, setAmount] = useState("1");
+  const [intentId, setIntentId] = useState<number | null>(null);
+  const [searchIntentId, setSearchIntentId] = useState<number | null>(null);
+  const [receiverUsdtBalance, setReceiverUsdtBalance] = useState<
+    bigint | undefined
+  >(undefined);
+  const [intentDetails, setIntentDetails] = useState<{
+    owner: string;
+    to: string;
+    amount: bigint;
+    timestamp: number;
+    verifier: string;
+  } | null>(null);
+
+  // Receiver의 USDT 잔고 조회
+  // const { data: receiverUsdtBalance } = useReadContract({
+  //   address: CONTRACT_ADDRESSES.MOCK_USDT,
+  //   abi: MOCK_USDT_ABI,
+  //   functionName: "balanceOf",
+  //   args: intentDetails?.to ? [intentDetails.to as `0x${string}`] : undefined,
+  //   query: { enabled: !!intentDetails?.to && chainId === 31337 },
+  // });
+
+  const readReceiverUsdtBalance = async (to: string) => {
+    if (!to) return;
+
+    const balance = await publicClient?.readContract({
+      address: CONTRACT_ADDRESSES.MOCK_USDT,
+      abi: MOCK_USDT_ABI,
+      functionName: "balanceOf",
+      args: [to as `0x${string}`],
+    });
+    setReceiverUsdtBalance(balance);
+  };
+
+  // 기존 proof 생성 관련
+  const [issueDate, setIssueDate] = useState(testData[0].issueDate);
+  const [certificateNumber, setCertificateNumber] = useState(
+    testData[0].certificateNumber
+  );
+
+  // 로딩 및 결과 상태
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [fulfillmentResult, setFulfillmentResult] = useState<{
+    success: boolean;
+    intentHash?: string;
+    verifier?: string;
+    owner?: string;
+    to?: string;
+    amount?: bigint;
+    txHash?: string;
+  } | null>(null);
+
+  const [proofResult, setProofResult] = useState<ProofResult | null>(null);
+
+  // 지갑 연결 상태가 변경될 때 단계 업데이트
+  React.useEffect(() => {
+    if (isConnected && currentStep === "connect") {
+      setCurrentStep("signal");
+    } else if (!isConnected) {
+      setCurrentStep("connect");
+      setIntentId(null);
+    }
+  }, [isConnected, currentStep]);
+
+  // 복잡한 useEffect들이 커스텀 훅으로 대체됨
+
+  // signalIntent 호출
+  const handleSignalIntent = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setResult(null);
+
+    if (!toAddress || !amount || !address) {
+      setError("Please fill in all required fields");
+      return;
+    }
+
+    if (chainId !== 31337) {
+      setError("Wrong network. Please connect to Anvil local network (31337)");
+      return;
+    }
 
     try {
-      // 날짜 형식을 YYYY-MM-DD로 변환
+      await signalIntentWrite({
+        address: CONTRACT_ADDRESSES.ZK_MINTER,
+        abi: ZK_MINTER_ABI,
+        functionName: "signalIntent",
+        args: [
+          toAddress as `0x${string}`,
+          parseUnits(amount, 18),
+          CONTRACT_ADDRESSES.TOSS_BANK_VERIFIER,
+        ],
+      });
+      // 성공 시 onSuccess 콜백에서 자동으로 intentId 설정됨
+    } catch (error) {
+      setError(
+        `Intent signal failed: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    }
+  };
+
+  // 내 intentId 조회 함수 (address 기반)
+  const handleRefreshMyIntentId = async () => {
+    if (!address) return;
+    try {
+      setIsLoading(true);
+      // accountIntent 함수로 현재 사용자의 intentId 조회
+      const userIntentId = await publicClient?.readContract({
+        address: CONTRACT_ADDRESSES.ZK_MINTER,
+        abi: ZK_MINTER_ABI,
+        functionName: "accountIntent",
+        args: [address],
+      });
+
+      if (userIntentId && Number(userIntentId) > 0) {
+        const newIntentId = Number(userIntentId);
+        setSearchIntentId(newIntentId); // 검색 필드에도 표시
+        setIntentId(newIntentId);
+      } else {
+        setError(
+          "아직 생성된 Intent가 없습니다. signalIntent를 먼저 실행하세요."
+        );
+        setIntentDetails(null);
+      }
+    } catch (error) {
+      console.error("내 intentId 조회 실패:", error);
+      setError("내 intentId 조회에 실패했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 임의의 Intent ID로 상세 정보 조회
+  const handleSearchIntentDetails = async (targetIntentId: number) => {
+    if (!targetIntentId) return;
+
+    try {
+      setIsLoading(true);
+      const intentData = await publicClient?.readContract({
+        address: CONTRACT_ADDRESSES.ZK_MINTER,
+        abi: ZK_MINTER_ABI,
+        functionName: "intents",
+        args: [BigInt(targetIntentId)],
+      });
+
+      if (
+        intentData &&
+        intentData[0] !== "0x0000000000000000000000000000000000000000"
+      ) {
+        const [owner, to, amount, timestamp, verifier] = intentData as [
+          string,
+          string,
+          bigint,
+          bigint,
+          string
+        ];
+        setIntentDetails({
+          owner,
+          to,
+          amount,
+          timestamp: Number(timestamp),
+          verifier,
+        });
+      } else {
+        setIntentDetails(null);
+        setError(`Intent ID ${targetIntentId}를 찾을 수 없습니다.`);
+      }
+    } catch (error) {
+      console.error("Intent ID 검색 실패:", error);
+      setIntentDetails(null);
+      setError(`Intent ID ${targetIntentId}를 찾을 수 없습니다.`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ZK Proof 생성
+  const handleGenerateProof = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
+    try {
       const formattedDate = issueDate.replace(
         /(\d{4})(\d{2})(\d{2})/,
         "$1-$2-$3"
@@ -41,13 +400,169 @@ export default function Home() {
         }
       );
 
-      setResult(response.data);
-      console.log("API Response:", response.data);
+      setProofResult(response.data);
+      setCurrentStep("fulfill");
     } catch (error) {
       console.error("API Error:", error);
-      setResult({ error: "API 호출 중 오류가 발생했습니다." });
+      setError("API 호출 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // proof 객체를 컨트랙트가 요구하는 형태로 변환하는 함수
+  const formatProofForContract = (receiptData: any) => {
+    if (!receiptData) {
+      throw new Error("Invalid receipt data");
+    }
+
+    const receipt = receiptData.data.receipt;
+    const claim = receipt.claim;
+    const signatures = receipt.signatures;
+
+    // claimSignature가 Buffer 형태라면 hex로 변환
+    let claimSignatureHex = signatures.claimSignature;
+    if (
+      signatures.claimSignature &&
+      typeof signatures.claimSignature === "object"
+    ) {
+      // Buffer인 경우 hex로 변환
+      claimSignatureHex =
+        "0x" + Buffer.from(signatures.claimSignature).toString("hex");
+    }
+
+    const proofObject = {
+      claimInfo: {
+        provider: claim.provider,
+        parameters: claim.parameters,
+        context: claim.context,
+      },
+      signedClaim: {
+        claim: {
+          identifier: claim.identifier,
+          owner: claim.owner,
+          timestampS: claim.timestampS,
+          epoch: claim.epoch,
+        },
+        signatures: [claimSignatureHex],
+      },
+      isAppclipProof: false,
+    };
+
+    return proofObject;
+  };
+
+  // proof 객체를 바이트로 인코딩하는 함수 (ABI 인코딩 사용)
+  const encodeProofToBytes = (proofObject: any) => {
+    try {
+      // ReclaimProof 구조체에 맞게 ABI 인코딩
+      const encodedProof = encodeAbiParameters(
+        [
+          {
+            type: "tuple",
+            components: [
+              {
+                type: "tuple",
+                name: "claimInfo",
+                components: [
+                  { type: "string", name: "provider" },
+                  { type: "string", name: "parameters" },
+                  { type: "string", name: "context" },
+                ],
+              },
+              {
+                type: "tuple",
+                name: "signedClaim",
+                components: [
+                  {
+                    type: "tuple",
+                    name: "claim",
+                    components: [
+                      { type: "bytes32", name: "identifier" },
+                      { type: "address", name: "owner" },
+                      { type: "uint32", name: "timestampS" },
+                      { type: "uint32", name: "epoch" },
+                    ],
+                  },
+                  { type: "bytes[]", name: "signatures" },
+                ],
+              },
+              { type: "bool", name: "isAppclipProof" },
+            ],
+          },
+        ],
+        [
+          {
+            claimInfo: {
+              provider: proofObject.claimInfo.provider,
+              parameters: proofObject.claimInfo.parameters,
+              context: proofObject.claimInfo.context,
+            },
+            signedClaim: {
+              claim: {
+                identifier: proofObject.signedClaim.claim
+                  .identifier as `0x${string}`,
+                owner: proofObject.signedClaim.claim.owner as `0x${string}`,
+                timestampS: proofObject.signedClaim.claim.timestampS,
+                epoch: proofObject.signedClaim.claim.epoch,
+              },
+              signatures: proofObject.signedClaim.signatures,
+            },
+            isAppclipProof: false,
+          },
+        ]
+      );
+
+      return encodedProof;
+    } catch (error) {
+      console.error("ABI encoding error:", error);
+      throw new Error("Failed to ABI encode proof: " + error);
+    }
+  };
+
+  // fulfillIntent 호출
+  const handleFulfillIntent = async () => {
+    if (!intentId || !proofResult) {
+      console.error("Missing intentId or proofResult");
+      setError("Missing intentId or proofResult");
+      return;
+    }
+
+    if (chainId !== 31337) {
+      console.error("Wrong network. Please connect to Anvil local network");
+      setError("Wrong network. Please connect to Anvil local network");
+      return;
+    }
+
+    try {
+      setFulfillmentResult(null); // 이전 결과 초기화
+
+      // result 데이터를 컨트랙트가 요구하는 형태로 변환
+      const formattedProof = formatProofForContract(proofResult);
+
+      // proof 객체를 바이트로 인코딩
+      const encodedProof = encodeProofToBytes(formattedProof);
+
+      console.log("Encoded proof:", encodedProof);
+      console.log("intentId", intentId);
+
+      await fulfillIntentWrite({
+        address: CONTRACT_ADDRESSES.ZK_MINTER,
+        abi: ZK_MINTER_ABI,
+        functionName: "fulfillIntent",
+        args: [
+          encodedProof, // _paymentProof as bytes
+          BigInt(intentId), // intentId
+        ],
+      });
+    } catch (error) {
+      console.error("fulfillIntent 실패:", error);
+      setError(
+        `Token minting failed: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+      setFulfillmentResult({ success: false });
     }
   };
 
@@ -59,28 +574,454 @@ export default function Home() {
     setCertificateNumber(data.certificateNumber);
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-12">
-            송금인증 ZK Proof 생성
-          </h1>
+  // 네트워크 이름 가져오기
+  const getNetworkName = (chainId: number) => {
+    switch (chainId) {
+      case 1:
+        return "Ethereum Mainnet";
+      case 11155111:
+        return "Sepolia Testnet";
+      case 31337:
+        return "Anvil Local";
+      default:
+        return `Chain ID: ${chainId}`;
+    }
+  };
 
-          <form onSubmit={handleSubmit} className="space-y-8">
+  // 강제 연결 해제 함수
+  const handleForceDisconnect = () => {
+    disconnect();
+    setCurrentStep("connect");
+    setIntentId(null);
+    setProofResult(null);
+    setIssueDate("");
+    setCertificateNumber("");
+    setToAddress("");
+    setAmount("");
+  };
+
+  // ETH 받기 안내 (Anvil 테스트 계정 사용 안내)
+  const handleGetETH = () => {
+    const message = `
+Anvil 테스트 계정으로 ETH를 받으려면:
+
+1. MetaMask에서 현재 계정을 제거하고
+2. 다음 Anvil 테스트 계정 중 하나를 가져오기 하세요:
+
+🔑 Owner 계정:
+- 주소: ${ANVIL_ACCOUNTS.OWNER.address}  
+- 개인키: ${ANVIL_ACCOUNTS.OWNER.privateKey}
+
+🔑 Alice 계정:
+- 주소: ${ANVIL_ACCOUNTS.ALICE.address}
+- 개인키: ${ANVIL_ACCOUNTS.ALICE.privateKey}
+
+🔑 Bob 계정:
+- 주소: ${ANVIL_ACCOUNTS.BOB.address}
+- 개인키: ${ANVIL_ACCOUNTS.BOB.privateKey}
+
+각 계정은 기본적으로 10,000 ETH를 보유하고 있습니다.
+    `.trim();
+
+    alert(message);
+  };
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case "connect":
+        return (
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              Step 1: Wallet Connection
+            </h2>
+            <p className="text-gray-600 mb-8">
+              Connect your wallet to get started.
+            </p>
+            <div className="flex justify-center">
+              <ConnectButton />
+            </div>
+          </div>
+        );
+
+      case "signal":
+        return (
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              Step 2: Intent Management
+            </h2>
+            {/* 나의 Intent Id */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+              <h3 className="text-lg font-semibold text-blue-800 mb-4">
+                🔍 My Intent ID
+              </h3>
+
+              <p className="text-blue-700 mb-4">
+                {intentId && Number(intentId) > 0
+                  ? `ID: ${intentId}`
+                  : "No ID available."}
+              </p>
+              <Button
+                onClick={handleRefreshMyIntentId}
+                disabled={isLoading}
+                className={`bg-blue-500 hover:bg-blue-600 text-white font-medium px-6 py-2 rounded-lg ${
+                  isLoading ? "bg-gray-400" : "bg-blue-500"
+                }`}
+              >
+                Lookup
+              </Button>
+            </div>
+
+            {/* Intent ID 조회/입력 섹션 */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+              <h3 className="text-lg font-semibold text-blue-800 mb-4">
+                🔍 Intent Detail Lookup
+              </h3>
+
+              {/* Intent ID 수동 입력 */}
+              <div className="mb-4">
+                <input
+                  type="text"
+                  value={searchIntentId || ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setSearchIntentId(value ? Number(value) : null);
+                  }}
+                  placeholder="Enter Intent ID..."
+                  className="w-full p-3 border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <Button
+                  onClick={() =>
+                    searchIntentId && handleSearchIntentDetails(searchIntentId)
+                  }
+                  disabled={isLoading}
+                  className={`bg-blue-500 hover:bg-blue-600 text-white font-medium px-6 py-2 rounded-lg mt-2 ${
+                    isLoading ? "bg-gray-400" : "bg-blue-500"
+                  }`}
+                >
+                  Lookup
+                </Button>
+              </div>
+
+              {/* Intent 상세 정보 표시 */}
+              {searchIntentId && (
+                <div className="mt-4 space-y-3">
+                  {intentDetails && (
+                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <h4 className="font-semibold text-blue-900 mb-3">
+                        📋 Intent Details
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <span className="font-medium text-blue-800">
+                            Owner:
+                          </span>
+                          <p className="text-blue-700 font-mono">
+                            {intentDetails.owner.slice(0, 6)}...
+                            {intentDetails.owner.slice(-4)}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="font-medium text-blue-800">
+                            Receiver:
+                          </span>
+                          <p className="text-blue-700 font-mono">
+                            {intentDetails.to.slice(0, 6)}...
+                            {intentDetails.to.slice(-4)}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="font-medium text-blue-800">
+                            Amount:
+                          </span>
+                          <p className="text-blue-700">
+                            {formatUnits(intentDetails.amount, 18)} USDT
+                          </p>
+                        </div>
+                        <div>
+                          <span className="font-medium text-blue-800">
+                            Created Time:
+                          </span>
+                          <p className="text-blue-700">
+                            {new Date(
+                              intentDetails.timestamp * 1000
+                            ).toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Receiver USDT 잔고 */}
+                      <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <h5 className="font-medium text-yellow-800 mb-2">
+                          💰 Receiver USDT Balance
+                        </h5>
+                        <button
+                          onClick={() =>
+                            readReceiverUsdtBalance(intentDetails.to)
+                          }
+                          className="text-blue-700 text-lg font-semibold cursor-pointer"
+                        >
+                          Lookup
+                        </button>
+                        <p className="text-blue-700 text-lg font-semibold">
+                          {receiverUsdtBalance &&
+                            formatUnits(receiverUsdtBalance, 18)}{" "}
+                          USDT
+                        </p>
+                        <p className="text-xs text-yellow-600 mt-1">
+                          Address: {intentDetails.to}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* 새 Intent 생성 섹션 */}
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                ➕ Create New Intent
+              </h3>
+              <p className="text-gray-600 mb-6">
+                If you dont have an existing Intent or want to create a new one,
+                please enter the information below.
+              </p>
+
+              <form onSubmit={handleSignalIntent} className="space-y-6">
+                <div className="space-y-3">
+                  <Label
+                    htmlFor="toAddress"
+                    className="text-lg font-medium text-gray-700"
+                  >
+                    Recipient Address
+                  </Label>
+                  <Input
+                    id="toAddress"
+                    type="text"
+                    value={toAddress}
+                    disabled={!!intentId}
+                    onChange={(e) => setToAddress(e.target.value)}
+                    placeholder="0x..."
+                    className="h-14 text-base border-gray-300 rounded-lg px-4"
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <Label
+                    htmlFor="amount"
+                    className="text-lg font-medium text-gray-700"
+                  >
+                    Amount (USDT)
+                  </Label>
+                  <Input
+                    id="amount"
+                    type="text"
+                    value={amount}
+                    disabled={!!intentId}
+                    onChange={(e) => setAmount(e.target.value)}
+                    placeholder="1.0"
+                    className="h-14 text-base border-gray-300 rounded-lg px-4"
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  className="bg-blue-500 hover:bg-blue-600 text-white font-medium text-lg px-8 py-4 rounded-lg h-auto"
+                  disabled={
+                    !toAddress || !amount || isSignalIntentLoading || !!intentId
+                  }
+                >
+                  {isSignalIntentLoading
+                    ? "Creating Intent..."
+                    : "Create New Intent"}
+                </Button>
+              </form>
+            </div>
+
+            {/* 다음 단계로 건너뛰기 */}
+            <div className="text-center">
+              <p className="text-gray-600 mb-4">
+                If you have an Intent ID, you can proceed to the next step.
+              </p>
+              <Button
+                onClick={() => setCurrentStep("transfer")}
+                disabled={!intentId}
+                variant="outline"
+                className="bg-green-500 hover:bg-green-600 text-white border-green-500 font-medium text-lg px-8 py-3 rounded-lg"
+              >
+                Proceed to Next Step →
+              </Button>
+            </div>
+          </div>
+        );
+
+      case "transfer":
+        return (
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              Step 3: Toss Transfer
+            </h2>
+
+            {/* 토스 송금 안내 - Intent ID가 있을 때만 표시 */}
+            {intentId && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
+                <h3 className="text-lg font-semibold text-yellow-800 mb-4">
+                  📱 Send money via Toss app
+                </h3>
+                <div className="space-y-2 text-yellow-700">
+                  <p>
+                    <strong>Recipient Account:</strong> elysia Toss account
+                  </p>
+                  <p>
+                    <strong>Transfer Memo:</strong>{" "}
+                    <code className="bg-yellow-100 px-2 py-1 rounded">
+                      {intentId}
+                    </code>
+                  </p>
+                  <p>
+                    <strong>Amount:</strong> KRW equivalent to {amount} USDT
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <p className="text-gray-600 mb-6">
+              {intentId
+                ? "After transfer, get a transfer confirmation certificate from the Toss app."
+                : "Please lookup Intent ID first."}
+            </p>
+
+            <div className="flex gap-4">
+              <Button
+                onClick={() => setCurrentStep("signal")}
+                variant="outline"
+                className="font-medium text-lg px-6 py-3 rounded-lg"
+              >
+                ← Previous
+              </Button>
+
+              <Button
+                onClick={() => setCurrentStep("proof")}
+                variant="outline"
+                className="font-medium text-lg px-6 py-3 rounded-lg"
+              >
+                Next →
+              </Button>
+            </div>
+          </div>
+        );
+
+      case "proof":
+        return (
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              Step 4: ZK Proof Generation
+            </h2>
+            <ul>
+              <li>
+                &apos;Generate ZK Proof&apos; button requires remote server to
+                generate zk Proof with eth signed
+                <br />
+                - remote server generates tls proof using attestor-server for
+                the Toss transfer
+                <br />
+                - remote server and attestor-server connected via websocket
+                <br />
+                - attestor-server validates the proof and signs with its private
+                key
+                <br />- remote server sends the proof to the attestor-server
+              </li>
+            </ul>
+
+            {/* intentId */}
+            <div className="space-y-3 my-6">
+              <p className="text-gray-600 mb-4 bg-gray-100 p-4 rounded-lg">
+                <strong>Intent ID :</strong> {intentId}
+              </p>
+            </div>
+
+            <form onSubmit={handleGenerateProof} className="space-y-6">
+              <div className="space-y-3">
+                <Label
+                  htmlFor="issueDate"
+                  className="text-lg font-medium text-gray-700"
+                >
+                  Issue Date
+                </Label>
+                <Input
+                  id="issueDate"
+                  type="text"
+                  value={issueDate}
+                  onChange={(e) => setIssueDate(e.target.value)}
+                  placeholder="Enter certificate issue date (e.g., 20250618)"
+                  className="h-14 text-base border-gray-300 rounded-lg px-4 placeholder:text-gray-400"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label
+                  htmlFor="certificateNumber"
+                  className="text-lg font-medium text-gray-700"
+                >
+                  Certificate Issue Number
+                </Label>
+                <Input
+                  id="certificateNumber"
+                  type="text"
+                  value={certificateNumber}
+                  onChange={(e) => setCertificateNumber(e.target.value)}
+                  placeholder="Please enter the certificate issue number."
+                  className="h-14 text-base border-gray-300 rounded-lg px-4 placeholder:text-gray-400"
+                />
+              </div>
+
+              <div className="flex gap-4">
+                <Button
+                  type="button"
+                  onClick={() => setCurrentStep("transfer")}
+                  variant="outline"
+                  className="font-medium text-lg px-6 py-3 rounded-lg"
+                >
+                  ← Previous Step
+                </Button>
+
+                <Button
+                  type="submit"
+                  className={`bg-blue-500 hover:bg-blue-600 text-white font-medium text-lg px-8 py-3 rounded-lg ${
+                    isLoading ? "bg-gray-400" : "bg-blue-500"
+                  }`}
+                  disabled={!issueDate || !certificateNumber || isLoading}
+                >
+                  Generate ZK Proof
+                </Button>
+              </div>
+            </form>
+          </div>
+        );
+
+      case "fulfill":
+        return (
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              Step 5: Token Minting
+            </h2>
+            <p className="text-gray-600 mb-8">
+              ZK Proof has been generated. Please execute token minting.
+            </p>
+
             <div className="space-y-3">
               <Label
                 htmlFor="issueDate"
                 className="text-lg font-medium text-gray-700"
               >
-                발급일자
+                Issue Date
               </Label>
               <Input
                 id="issueDate"
                 type="text"
                 value={issueDate}
-                onChange={(e) => setIssueDate(e.target.value)}
-                placeholder="증명서 발급일자를 입력하세요. (예: 20250618)"
+                disabled={true}
+                placeholder="Enter certificate issue date (e.g., 20250618)"
                 className="h-14 text-base border-gray-300 rounded-lg px-4 placeholder:text-gray-400"
               />
             </div>
@@ -90,88 +1031,393 @@ export default function Home() {
                 htmlFor="certificateNumber"
                 className="text-lg font-medium text-gray-700"
               >
-                증명서 발급번호
+                Certificate Issue Number
               </Label>
               <Input
                 id="certificateNumber"
                 type="text"
                 value={certificateNumber}
-                onChange={(e) => setCertificateNumber(e.target.value)}
-                placeholder="증명서 발급번호를 입력해주세요."
+                disabled={true}
+                placeholder="Please enter the certificate issue number."
                 className="h-14 text-base border-gray-300 rounded-lg px-4 placeholder:text-gray-400"
               />
             </div>
 
-            <div className="pt-6">
+            {/* intentId */}
+            <div className="space-y-3 my-6">
+              <p className="text-gray-600 mb-4 bg-gray-100 p-4 rounded-lg">
+                <strong>Intent ID :</strong> {intentId}
+              </p>
+            </div>
+
+            <div className="flex gap-4">
               <Button
-                type="submit"
-                className="bg-blue-500 hover:bg-blue-600 text-white font-medium text-lg px-8 py-4 rounded-lg h-auto"
-                disabled={!issueDate || !certificateNumber || isLoading}
+                onClick={() => setCurrentStep("proof")}
+                variant="outline"
+                className="font-medium text-lg px-6 py-3 rounded-lg"
               >
-                {isLoading ? "생성 중..." : "ZK Proof 생성"}
+                ← Previous Step
+              </Button>
+
+              <Button
+                onClick={handleFulfillIntent}
+                className="font-medium text-lg px-6 py-3 rounded-lg bg-blue-500 hover:bg-blue-600 text-white"
+                disabled={
+                  isFulfillIntentLoading ||
+                  !intentId ||
+                  fulfillmentResult?.success
+                }
+              >
+                {isFulfillIntentLoading
+                  ? "Minting Tokens..."
+                  : fulfillmentResult?.success
+                  ? "Minting Complete"
+                  : "Mint Tokens"}
               </Button>
             </div>
-          </form>
 
-          {/* Result Section */}
-          {result && (
-            <div className="mt-8 p-6 bg-gray-50 rounded-lg">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                API 응답 결과
-              </h3>
-              <pre className="bg-white p-4 rounded border text-sm overflow-auto">
-                {JSON.stringify(result, null, 2)}
-              </pre>
-            </div>
-          )}
-        </div>
+            {fulfillmentResult && (
+              <FulfillmentResult fulfillmentResult={fulfillmentResult} />
+            )}
 
-        {/* Test Data Section */}
-        <div className="bg-white rounded-lg shadow-sm p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
-            테스트 데이터
-          </h2>
-          <p className="text-gray-600 mb-6">
-            아래 데이터를 클릭하여 폼에 자동으로 입력할 수 있습니다.
-          </p>
-
-          <div className="grid gap-4">
-            {issueData.map(
-              (
-                data: { issueDate: string; certificateNumber: string },
-                index: number
-              ) => (
-                <div
-                  key={index}
-                  className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
-                  onClick={() => handleTestDataSelect(data)}
-                >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="font-medium text-gray-900">
-                        발급일자: {data.issueDate}
-                      </p>
-                      <p className="text-gray-600">
-                        증명서 발급번호: {data.certificateNumber}
-                      </p>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleTestDataSelect(data);
-                      }}
-                    >
-                      선택
-                    </Button>
-                  </div>
+            {proofResult && (
+              <>
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 my-6">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                    ✅ Proof Generation Completed
+                  </h3>
+                  <ProofResultComponent proofResult={proofResult} />
                 </div>
-              )
+              </>
             )}
           </div>
+        );
+
+      default:
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-12 px-4">
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-12">
+            ZK Escrow Transfer System
+          </h1>
+
+          {/* 연결 상태 정보 */}
+          <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex justify-between items-center">
+              <div>
+                <div className="flex items-center gap-4 mb-2">
+                  <p className="text-blue-800">
+                    <strong>Connection Status:</strong>{" "}
+                    {isConnected ? "Connected" : "Disconnected"}
+                  </p>
+                  <p className="text-blue-800">
+                    <strong>Network:</strong> {getNetworkName(chainId)}
+                  </p>
+                </div>
+                {isConnected && address && (
+                  <div>
+                    <p className="text-blue-800">
+                      <strong>Wallet Address:</strong> {address.slice(0, 6)}...
+                      {address.slice(-4)}
+                    </p>
+                    {intentId && (
+                      <p className="text-blue-800 mt-1">
+                        <strong>Current Intent ID:</strong> {intentId}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <ConnectButton />
+                {isConnected && (
+                  <Button
+                    onClick={handleForceDisconnect}
+                    variant="outline"
+                    size="sm"
+                    className="text-red-600 border-red-300 hover:bg-red-50"
+                  >
+                    Force Disconnect
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* 자산 정보 및 획득 섹션 - Anvil 네트워크에서만 표시 */}
+          {isConnected && chainId === 31337 && (
+            <div className="mb-8 p-6 bg-green-50 border border-green-200 rounded-lg">
+              <h2 className="text-xl font-semibold text-green-900 mb-4">
+                🎯 Test Asset Management
+              </h2>
+
+              {/* 잔액 정보 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="bg-white p-4 rounded-lg border">
+                  <h3 className="font-medium text-gray-900 mb-2">
+                    ETH Balance
+                  </h3>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {ethBalance
+                      ? formatEther(ethBalance.value).slice(0, 8)
+                      : "0.00"}{" "}
+                    ETH
+                  </p>
+                  <Button
+                    onClick={handleGetETH}
+                    className="mt-2 bg-blue-500 hover:bg-blue-600 text-white"
+                    size="sm"
+                  >
+                    Test Account Guide
+                  </Button>
+                </div>
+              </div>
+
+              {/* 안내 메시지 */}
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <p className="text-yellow-800 text-sm">
+                  💡 <strong>Notice:</strong> This is a feature for the Anvil
+                  test network. Make sure you have sufficient ETH (for gas fees)
+                  and USDT before proceeding with actual transactions.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* 단계별 콘텐츠 */}
+          {renderStepContent()}
+
+          {/* 에러 메시지 */}
+          {error && (
+            <div className="mt-8 p-6 bg-red-50 border border-red-200 rounded-lg">
+              <h3 className="text-lg font-semibold text-red-900 mb-2">
+                Error
+                <button
+                  className="cursor-pointer ml-2"
+                  onClick={() => setError(null)}
+                >
+                  ❌
+                </button>
+              </h3>
+              <p className="text-red-700">{error}</p>
+            </div>
+          )}
+
+          {/* Test Data Section - Proof 단계에서만 표시 */}
+          {currentStep === "proof" && (
+            <TestProofs
+              testData={testData}
+              handleTestDataSelect={handleTestDataSelect}
+            />
+          )}
         </div>
       </div>
     </div>
   );
 }
+
+const ProofResultComponent = ({
+  proofResult,
+}: {
+  proofResult: ProofResult | null;
+}) => {
+  const [showAPIResponse, setShowAPIResponse] = useState(false);
+  if (!proofResult) return null;
+  if (proofResult.error) return null;
+
+  return (
+    <div>
+      {proofResult.data?.extractedParameters && (
+        <div className="bg-white p-4 rounded border mb-4">
+          <h4 className="font-semibold text-gray-800 mb-3">
+            📋 Extracted Transaction Data
+          </h4>
+          <div className="mt-3">
+            <pre className="bg-gray-100 p-3 rounded text-xs overflow-auto max-h-96 border">
+              {JSON.stringify(proofResult.data.extractedParameters, null, 2)}
+            </pre>
+          </div>
+        </div>
+      )}
+
+      {/* Proof Verification Info */}
+      {proofResult.data?.receipt?.claim && (
+        <div className="bg-white p-4 rounded border mb-4">
+          <h4 className="font-semibold text-gray-800 mb-3">Claim</h4>
+          <div className="mt-3">
+            <pre className="bg-gray-100 p-3 rounded text-xs overflow-auto max-h-96 border">
+              {JSON.stringify(proofResult.data.receipt.claim, null, 2)}
+            </pre>
+          </div>
+        </div>
+      )}
+
+      {/* Attestor Info */}
+      {proofResult.data?.receipt?.signatures && (
+        <div className="bg-white p-4 rounded border mb-4">
+          <h4 className="font-semibold text-gray-800 mb-3">
+            Attestor Signature
+          </h4>
+          <span className="font-medium text-gray-600">Attestor Address:</span>
+          <div className="mt-3">
+            <pre className="bg-gray-100 p-3 rounded text-xs overflow-auto max-h-96 border">
+              {JSON.stringify(proofResult.data.receipt.signatures, null, 2)}
+            </pre>
+          </div>
+        </div>
+      )}
+
+      {/* Toggle for Full Data */}
+      <div className="mt-4">
+        <Button
+          onClick={() => setShowAPIResponse(!showAPIResponse)}
+          variant="outline"
+          size="sm"
+          className="text-xs"
+        >
+          {showAPIResponse ? "Hide Full JSON" : "Show Full JSON"}
+        </Button>
+        {showAPIResponse && (
+          <div className="mt-3">
+            <pre className="bg-gray-100 p-3 rounded text-xs overflow-auto max-h-96 border">
+              {JSON.stringify(proofResult, null, 2)}
+            </pre>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const TestProofs = ({
+  testData,
+  handleTestDataSelect,
+}: {
+  testData: {
+    note: number;
+    issueDate: string;
+    certificateNumber: string;
+  }[];
+  handleTestDataSelect: (data: {
+    issueDate: string;
+    certificateNumber: string;
+  }) => void;
+}) => {
+  return (
+    <div className="bg-white rounded-lg shadow-sm p-8">
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">Test Data</h2>
+      <p className="text-gray-600 mb-6">
+        Click the data below to automatically fill in the form.
+      </p>
+
+      <div className="grid gap-4">
+        {testData.map(
+          (
+            data: {
+              note: number;
+              issueDate: string;
+              certificateNumber: string;
+            },
+            index: number
+          ) => (
+            <div
+              key={index}
+              className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+              onClick={() => handleTestDataSelect(data)}
+            >
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="font-medium text-gray-900">NOTE: {data.note}</p>
+                  <p className="font-medium text-gray-900">
+                    Issue Date: {data.issueDate}
+                  </p>
+                  <p className="text-gray-600">
+                    Certificate Issue Number: {data.certificateNumber}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )
+        )}
+      </div>
+    </div>
+  );
+};
+
+const FulfillmentResult = ({
+  fulfillmentResult,
+}: {
+  fulfillmentResult: {
+    success: boolean;
+    intentHash?: string;
+    verifier?: string;
+    owner?: string;
+    to?: string;
+    amount?: bigint;
+    txHash?: string;
+  };
+}) => {
+  if (!fulfillmentResult?.success) return null;
+  return (
+    <div
+      className={`p-6 border rounded-lg my-6 ${
+        fulfillmentResult.success
+          ? "bg-green-50 border-green-200"
+          : "bg-red-50 border-red-200"
+      }`}
+    >
+      {fulfillmentResult.success && (
+        <div className="space-y-3 text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <span className="font-medium text-green-800">Intent Hash:</span>
+              <p className="text-green-700 font-mono break-all">
+                {fulfillmentResult.intentHash}
+              </p>
+            </div>
+            <div>
+              <span className="font-medium text-green-800">Verifier:</span>
+              <p className="text-green-700 font-mono">
+                {fulfillmentResult.verifier?.slice(0, 6)}...
+                {fulfillmentResult.verifier?.slice(-4)}
+              </p>
+            </div>
+            <div>
+              <span className="font-medium text-green-800">Owner:</span>
+              <p className="text-green-700 font-mono">
+                {fulfillmentResult.owner?.slice(0, 6)}...
+                {fulfillmentResult.owner?.slice(-4)}
+              </p>
+            </div>
+            <div>
+              <span className="font-medium text-green-800">Receiver:</span>
+              <p className="text-green-700 font-mono">
+                {fulfillmentResult.to?.slice(0, 6)}...
+                {fulfillmentResult.to?.slice(-4)}
+              </p>
+            </div>
+            <div>
+              <span className="font-medium text-green-800">Amount:</span>
+              <p className="text-green-700">
+                {fulfillmentResult.amount &&
+                  formatUnits(fulfillmentResult.amount, 18)}{" "}
+                USDT
+              </p>
+            </div>
+            <div>
+              <span className="font-medium text-green-800">Transaction:</span>
+              <p className="text-green-700 font-mono">
+                {fulfillmentResult.txHash?.slice(0, 6)}...
+                {fulfillmentResult.txHash?.slice(-4)}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
