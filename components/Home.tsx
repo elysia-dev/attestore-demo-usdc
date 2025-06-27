@@ -33,12 +33,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { testData } from "../data";
 import { BASE_URL } from "@/constant";
-import {
-  CONTRACT_ADDRESSES,
-  ZK_MINTER_ABI,
-  MOCK_USDT_ABI,
-  ANVIL_ACCOUNTS,
-} from "@/lib/wagmi";
+import ADDRESSES from "@/lib/addresses";
+import { ZK_MINTER_ABI, MOCK_USDT_ABI, ANVIL_ACCOUNTS } from "@/lib/wagmi";
 import { useContractWrite } from "@/hooks/useContractWrite";
 
 type WorkflowStep = "connect" | "signal" | "transfer" | "proof" | "fulfill";
@@ -82,9 +78,7 @@ export default function Home() {
   const chainId = useChainId();
   const { disconnect } = useDisconnect();
   const publicClient = usePublicClient();
-  const [showAPIResponse, setShowAPIResponse] = useState(true);
 
-  // 커스텀 훅 사용
   const { writeAndWait: signalIntentWrite, isLoading: isSignalIntentLoading } =
     useContractWrite({
       onSuccess: (receipt) => {
@@ -96,8 +90,7 @@ export default function Home() {
             );
             return (
               log.topics[0] === intentSignaledTopic &&
-              log.address.toLowerCase() ===
-                CONTRACT_ADDRESSES.ZK_MINTER.toLowerCase()
+              log.address.toLowerCase() === ADDRESSES.ZK_MINTER.toLowerCase()
             );
           });
 
@@ -138,8 +131,7 @@ export default function Home() {
           );
           return (
             log.topics[0] === intentFulfilledTopic &&
-            log.address.toLowerCase() ===
-              CONTRACT_ADDRESSES.ZK_MINTER.toLowerCase()
+            log.address.toLowerCase() === ADDRESSES.ZK_MINTER.toLowerCase()
           );
         });
 
@@ -179,15 +171,15 @@ export default function Home() {
   // 잔액 조회
   const { data: ethBalance } = useBalance({
     address,
-    query: { enabled: !!address && chainId === 31337 },
+    query: { enabled: !!address },
   });
 
   const { data: usdtBalance } = useReadContract({
-    address: CONTRACT_ADDRESSES.MOCK_USDT,
+    address: ADDRESSES.TOKEN,
     abi: MOCK_USDT_ABI,
     functionName: "balanceOf",
     args: address ? [address] : undefined,
-    query: { enabled: !!address && chainId === 31337 },
+    query: { enabled: !!address },
   });
 
   // 워크플로우 상태
@@ -213,7 +205,7 @@ export default function Home() {
 
   // Receiver의 USDT 잔고 조회
   // const { data: receiverUsdtBalance } = useReadContract({
-  //   address: CONTRACT_ADDRESSES.MOCK_USDT,
+  //   address: ADDRESSES.MOCK_USDT,
   //   abi: MOCK_USDT_ABI,
   //   functionName: "balanceOf",
   //   args: intentDetails?.to ? [intentDetails.to as `0x${string}`] : undefined,
@@ -224,7 +216,7 @@ export default function Home() {
     if (!to) return;
 
     const balance = await publicClient?.readContract({
-      address: CONTRACT_ADDRESSES.MOCK_USDT,
+      address: ADDRESSES.TOKEN,
       abi: MOCK_USDT_ABI,
       functionName: "balanceOf",
       args: [to as `0x${string}`],
@@ -273,21 +265,15 @@ export default function Home() {
       setError("Please fill in all required fields");
       return;
     }
-
-    if (chainId !== 31337) {
-      setError("Wrong network. Please connect to Anvil local network (31337)");
-      return;
-    }
-
     try {
       await signalIntentWrite({
-        address: CONTRACT_ADDRESSES.ZK_MINTER,
+        address: ADDRESSES.ZK_MINTER,
         abi: ZK_MINTER_ABI,
         functionName: "signalIntent",
         args: [
           toAddress as `0x${string}`,
           parseUnits(amount, 18),
-          CONTRACT_ADDRESSES.TOSS_BANK_VERIFIER,
+          ADDRESSES.TOSS_BANK_VERIFIER,
         ],
       });
       // 성공 시 onSuccess 콜백에서 자동으로 intentId 설정됨
@@ -307,7 +293,7 @@ export default function Home() {
       setIsLoading(true);
       // accountIntent 함수로 현재 사용자의 intentId 조회
       const userIntentId = await publicClient?.readContract({
-        address: CONTRACT_ADDRESSES.ZK_MINTER,
+        address: ADDRESSES.ZK_MINTER,
         abi: ZK_MINTER_ABI,
         functionName: "accountIntent",
         args: [address],
@@ -338,7 +324,7 @@ export default function Home() {
     try {
       setIsLoading(true);
       const intentData = await publicClient?.readContract({
-        address: CONTRACT_ADDRESSES.ZK_MINTER,
+        address: ADDRESSES.ZK_MINTER,
         abi: ZK_MINTER_ABI,
         functionName: "intents",
         args: [BigInt(targetIntentId)],
@@ -527,13 +513,6 @@ export default function Home() {
       setError("Missing intentId or proofResult");
       return;
     }
-
-    if (chainId !== 31337) {
-      console.error("Wrong network. Please connect to Anvil local network");
-      setError("Wrong network. Please connect to Anvil local network");
-      return;
-    }
-
     try {
       setFulfillmentResult(null); // 이전 결과 초기화
 
@@ -547,7 +526,7 @@ export default function Home() {
       console.log("intentId", intentId);
 
       await fulfillIntentWrite({
-        address: CONTRACT_ADDRESSES.ZK_MINTER,
+        address: ADDRESSES.ZK_MINTER,
         abi: ZK_MINTER_ABI,
         functionName: "fulfillIntent",
         args: [
@@ -583,6 +562,8 @@ export default function Home() {
         return "Sepolia Testnet";
       case 31337:
         return "Anvil Local";
+      case 17000:
+        return "Holsky Testnet";
       default:
         return `Chain ID: ${chainId}`;
     }
@@ -598,32 +579,6 @@ export default function Home() {
     setCertificateNumber("");
     setToAddress("");
     setAmount("");
-  };
-
-  // ETH 받기 안내 (Anvil 테스트 계정 사용 안내)
-  const handleGetETH = () => {
-    const message = `
-Anvil 테스트 계정으로 ETH를 받으려면:
-
-1. MetaMask에서 현재 계정을 제거하고
-2. 다음 Anvil 테스트 계정 중 하나를 가져오기 하세요:
-
-🔑 Owner 계정:
-- 주소: ${ANVIL_ACCOUNTS.OWNER.address}  
-- 개인키: ${ANVIL_ACCOUNTS.OWNER.privateKey}
-
-🔑 Alice 계정:
-- 주소: ${ANVIL_ACCOUNTS.ALICE.address}
-- 개인키: ${ANVIL_ACCOUNTS.ALICE.privateKey}
-
-🔑 Bob 계정:
-- 주소: ${ANVIL_ACCOUNTS.BOB.address}
-- 개인키: ${ANVIL_ACCOUNTS.BOB.privateKey}
-
-각 계정은 기본적으로 10,000 ETH를 보유하고 있습니다.
-    `.trim();
-
-    alert(message);
   };
 
   const renderStepContent = () => {
@@ -879,7 +834,8 @@ Anvil 테스트 계정으로 ETH를 받으려면:
                     </code>
                   </p>
                   <p>
-                    <strong>Amount:</strong> KRW equivalent to {amount} USDT
+                    <strong>Amount:</strong> KRW equivalent to {amount} KRW
+                    token
                   </p>
                 </div>
               </div>
@@ -1149,7 +1105,7 @@ Anvil 테스트 계정으로 ETH를 받으려면:
           </div>
 
           {/* 자산 정보 및 획득 섹션 - Anvil 네트워크에서만 표시 */}
-          {isConnected && chainId === 31337 && (
+          {isConnected && (
             <div className="mb-8 p-6 bg-green-50 border border-green-200 rounded-lg">
               <h2 className="text-xl font-semibold text-green-900 mb-4">
                 🎯 Test Asset Management
@@ -1167,23 +1123,7 @@ Anvil 테스트 계정으로 ETH를 받으려면:
                       : "0.00"}{" "}
                     ETH
                   </p>
-                  <Button
-                    onClick={handleGetETH}
-                    className="mt-2 bg-blue-500 hover:bg-blue-600 text-white"
-                    size="sm"
-                  >
-                    Test Account Guide
-                  </Button>
                 </div>
-              </div>
-
-              {/* 안내 메시지 */}
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <p className="text-yellow-800 text-sm">
-                  💡 <strong>Notice:</strong> This is a feature for the Anvil
-                  test network. Make sure you have sufficient ETH (for gas fees)
-                  and USDT before proceeding with actual transactions.
-                </p>
               </div>
             </div>
           )}

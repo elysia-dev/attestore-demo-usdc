@@ -1,5 +1,15 @@
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
-import { mainnet, sepolia, hardhat } from "wagmi/chains";
+import { mainnet, sepolia } from "wagmi/chains";
+
+export const holsky = {
+  id: 17000,
+  name: "Holesky Test Network",
+  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+  rpcUrls: {
+    default: { http: ["https://ethereum-holesky.publicnode.com"] },
+  },
+  testnet: true,
+} as const;
 
 // Anvil 로컬 네트워크 정의
 export const anvil = {
@@ -18,17 +28,9 @@ export const anvil = {
 export const config = getDefaultConfig({
   appName: "ZK Escrow Demo",
   projectId: "YOUR_PROJECT_ID", // WalletConnect Project ID (선택사항)
-  chains: [anvil, mainnet, sepolia],
+  chains: [anvil, holsky, mainnet, sepolia],
   ssr: true, // Next.js에서 SSR 사용하는 경우
 });
-
-// 컨트랙트 주소들
-export const CONTRACT_ADDRESSES = {
-  MOCK_USDT: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-  NULLIFIER_REGISTRY: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-  ZK_MINTER: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
-  TOSS_BANK_VERIFIER: "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
-} as const;
 
 // Anvil 기본 계정들 (ANVIL_SETUP.md에서 가져옴)
 export const ANVIL_ACCOUNTS = {
