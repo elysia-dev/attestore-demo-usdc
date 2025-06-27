@@ -255,7 +255,7 @@ export default function Home() {
     }
   }, [isConnected, currentStep]);
 
-  // 복잡한 useEffect들이 커스텀 훅으로 대체됨
+  const disableNextStep = !intentId || !intentDetails?.amount;
 
   // signalIntent 호출
   const handleSignalIntent = async (e: React.FormEvent) => {
@@ -617,6 +617,8 @@ export default function Home() {
               <br />
               If you don&apos;t have an Intent, click{" "}
               <strong>Create New</strong> for creating a new Intent.
+              <br />
+              And Click <strong>Lookup</strong> for refresh.
             </p>
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
               <h3 className="text-lg font-semibold text-blue-800 mb-4">
@@ -837,12 +839,18 @@ export default function Home() {
 
             {/* 다음 단계로 건너뛰기 */}
             <div className="text-left">
-              <p className="text-gray-600 mb-4">
-                If you have an Intent, you can proceed to the next step.
-              </p>
+              {disableNextStep ? (
+                <p className="text-gray-600 mb-4">
+                  Please lookup intent details first.
+                </p>
+              ) : (
+                <p className="text-gray-600 mb-4">
+                  If you have an Intent, you can proceed to the next step.
+                </p>
+              )}
               <Button
                 onClick={() => setCurrentStep("transfer")}
-                disabled={!intentId}
+                disabled={disableNextStep}
                 variant="outline"
                 className="bg-green-500 hover:bg-green-600 text-white border-green-500 font-medium text-lg px-8 py-3 rounded-lg"
               >
