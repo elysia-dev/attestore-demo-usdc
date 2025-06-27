@@ -117,7 +117,7 @@ export default function Home() {
             setSearchIntentId(intentIdNumber);
           }
         } catch (error) {
-          console.error("IntentSignaled 이벤트 파싱 실패:", error);
+          console.error("Failed to parse IntentSignaled event:", error);
         }
       },
     });
@@ -166,7 +166,7 @@ export default function Home() {
           });
         }
       } catch (error) {
-        console.error("IntentFulfilled 이벤트 파싱 실패:", error);
+        console.error("Failed to parse IntentFulfilled event:", error);
       }
     },
   });
@@ -305,14 +305,12 @@ export default function Home() {
         setIntentId(newIntentId);
         handleSearchIntentDetails(newIntentId);
       } else {
-        setError(
-          "아직 생성된 Intent가 없습니다. signalIntent를 먼저 실행하세요."
-        );
+        setError("No Intent found");
         setIntentDetails(null);
       }
     } catch (error) {
-      console.error("내 intentId 조회 실패:", error);
-      setError("내 intentId 조회에 실패했습니다.");
+      console.error("Failed to lookup Intent ID:", error);
+      setError("Failed to lookup Intent ID");
     } finally {
       setIsLoading(false);
     }
@@ -351,12 +349,12 @@ export default function Home() {
         });
       } else {
         setIntentDetails(null);
-        setError(`Intent ID ${targetIntentId}를 찾을 수 없습니다.`);
+        setError(`Intent ID ${targetIntentId} not found`);
       }
     } catch (error) {
-      console.error("Intent ID 검색 실패:", error);
+      console.error("Failed to lookup Intent ID:", error);
       setIntentDetails(null);
-      setError(`Intent ID ${targetIntentId}를 찾을 수 없습니다.`);
+      setError(`Intent ID ${targetIntentId} not found`);
     } finally {
       setIsLoading(false);
     }
@@ -533,7 +531,7 @@ export default function Home() {
         ],
       });
     } catch (error) {
-      console.error("fulfillIntent 실패:", error);
+      console.error("Failed to fulfillIntent:", error);
       setError(
         `Token minting failed: ${
           error instanceof Error ? error.message : "Unknown error"
