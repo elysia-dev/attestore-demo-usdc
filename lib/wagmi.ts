@@ -1,5 +1,5 @@
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
-import { mainnet, sepolia } from "wagmi/chains";
+// import { mainnet, sepolia } from "wagmi/chains";
 
 export const holsky = {
   id: 17000,
@@ -26,9 +26,10 @@ export const anvil = {
 } as const;
 
 export const config = getDefaultConfig({
-  appName: "ZK Escrow Demo",
-  projectId: "YOUR_PROJECT_ID", // WalletConnect Project ID (선택사항)
-  chains: [anvil, holsky, mainnet, sepolia],
+  appName: "Genie",
+  projectId: "YOUR_PROJECT_ID",
+  chains: [holsky],
+  // chains: [anvil, holsky, mainnet, sepolia],
   ssr: true, // Next.js에서 SSR 사용하는 경우
 });
 

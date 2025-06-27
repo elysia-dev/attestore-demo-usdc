@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import '@rainbow-me/rainbowkit/styles.css';
-import { Providers } from './providers';
+import "@rainbow-me/rainbowkit/styles.css";
+import { Providers } from "./providers";
+import Header from "@/components/Header";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ZK Escrow Demo",
+  title: "Genie(ZK Escrow)",
   description: "Zero-Knowledge Escrow System Demo",
 };
 
@@ -29,6 +30,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <Header />
         <Providers>{children}</Providers>
       </body>
     </html>

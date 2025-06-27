@@ -79,6 +79,10 @@ export default function Home() {
   const { disconnect } = useDisconnect();
   const publicClient = usePublicClient();
 
+  const handleFaucet = () => {
+    window.open("https://www.alchemy.com/faucets/ethereum-holesky", "_blank");
+  };
+
   const { writeAndWait: signalIntentWrite, isLoading: isSignalIntentLoading } =
     useContractWrite({
       onSuccess: (receipt) => {
@@ -186,13 +190,11 @@ export default function Home() {
   const [currentStep, setCurrentStep] = useState<WorkflowStep>("connect");
 
   // signalIntent 관련
-  const [toAddress, setToAddress] = useState(
-    "0x189027e3C77b3a92fd01bF7CC4E6a86E77F5034E"
-  );
-  const [amount, setAmount] = useState("1");
+  const [toAddress, setToAddress] = useState("");
+  const [amount, setAmount] = useState("");
   const [intentId, setIntentId] = useState<number | null>(null);
   const [searchIntentId, setSearchIntentId] = useState<number | null>(null);
-  const [receiverUsdtBalance, setReceiverUsdtBalance] = useState<
+  const [receiverTokenBalance, setReceiverTokenBalance] = useState<
     bigint | undefined
   >(undefined);
   const [intentDetails, setIntentDetails] = useState<{
@@ -212,7 +214,7 @@ export default function Home() {
   //   query: { enabled: !!intentDetails?.to && chainId === 31337 },
   // });
 
-  const readReceiverUsdtBalance = async (to: string) => {
+  const readReceiverTokenBalance = async (to: string) => {
     if (!to) return;
 
     const balance = await publicClient?.readContract({
@@ -221,14 +223,12 @@ export default function Home() {
       functionName: "balanceOf",
       args: [to as `0x${string}`],
     });
-    setReceiverUsdtBalance(balance);
+    setReceiverTokenBalance(balance);
   };
 
   // 기존 proof 생성 관련
-  const [issueDate, setIssueDate] = useState(testData[0].issueDate);
-  const [certificateNumber, setCertificateNumber] = useState(
-    testData[0].certificateNumber
-  );
+  const [issueDate, setIssueDate] = useState("");
+  const [certificateNumber, setCertificateNumber] = useState("");
 
   // 로딩 및 결과 상태
   const [isLoading, setIsLoading] = useState(false);
@@ -303,6 +303,7 @@ export default function Home() {
         const newIntentId = Number(userIntentId);
         setSearchIntentId(newIntentId); // 검색 필드에도 표시
         setIntentId(newIntentId);
+        handleSearchIntentDetails(newIntentId);
       } else {
         setError(
           "아직 생성된 Intent가 없습니다. signalIntent를 먼저 실행하세요."
@@ -390,13 +391,12 @@ export default function Home() {
       setCurrentStep("fulfill");
     } catch (error) {
       console.error("API Error:", error);
-      setError("API 호출 중 오류가 발생했습니다.");
+      setError("Failed to generate ZK Proof. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // proof 객체를 컨트랙트가 요구하는 형태로 변환하는 함수
   const formatProofForContract = (receiptData: any) => {
     if (!receiptData) {
       throw new Error("Invalid receipt data");
@@ -406,13 +406,11 @@ export default function Home() {
     const claim = receipt.claim;
     const signatures = receipt.signatures;
 
-    // claimSignature가 Buffer 형태라면 hex로 변환
     let claimSignatureHex = signatures.claimSignature;
     if (
       signatures.claimSignature &&
       typeof signatures.claimSignature === "object"
     ) {
-      // Buffer인 경우 hex로 변환
       claimSignatureHex =
         "0x" + Buffer.from(signatures.claimSignature).toString("hex");
     }
@@ -581,13 +579,23 @@ export default function Home() {
     setAmount("");
   };
 
+  // 계좌번호 복사 함수
+  const handleCopyAccountNumber = async () => {
+    try {
+      await navigator.clipboard.writeText("100202642943");
+      window.alert("Copied");
+    } catch (err) {
+      console.error("Failed to copy account number:", err);
+    }
+  };
+
   const renderStepContent = () => {
     switch (currentStep) {
       case "connect":
         return (
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              Step 1: Wallet Connection
+              Step 1: Connect Wallet
             </h2>
             <p className="text-gray-600 mb-8">
               Connect your wallet to get started.
@@ -605,59 +613,17 @@ export default function Home() {
               Step 2: Intent Management
             </h2>
             {/* 나의 Intent Id */}
+
+            <p className="text-gray-600 mb-8">
+              Click <strong>Lookup</strong> for looking up your Intent.
+              <br />
+              If you don&apos;t have an Intent, click{" "}
+              <strong>Create New</strong> for creating a new Intent.
+            </p>
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
               <h3 className="text-lg font-semibold text-blue-800 mb-4">
-                🔍 My Intent ID
+                🔍 My Intent
               </h3>
-
-              <p className="text-blue-700 mb-4">
-                {intentId && Number(intentId) > 0
-                  ? `ID: ${intentId}`
-                  : "No ID available."}
-              </p>
-              <Button
-                onClick={handleRefreshMyIntentId}
-                disabled={isLoading}
-                className={`bg-blue-500 hover:bg-blue-600 text-white font-medium px-6 py-2 rounded-lg ${
-                  isLoading ? "bg-gray-400" : "bg-blue-500"
-                }`}
-              >
-                Lookup
-              </Button>
-            </div>
-
-            {/* Intent ID 조회/입력 섹션 */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
-              <h3 className="text-lg font-semibold text-blue-800 mb-4">
-                🔍 Intent Detail Lookup
-              </h3>
-
-              {/* Intent ID 수동 입력 */}
-              <div className="mb-4">
-                <input
-                  type="text"
-                  value={searchIntentId || ""}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setSearchIntentId(value ? Number(value) : null);
-                  }}
-                  placeholder="Enter Intent ID..."
-                  className="w-full p-3 border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                <Button
-                  onClick={() =>
-                    searchIntentId && handleSearchIntentDetails(searchIntentId)
-                  }
-                  disabled={isLoading}
-                  className={`bg-blue-500 hover:bg-blue-600 text-white font-medium px-6 py-2 rounded-lg mt-2 ${
-                    isLoading ? "bg-gray-400" : "bg-blue-500"
-                  }`}
-                >
-                  Lookup
-                </Button>
-              </div>
-
-              {/* Intent 상세 정보 표시 */}
               {searchIntentId && (
                 <div className="mt-4 space-y-3">
                   {intentDetails && (
@@ -666,6 +632,10 @@ export default function Home() {
                         📋 Intent Details
                       </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <span className="font-medium text-blue-800">Id:</span>
+                          <p className="text-blue-700 font-mono">{intentId}</p>
+                        </div>
                         <div>
                           <span className="font-medium text-blue-800">
                             Owner:
@@ -704,24 +674,45 @@ export default function Home() {
                         </div>
                       </div>
 
-                      {/* Receiver USDT 잔고 */}
+                      {/* Receiver token balance*/}
                       <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                         <h5 className="font-medium text-yellow-800 mb-2">
-                          💰 Receiver USDT Balance
+                          💰 Receiver Info
                         </h5>
-                        <button
-                          onClick={() =>
-                            readReceiverUsdtBalance(intentDetails.to)
-                          }
-                          className="text-blue-700 text-lg font-semibold cursor-pointer"
-                        >
-                          Lookup
-                        </button>
-                        <p className="text-blue-700 text-lg font-semibold">
-                          {receiverUsdtBalance &&
-                            formatUnits(receiverUsdtBalance, 18)}{" "}
-                          USDT
-                        </p>
+
+                        <div className="flex items-center gap-2">
+                          <p className="text-blue-700 text-lg font-semibold">
+                            {receiverTokenBalance
+                              ? formatUnits(receiverTokenBalance, 18)
+                              : "0"}{" "}
+                            KRW_TEST
+                          </p>
+
+                          <button
+                            onClick={() =>
+                              readReceiverTokenBalance(intentDetails.to)
+                            }
+                            className="text-blue-700 hover:text-blue-900 transition-colors duration-200 p-2 rounded-full hover:bg-blue-50"
+                            title="Refresh balance"
+                          >
+                            <svg
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="inline-block"
+                            >
+                              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                              <path d="M21 3v5h-5" />
+                              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                              <path d="M3 21v-5h5" />
+                            </svg>
+                          </button>
+                        </div>
                         <p className="text-xs text-yellow-600 mt-1">
                           Address: {intentDetails.to}
                         </p>
@@ -730,12 +721,65 @@ export default function Home() {
                   )}
                 </div>
               )}
+              <Button
+                onClick={handleRefreshMyIntentId}
+                disabled={isLoading}
+                className={`bg-blue-500 hover:bg-blue-600 text-white font-medium px-6 py-2 mt-4 rounded-lg flex items-center gap-2 ${
+                  isLoading ? "bg-gray-400" : "bg-blue-500"
+                }`}
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.35-4.35" />
+                </svg>
+                {isLoading ? "Loading..." : "Lookup"}
+              </Button>
             </div>
+
+            {/* Intent ID 조회/입력 섹션 */}
+            {/* <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+              <h3 className="text-lg font-semibold text-blue-800 mb-4">
+                🔍 Intent Detail Lookup
+              </h3>
+
+              <div className="mb-4">
+                <input
+                  type="text"
+                  value={searchIntentId || ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setSearchIntentId(value ? Number(value) : null);
+                  }}
+                  placeholder="Enter Intent ID..."
+                  className="w-full p-3 border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <Button
+                  onClick={() =>
+                    searchIntentId && handleSearchIntentDetails(searchIntentId)
+                  }
+                  disabled={isLoading}
+                  className={`bg-blue-500 hover:bg-blue-600 text-white font-medium px-6 py-2 rounded-lg mt-2 ${
+                    isLoading ? "bg-gray-400" : "bg-blue-500"
+                  }`}
+                >
+                  Lookup
+                </Button>
+              </div>
+            </div> */}
 
             {/* 새 Intent 생성 섹션 */}
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                ➕ Create New Intent
+                ➕ Enroll Your Intent
               </h3>
               <p className="text-gray-600 mb-6">
                 If you dont have an existing Intent or want to create a new one,
@@ -766,7 +810,7 @@ export default function Home() {
                     htmlFor="amount"
                     className="text-lg font-medium text-gray-700"
                   >
-                    Amount (USDT)
+                    Amount (KRW_TEST)
                   </Label>
                   <Input
                     id="amount"
@@ -794,9 +838,9 @@ export default function Home() {
             </div>
 
             {/* 다음 단계로 건너뛰기 */}
-            <div className="text-center">
+            <div className="text-left">
               <p className="text-gray-600 mb-4">
-                If you have an Intent ID, you can proceed to the next step.
+                If you have an Intent, you can proceed to the next step.
               </p>
               <Button
                 onClick={() => setCurrentStep("transfer")}
@@ -818,14 +862,46 @@ export default function Home() {
             </h2>
 
             {/* 토스 송금 안내 - Intent ID가 있을 때만 표시 */}
-            {intentId && (
+            {intentId && intentDetails?.amount && (
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
                 <h3 className="text-lg font-semibold text-yellow-800 mb-4">
                   📱 Send money via Toss app
                 </h3>
                 <div className="space-y-2 text-yellow-700">
                   <p>
-                    <strong>Recipient Account:</strong> elysia Toss account
+                    <strong>Recipient Name:</strong> 이현민 (Modori Tossbank
+                    account)
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <strong>Bank Account:</strong>{" "}
+                    <button
+                      onClick={handleCopyAccountNumber}
+                      className="text-blue-600 hover:text-blue-800 font-mono bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded border border-blue-200 transition-colors duration-200 flex items-center gap-2"
+                      title="Click to copy account number"
+                    >
+                      <span>100202642943</span>
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <rect
+                          width="14"
+                          height="14"
+                          x="8"
+                          y="8"
+                          rx="2"
+                          ry="2"
+                        />
+                        <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                      </svg>
+                    </button>
+                    (토스뱅크)
                   </p>
                   <p>
                     <strong>Transfer Memo:</strong>{" "}
@@ -834,18 +910,24 @@ export default function Home() {
                     </code>
                   </p>
                   <p>
-                    <strong>Amount:</strong> KRW equivalent to {amount} KRW
-                    token
+                    <strong>Amount:</strong>{" "}
+                    {formatUnits(intentDetails?.amount, 18)} KRW
                   </p>
                 </div>
               </div>
             )}
 
-            <p className="text-gray-600 mb-6">
-              {intentId
-                ? "After transfer, get a transfer confirmation certificate from the Toss app."
-                : "Please lookup Intent ID first."}
-            </p>
+            {intentId && (
+              <p className="text-gray-600 mb-8">
+                After transfer, click <strong>Next</strong>
+              </p>
+            )}
+
+            {!intentId && (
+              <p className="text-gray-600 mb-6">
+                Please lookup Intent ID first.
+              </p>
+            )}
 
             <div className="flex gap-4">
               <Button
@@ -873,7 +955,11 @@ export default function Home() {
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
               Step 4: ZK Proof Generation
             </h2>
-            <ul>
+            <ul className="text-gray-600">
+              <p className="text-gray-600 mb-8">
+                Click <strong>Generate ZK Proof</strong> for generating ZK
+                Proof.
+              </p>
               <li>
                 &apos;Generate ZK Proof&apos; button requires remote server to
                 generate zk Proof with eth signed
@@ -961,8 +1047,9 @@ export default function Home() {
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
               Step 5: Token Minting
             </h2>
+            <p className="text-gray-600 ">ZK Proof has been generated.</p>
             <p className="text-gray-600 mb-8">
-              ZK Proof has been generated. Please execute token minting.
+              Click <strong>Mint Tokens</strong> for minting tokens.
             </p>
 
             <div className="space-y-3">
@@ -994,7 +1081,7 @@ export default function Home() {
                 type="text"
                 value={certificateNumber}
                 disabled={true}
-                placeholder="Please enter the certificate issue number."
+                placeholder="Please enter the certificate issue number.(e.g, 1234-ABCD-EFGHIJKL)"
                 className="h-14 text-base border-gray-300 rounded-lg px-4 placeholder:text-gray-400"
               />
             </div>
@@ -1061,7 +1148,6 @@ export default function Home() {
             ZK Escrow Transfer System
           </h1>
 
-          {/* 연결 상태 정보 */}
           <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex justify-between items-center">
               <div>
@@ -1070,16 +1156,28 @@ export default function Home() {
                     <strong>Connection Status:</strong>{" "}
                     {isConnected ? "Connected" : "Disconnected"}
                   </p>
-                  <p className="text-blue-800">
+                  <div
+                    className="text-blue-800 cursor-pointer hover:bg-blue-50 transition-colors duration-200 px-2 py-1 rounded-lg"
+                    onClick={handleFaucet}
+                  >
                     <strong>Network:</strong> {getNetworkName(chainId)}
-                  </p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <ConnectButton />
+                  {isConnected && (
+                    <Button
+                      onClick={handleForceDisconnect}
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 border-red-300 hover:bg-red-50 h-10"
+                    >
+                      Disconnect
+                    </Button>
+                  )}
                 </div>
                 {isConnected && address && (
                   <div>
-                    <p className="text-blue-800">
-                      <strong>Wallet Address:</strong> {address.slice(0, 6)}...
-                      {address.slice(-4)}
-                    </p>
                     {intentId && (
                       <p className="text-blue-800 mt-1">
                         <strong>Current Intent ID:</strong> {intentId}
@@ -1088,30 +1186,16 @@ export default function Home() {
                   </div>
                 )}
               </div>
-              <div className="flex gap-2">
-                <ConnectButton />
-                {isConnected && (
-                  <Button
-                    onClick={handleForceDisconnect}
-                    variant="outline"
-                    size="sm"
-                    className="text-red-600 border-red-300 hover:bg-red-50"
-                  >
-                    Force Disconnect
-                  </Button>
-                )}
-              </div>
             </div>
           </div>
 
           {/* 자산 정보 및 획득 섹션 - Anvil 네트워크에서만 표시 */}
-          {isConnected && (
+          {/* {isConnected && (
             <div className="mb-8 p-6 bg-green-50 border border-green-200 rounded-lg">
               <h2 className="text-xl font-semibold text-green-900 mb-4">
                 🎯 Test Asset Management
               </h2>
 
-              {/* 잔액 정보 */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div className="bg-white p-4 rounded-lg border">
                   <h3 className="font-medium text-gray-900 mb-2">
@@ -1126,7 +1210,7 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          )}
+          )} */}
 
           {/* 단계별 콘텐츠 */}
           {renderStepContent()}
@@ -1147,13 +1231,12 @@ export default function Home() {
             </div>
           )}
 
-          {/* Test Data Section - Proof 단계에서만 표시 */}
-          {currentStep === "proof" && (
+          {/* {currentStep === "proof" && (
             <TestProofs
               testData={testData}
               handleTestDataSelect={handleTestDataSelect}
             />
-          )}
+          )} */}
         </div>
       </div>
     </div>
@@ -1312,6 +1395,9 @@ const FulfillmentResult = ({
     >
       {fulfillmentResult.success && (
         <div className="space-y-3 text-sm">
+          <h4 className="font-semibold text-gray-800 mb-3">
+            ✅ Minting Completed
+          </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <span className="font-medium text-green-800">Intent Hash:</span>
