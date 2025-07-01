@@ -590,11 +590,73 @@ export default function Home() {
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
               Step 1: Connect Wallet
             </h2>
+
             <p className="text-gray-600 mb-8">
-              Connect your wallet to get started.
+              Connect your wallet to get started with secure, private, and
+              verifiable cross-chain transfers.
             </p>
             <div className="flex justify-center">
               <ConnectButton />
+            </div>
+            {/* Application Description */}
+
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-8 mb-8 max-w-4xl mx-auto mt-8">
+              <div className="text-left space-y-4 text-gray-700">
+                <p className="text-lg leading-relaxed">
+                  A revolutionary blockchain application that bridges
+                  traditional banking with decentralized finance using
+                  Zero-Knowledge proofs.
+                </p>
+
+                <div className="grid md:grid-cols-2 gap-6 mt-6">
+                  <div className="bg-white p-4 rounded-lg shadow-sm">
+                    <h4 className="font-semibold text-blue-600 mb-2">
+                      🔒 Privacy-First
+                    </h4>
+                    <p className="text-sm">
+                      Generate cryptographic proofs of your Toss bank transfers
+                      without revealing sensitive transaction details.
+                    </p>
+                  </div>
+
+                  <div className="bg-white p-4 rounded-lg shadow-sm">
+                    <h4 className="font-semibold text-green-600 mb-2">
+                      🔄 Seamless Bridge
+                    </h4>
+                    <p className="text-sm">
+                      Convert your traditional bank transfers into blockchain
+                      tokens through automated escrow mechanisms.
+                    </p>
+                  </div>
+
+                  <div className="bg-white p-4 rounded-lg shadow-sm">
+                    <h4 className="font-semibold text-purple-600 mb-2">
+                      ⚡ Instant Verification
+                    </h4>
+                    <p className="text-sm">
+                      Real-time validation of bank transfers using TLS
+                      attestation and zero-knowledge cryptography.
+                    </p>
+                  </div>
+
+                  <div className="bg-white p-4 rounded-lg shadow-sm">
+                    <h4 className="font-semibold text-orange-600 mb-2">
+                      🌐 Cross-Chain Ready
+                    </h4>
+                    <p className="text-sm">
+                      Built for interoperability across multiple blockchain
+                      networks and traditional financial systems.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-blue-100 p-4 rounded-lg mt-6">
+                  <p className="text-sm text-blue-800">
+                    <strong>How it works:</strong> Create an intent → Transfer
+                    via Toss → Generate ZK proof → Mint tokens
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         );
@@ -1143,69 +1205,39 @@ export default function Home() {
             ZK Escrow Transfer System
           </h1>
 
-          <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex justify-between items-center">
-              <div>
-                <div className="flex items-center gap-4 mb-2">
-                  <p className="text-blue-800">
-                    <strong>Connection Status:</strong>{" "}
-                    {isConnected ? "Connected" : "Disconnected"}
-                  </p>
-                  <div
-                    className="text-blue-800 cursor-pointer hover:bg-blue-50 transition-colors duration-200 px-2 py-1 rounded-lg"
-                    onClick={handleFaucet}
-                  >
-                    <strong>Network:</strong> {getNetworkName(chainId)}
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <ConnectButton />
-                  {isConnected && (
-                    <Button
-                      onClick={handleForceDisconnect}
-                      variant="outline"
-                      size="sm"
-                      className="text-red-600 border-red-300 hover:bg-red-50 h-10"
+          {currentStep !== "connect" && (
+            <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex justify-between items-center">
+                <div>
+                  <div className="flex items-center gap-4 mb-2">
+                    <p className="text-blue-800">
+                      <strong>Connection Status:</strong>{" "}
+                      {isConnected ? "Connected" : "Disconnected"}
+                    </p>
+                    <div
+                      className="text-blue-800 cursor-pointer hover:bg-blue-50 transition-colors duration-200 px-2 py-1 rounded-lg"
+                      onClick={handleFaucet}
                     >
-                      Disconnect
-                    </Button>
-                  )}
-                </div>
-                {isConnected && address && (
-                  <div>
-                    {intentId && (
-                      <p className="text-blue-800 mt-1">
-                        <strong>Current Intent ID:</strong> {intentId}
-                      </p>
+                      <strong>Network:</strong> {getNetworkName(chainId)}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <ConnectButton />
+                    {isConnected && (
+                      <Button
+                        onClick={handleForceDisconnect}
+                        variant="outline"
+                        size="sm"
+                        className="text-red-600 border-red-300 hover:bg-red-50 h-10"
+                      >
+                        Disconnect
+                      </Button>
                     )}
                   </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* 자산 정보 및 획득 섹션 - Anvil 네트워크에서만 표시 */}
-          {/* {isConnected && (
-            <div className="mb-8 p-6 bg-green-50 border border-green-200 rounded-lg">
-              <h2 className="text-xl font-semibold text-green-900 mb-4">
-                🎯 Test Asset Management
-              </h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div className="bg-white p-4 rounded-lg border">
-                  <h3 className="font-medium text-gray-900 mb-2">
-                    ETH Balance
-                  </h3>
-                  <p className="text-2xl font-bold text-blue-600">
-                    {ethBalance
-                      ? formatEther(ethBalance.value).slice(0, 8)
-                      : "0.00"}{" "}
-                    ETH
-                  </p>
                 </div>
               </div>
             </div>
-          )} */}
+          )}
 
           {/* 단계별 콘텐츠 */}
           {renderStepContent()}
