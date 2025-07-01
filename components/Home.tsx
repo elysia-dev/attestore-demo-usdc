@@ -116,6 +116,7 @@ export default function Home() {
             const intentIdNumber = Number(newIntentId);
             setIntentId(intentIdNumber);
             setSearchIntentId(intentIdNumber);
+            handleRefreshMyIntentId();
           }
         } catch (error) {
           console.error("Failed to parse IntentSignaled event:", error);
@@ -171,22 +172,10 @@ export default function Home() {
       }
     },
   });
-  // 로그 정리됨
 
-  // 잔액 조회
-  const { data: ethBalance } = useBalance({
-    address,
-    query: { enabled: !!address },
-  });
-
-  const { data: usdtBalance } = useReadContract({
-    address: ADDRESSES.TOKEN,
-    abi: MOCK_USDT_ABI,
-    functionName: "balanceOf",
-    args: address ? [address] : undefined,
-    query: { enabled: !!address },
-  });
-
+  useEffect(() => {
+    handleRefreshMyIntentId();
+  }, [isConnected, address]);
   // 워크플로우 상태
   const [currentStep, setCurrentStep] = useState<WorkflowStep>("connect");
 
@@ -751,38 +740,6 @@ export default function Home() {
               </Button>
             </div>
 
-            {/* Intent ID 조회/입력 섹션 */}
-            {/* <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
-              <h3 className="text-lg font-semibold text-blue-800 mb-4">
-                🔍 Intent Detail Lookup
-              </h3>
-
-              <div className="mb-4">
-                <input
-                  type="text"
-                  value={searchIntentId || ""}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setSearchIntentId(value ? Number(value) : null);
-                  }}
-                  placeholder="Enter Intent ID..."
-                  className="w-full p-3 border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                <Button
-                  onClick={() =>
-                    searchIntentId && handleSearchIntentDetails(searchIntentId)
-                  }
-                  disabled={isLoading}
-                  className={`bg-blue-500 hover:bg-blue-600 text-white font-medium px-6 py-2 rounded-lg mt-2 ${
-                    isLoading ? "bg-gray-400" : "bg-blue-500"
-                  }`}
-                >
-                  Lookup
-                </Button>
-              </div>
-            </div> */}
-
-            {/* 새 Intent 생성 섹션 */}
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">
                 ➕ Enroll Your Intent
@@ -854,6 +811,7 @@ export default function Home() {
                   If you have an Intent, you can proceed to the next step.
                 </p>
               )}
+
               <Button
                 onClick={() => {
                   setCurrentStep("transfer");
@@ -861,9 +819,9 @@ export default function Home() {
                 }}
                 disabled={disableNextStep}
                 variant="outline"
-                className="bg-green-500 hover:bg-green-600 text-white border-green-500 font-medium text-lg px-8 py-3 rounded-lg"
+                className="font-medium text-lg px-6 py-3 rounded-lg"
               >
-                Proceed to Next Step →
+                Next →
               </Button>
             </div>
           </div>
@@ -875,6 +833,11 @@ export default function Home() {
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
               Step 3: Toss Transfer
             </h2>
+            <p className="text-gray-600 mb-8">
+              1. Send fiat money to the recipient via Toss app.
+              <br />
+              2. Click <strong>Next</strong> for proceeding to the next step.
+            </p>
 
             {/* 토스 송금 안내 - Intent ID가 있을 때만 표시 */}
             {intentId && intentDetails?.amount && (
@@ -940,7 +903,7 @@ export default function Home() {
 
             {!intentId && (
               <p className="text-gray-600 mb-6">
-                Please lookup Intent ID first.
+                Please lookup Intent ID first. (click previous)
               </p>
             )}
 
@@ -958,6 +921,7 @@ export default function Home() {
                   setCurrentStep("proof");
                   freeError();
                 }}
+                disabled={!intentId}
                 variant="outline"
                 className="font-medium text-lg px-6 py-3 rounded-lg"
               >
@@ -1042,7 +1006,7 @@ export default function Home() {
                   variant="outline"
                   className="font-medium text-lg px-6 py-3 rounded-lg"
                 >
-                  ← Previous Step
+                  ← Previous
                 </Button>
 
                 <Button
@@ -1117,7 +1081,7 @@ export default function Home() {
                 variant="outline"
                 className="font-medium text-lg px-6 py-3 rounded-lg"
               >
-                ← Previous Step
+                ← Previous
               </Button>
 
               <Button

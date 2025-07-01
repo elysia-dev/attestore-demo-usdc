@@ -28,10 +28,12 @@ export const anvil = {
   testnet: true,
 } as const;
 
+const isLocal = process.env.NODE_ENV === "development";
+
 export const config = getDefaultConfig({
   appName: "Genie",
   projectId: "YOUR_PROJECT_ID",
-  chains: [holesky],
+  chains: isLocal ? [anvil] : [holesky],
   wallets: [
     {
       groupName: "Recommended",
