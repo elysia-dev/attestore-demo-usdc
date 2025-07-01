@@ -18,10 +18,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { BASE_URL } from "@/constant";
+import { BASE_URL, faucetLink } from "@/constant";
 import ADDRESSES from "@/lib/addresses";
 import { ZK_MINTER_ABI, MOCK_USDT_ABI } from "@/lib/wagmi";
 import { useContractWrite } from "@/hooks/useContractWrite";
+import FulfillmentResult from "./FulfillmentResult";
+import ProofResultComponent from "./ProofResult";
 
 enum WorkflowStep {
   CONNECT = "connect",
@@ -30,8 +32,17 @@ enum WorkflowStep {
   PROOF = "proof",
   FULFILL = "fulfill",
 }
+export type FulfillmentResult = {
+  success: boolean;
+  intentHash?: string;
+  verifier?: string;
+  owner?: string;
+  to?: string;
+  amount?: bigint;
+  txHash?: string;
+};
 
-type ProofResult = {
+export type ProofResult = {
   success?: boolean;
   error?: string;
   data?: {
@@ -64,16 +75,15 @@ type ProofResult = {
   };
 };
 
+const openFaucetLink = () => {
+  window.open(faucetLink, "_blank");
+};
+
 export default function Home() {
-  // Wagmi hooks
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
   const { disconnect } = useDisconnect();
   const publicClient = usePublicClient();
-
-  const handleFaucet = () => {
-    window.open("https://www.alchemy.com/faucets/ethereum-holesky", "_blank");
-  };
 
   const { writeAndWait: signalIntentWrite, isLoading: isSignalIntentLoading } =
     useContractWrite({
@@ -167,7 +177,7 @@ export default function Home() {
   useEffect(() => {
     handleRefreshMyIntentId();
   }, [isConnected, address]);
-  // 워크플로우 상태
+
   const [currentStep, setCurrentStep] = useState<WorkflowStep>(
     WorkflowStep.CONNECT
   );
@@ -205,15 +215,9 @@ export default function Home() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [fulfillmentResult, setFulfillmentResult] = useState<{
-    success: boolean;
-    intentHash?: string;
-    verifier?: string;
-    owner?: string;
-    to?: string;
-    amount?: bigint;
-    txHash?: string;
-  } | null>(null);
+
+  const [fulfillmentResult, setFulfillmentResult] =
+    useState<FulfillmentResult | null>(null);
 
   const [proofResult, setProofResult] = useState<ProofResult | null>(null);
 
@@ -1199,7 +1203,7 @@ export default function Home() {
                     </p>
                     <div
                       className="text-blue-800 cursor-pointer hover:bg-blue-50 transition-colors duration-200 px-2 py-1 rounded-lg"
-                      onClick={handleFaucet}
+                      onClick={openFaucetLink}
                     >
                       <strong>Network:</strong> {getNetworkName(chainId)}
                     </div>
@@ -1237,91 +1241,11 @@ export default function Home() {
               <p className="text-red-700">{error}</p>
             </div>
           )}
-
-          {/* {currentStep === "proof" && (
-            <TestProofs
-              testData={testData}
-              handleTestDataSelect={handleTestDataSelect}
-            />
-          )} */}
         </div>
       </div>
     </div>
   );
 }
-
-const ProofResultComponent = ({
-  proofResult,
-}: {
-  proofResult: ProofResult | null;
-}) => {
-  const [showAPIResponse, setShowAPIResponse] = useState(false);
-  if (!proofResult) return null;
-  if (proofResult.error) return null;
-
-  return (
-    <div>
-      {proofResult.data?.extractedParameters && (
-        <div className="bg-white p-4 rounded border mb-4">
-          <h4 className="font-semibold text-gray-800 mb-3">
-            📋 Extracted Transaction Data
-          </h4>
-          <div className="mt-3">
-            <pre className="bg-gray-100 p-3 rounded text-xs overflow-auto max-h-96 border">
-              {JSON.stringify(proofResult.data.extractedParameters, null, 2)}
-            </pre>
-          </div>
-        </div>
-      )}
-
-      {/* Proof Verification Info */}
-      {proofResult.data?.receipt?.claim && (
-        <div className="bg-white p-4 rounded border mb-4">
-          <h4 className="font-semibold text-gray-800 mb-3">Claim</h4>
-          <div className="mt-3">
-            <pre className="bg-gray-100 p-3 rounded text-xs overflow-auto max-h-96 border">
-              {JSON.stringify(proofResult.data.receipt.claim, null, 2)}
-            </pre>
-          </div>
-        </div>
-      )}
-
-      {/* Attestor Info */}
-      {proofResult.data?.receipt?.signatures && (
-        <div className="bg-white p-4 rounded border mb-4">
-          <h4 className="font-semibold text-gray-800 mb-3">
-            Attestor Signature
-          </h4>
-          <span className="font-medium text-gray-600">Attestor Address:</span>
-          <div className="mt-3">
-            <pre className="bg-gray-100 p-3 rounded text-xs overflow-auto max-h-96 border">
-              {JSON.stringify(proofResult.data.receipt.signatures, null, 2)}
-            </pre>
-          </div>
-        </div>
-      )}
-
-      {/* Toggle for Full Data */}
-      <div className="mt-4">
-        <Button
-          onClick={() => setShowAPIResponse(!showAPIResponse)}
-          variant="outline"
-          size="sm"
-          className="text-xs"
-        >
-          {showAPIResponse ? "Hide Full JSON" : "Show Full JSON"}
-        </Button>
-        {showAPIResponse && (
-          <div className="mt-3">
-            <pre className="bg-gray-100 p-3 rounded text-xs overflow-auto max-h-96 border">
-              {JSON.stringify(proofResult, null, 2)}
-            </pre>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
 
 const TestProofs = ({
   testData,
@@ -1374,83 +1298,6 @@ const TestProofs = ({
           )
         )}
       </div>
-    </div>
-  );
-};
-
-const FulfillmentResult = ({
-  fulfillmentResult,
-}: {
-  fulfillmentResult: {
-    success: boolean;
-    intentHash?: string;
-    verifier?: string;
-    owner?: string;
-    to?: string;
-    amount?: bigint;
-    txHash?: string;
-  };
-}) => {
-  if (!fulfillmentResult?.success) return null;
-  return (
-    <div
-      className={`p-6 border rounded-lg my-6 ${
-        fulfillmentResult.success
-          ? "bg-green-50 border-green-200"
-          : "bg-red-50 border-red-200"
-      }`}
-    >
-      {fulfillmentResult.success && (
-        <div className="space-y-3 text-sm">
-          <h4 className="font-semibold text-gray-800 mb-3">
-            ✅ Minting Completed
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div>
-              <span className="font-medium text-green-800">Intent Hash:</span>
-              <p className="text-green-700 font-mono break-all">
-                {fulfillmentResult.intentHash}
-              </p>
-            </div>
-            <div>
-              <span className="font-medium text-green-800">Verifier:</span>
-              <p className="text-green-700 font-mono">
-                {fulfillmentResult.verifier?.slice(0, 6)}...
-                {fulfillmentResult.verifier?.slice(-4)}
-              </p>
-            </div>
-            <div>
-              <span className="font-medium text-green-800">Owner:</span>
-              <p className="text-green-700 font-mono">
-                {fulfillmentResult.owner?.slice(0, 6)}...
-                {fulfillmentResult.owner?.slice(-4)}
-              </p>
-            </div>
-            <div>
-              <span className="font-medium text-green-800">Receiver:</span>
-              <p className="text-green-700 font-mono">
-                {fulfillmentResult.to?.slice(0, 6)}...
-                {fulfillmentResult.to?.slice(-4)}
-              </p>
-            </div>
-            <div>
-              <span className="font-medium text-green-800">Amount:</span>
-              <p className="text-green-700">
-                {fulfillmentResult.amount &&
-                  formatUnits(fulfillmentResult.amount, 18)}{" "}
-                KRW_TEST
-              </p>
-            </div>
-            <div>
-              <span className="font-medium text-green-800">Transaction:</span>
-              <p className="text-green-700 font-mono">
-                {fulfillmentResult.txHash?.slice(0, 6)}...
-                {fulfillmentResult.txHash?.slice(-4)}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
