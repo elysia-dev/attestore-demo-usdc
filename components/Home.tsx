@@ -833,6 +833,19 @@ export default function Home() {
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
               Step 3: Toss Transfer
             </h2>
+
+            {/* 토스 송금 데모 비디오 */}
+            <div className="mb-8">
+              <video
+                controls
+                className="w-full max-w-2xl mx-auto rounded-lg shadow-lg h-[640px]"
+                poster="/tossbank_transfer_korean_thumbnail.jpg"
+              >
+                <source src="/tossbank_transfer_korean_.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+
             <p className="text-gray-600 mb-8">
               1. Send fiat money to the recipient via Toss app.
               <br />
