@@ -6,39 +6,30 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 
+import { useAccount, useChainId, useDisconnect, usePublicClient } from "wagmi";
 import {
-  useAccount,
-  useWriteContract,
-  useReadContract,
-  useWaitForTransactionReceipt,
-  useChainId,
-  useDisconnect,
-  useBalance,
-  useSendTransaction,
-  usePublicClient,
-} from "wagmi";
-import {
-  parseEther,
-  formatEther,
-  encodeFunctionData,
-  encodeAbiParameters,
-  parseAbiParameters,
-  parseUnits,
   formatUnits,
   keccak256,
   toBytes,
   decodeEventLog,
+  parseUnits,
+  encodeAbiParameters,
 } from "viem";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { testData } from "../data";
 import { BASE_URL } from "@/constant";
 import ADDRESSES from "@/lib/addresses";
-import { ZK_MINTER_ABI, MOCK_USDT_ABI, ANVIL_ACCOUNTS } from "@/lib/wagmi";
+import { ZK_MINTER_ABI, MOCK_USDT_ABI } from "@/lib/wagmi";
 import { useContractWrite } from "@/hooks/useContractWrite";
 
-type WorkflowStep = "connect" | "signal" | "transfer" | "proof" | "fulfill";
+enum WorkflowStep {
+  CONNECT = "connect",
+  SIGNAL = "signal",
+  TRANSFER = "transfer",
+  PROOF = "proof",
+  FULFILL = "fulfill",
+}
 
 type ProofResult = {
   success?: boolean;
@@ -177,7 +168,9 @@ export default function Home() {
     handleRefreshMyIntentId();
   }, [isConnected, address]);
   // 워크플로우 상태
-  const [currentStep, setCurrentStep] = useState<WorkflowStep>("connect");
+  const [currentStep, setCurrentStep] = useState<WorkflowStep>(
+    WorkflowStep.CONNECT
+  );
 
   // signalIntent 관련
   const [toAddress, setToAddress] = useState("");
@@ -195,15 +188,6 @@ export default function Home() {
     verifier: string;
   } | null>(null);
 
-  // Receiver의 USDT 잔고 조회
-  // const { data: receiverUsdtBalance } = useReadContract({
-  //   address: ADDRESSES.MOCK_USDT,
-  //   abi: MOCK_USDT_ABI,
-  //   functionName: "balanceOf",
-  //   args: intentDetails?.to ? [intentDetails.to as `0x${string}`] : undefined,
-  //   query: { enabled: !!intentDetails?.to && chainId === 31337 },
-  // });
-
   const readReceiverTokenBalance = async (to: string) => {
     if (!to) return;
 
@@ -216,11 +200,9 @@ export default function Home() {
     setReceiverTokenBalance(balance);
   };
 
-  // 기존 proof 생성 관련
   const [issueDate, setIssueDate] = useState("");
   const [certificateNumber, setCertificateNumber] = useState("");
 
-  // 로딩 및 결과 상태
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fulfillmentResult, setFulfillmentResult] = useState<{
@@ -240,11 +222,11 @@ export default function Home() {
   };
 
   // 지갑 연결 상태가 변경될 때 단계 업데이트
-  React.useEffect(() => {
-    if (isConnected && currentStep === "connect") {
-      setCurrentStep("signal");
+  useEffect(() => {
+    if (isConnected && currentStep === WorkflowStep.CONNECT) {
+      setCurrentStep(WorkflowStep.SIGNAL);
     } else if (!isConnected) {
-      setCurrentStep("connect");
+      setCurrentStep(WorkflowStep.CONNECT);
       setIntentId(null);
     }
   }, [isConnected, currentStep]);
@@ -380,7 +362,7 @@ export default function Home() {
       );
 
       setProofResult(response.data);
-      setCurrentStep("fulfill");
+      setCurrentStep(WorkflowStep.FULFILL);
       freeError();
     } catch (error) {
       console.error("API Error:", error);
@@ -536,15 +518,6 @@ export default function Home() {
     }
   };
 
-  const handleTestDataSelect = (data: {
-    issueDate: string;
-    certificateNumber: string;
-  }) => {
-    setIssueDate(data.issueDate);
-    setCertificateNumber(data.certificateNumber);
-  };
-
-  // 네트워크 이름 가져오기
   const getNetworkName = (chainId: number) => {
     switch (chainId) {
       case 1:
@@ -563,7 +536,7 @@ export default function Home() {
   // 강제 연결 해제 함수
   const handleForceDisconnect = () => {
     disconnect();
-    setCurrentStep("connect");
+    setCurrentStep(WorkflowStep.CONNECT);
     setIntentId(null);
     setProofResult(null);
     setIssueDate("");
@@ -584,7 +557,7 @@ export default function Home() {
 
   const renderStepContent = () => {
     switch (currentStep) {
-      case "connect":
+      case WorkflowStep.CONNECT:
         return (
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
@@ -661,7 +634,7 @@ export default function Home() {
           </div>
         );
 
-      case "signal":
+      case WorkflowStep.SIGNAL:
         return (
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
@@ -876,7 +849,7 @@ export default function Home() {
 
               <Button
                 onClick={() => {
-                  setCurrentStep("transfer");
+                  setCurrentStep(WorkflowStep.TRANSFER);
                   freeError();
                 }}
                 disabled={disableNextStep}
@@ -889,7 +862,7 @@ export default function Home() {
           </div>
         );
 
-      case "transfer":
+      case WorkflowStep.TRANSFER:
         return (
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
@@ -984,7 +957,7 @@ export default function Home() {
 
             <div className="flex gap-4">
               <Button
-                onClick={() => setCurrentStep("signal")}
+                onClick={() => setCurrentStep(WorkflowStep.SIGNAL)}
                 variant="outline"
                 className="font-medium text-lg px-6 py-3 rounded-lg"
               >
@@ -993,7 +966,7 @@ export default function Home() {
 
               <Button
                 onClick={() => {
-                  setCurrentStep("proof");
+                  setCurrentStep(WorkflowStep.PROOF);
                   freeError();
                 }}
                 disabled={!intentId}
@@ -1006,7 +979,7 @@ export default function Home() {
           </div>
         );
 
-      case "proof":
+      case WorkflowStep.PROOF:
         return (
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
@@ -1077,7 +1050,7 @@ export default function Home() {
               <div className="flex gap-4">
                 <Button
                   type="button"
-                  onClick={() => setCurrentStep("transfer")}
+                  onClick={() => setCurrentStep(WorkflowStep.TRANSFER)}
                   variant="outline"
                   className="font-medium text-lg px-6 py-3 rounded-lg"
                 >
@@ -1098,7 +1071,7 @@ export default function Home() {
           </div>
         );
 
-      case "fulfill":
+      case WorkflowStep.FULFILL:
         return (
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
@@ -1152,7 +1125,7 @@ export default function Home() {
 
             <div className="flex gap-4">
               <Button
-                onClick={() => setCurrentStep("proof")}
+                onClick={() => setCurrentStep(WorkflowStep.PROOF)}
                 variant="outline"
                 className="font-medium text-lg px-6 py-3 rounded-lg"
               >
@@ -1215,7 +1188,7 @@ export default function Home() {
             </a>
           </div>
 
-          {currentStep !== "connect" && (
+          {currentStep !== WorkflowStep.CONNECT && (
             <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <div className="flex justify-between items-center">
                 <div>
