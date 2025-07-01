@@ -24,8 +24,13 @@ import { ZK_MINTER_ABI, MOCK_USDT_ABI } from "@/lib/wagmi";
 import { useContractWrite } from "@/hooks/useContractWrite";
 import FulfillmentResult from "./FulfillmentResult";
 import ProofResultComponent from "./ProofResult";
+import Connect from "./step/Connect";
+import Signal from "./step/Signal";
+import Transfer from "./step/Transfer";
+import Proof from "./step/Proof";
+import FulFill from "./step/FulFill";
 
-enum WorkflowStep {
+export enum WorkflowStep {
   CONNECT = "connect",
   SIGNAL = "signal",
   TRANSFER = "transfer",
@@ -40,6 +45,13 @@ export type FulfillmentResult = {
   to?: string;
   amount?: bigint;
   txHash?: string;
+};
+export type IntentDetails = {
+  owner: string;
+  to: string;
+  amount: bigint;
+  timestamp: number;
+  verifier: string;
 };
 
 export type ProofResult = {
@@ -78,101 +90,26 @@ export type ProofResult = {
 const openFaucetLink = () => {
   window.open(faucetLink, "_blank");
 };
+const getNetworkName = (chainId: number) => {
+  switch (chainId) {
+    case 1:
+      return "Ethereum Mainnet";
+    case 11155111:
+      return "Sepolia Testnet";
+    case 31337:
+      return "Anvil Local";
+    case 17000:
+      return "Holsky Testnet";
+    default:
+      return `Chain ID: ${chainId}`;
+  }
+};
 
 export default function Home() {
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
   const { disconnect } = useDisconnect();
   const publicClient = usePublicClient();
-
-  const { writeAndWait: signalIntentWrite, isLoading: isSignalIntentLoading } =
-    useContractWrite({
-      onSuccess: (receipt) => {
-        // signalIntent 성공 시 intentId 추출
-        try {
-          const intentSignaledEvent = receipt.logs.find((log: any) => {
-            const intentSignaledTopic = keccak256(
-              toBytes("IntentSignaled(address,address,uint256,uint256)")
-            );
-            return (
-              log.topics[0] === intentSignaledTopic &&
-              log.address.toLowerCase() === ADDRESSES.ZK_MINTER.toLowerCase()
-            );
-          });
-
-          if (intentSignaledEvent) {
-            const decodedLog = decodeEventLog({
-              abi: ZK_MINTER_ABI,
-              data: intentSignaledEvent.data,
-              topics: intentSignaledEvent.topics,
-            });
-
-            const { intentId: newIntentId } = decodedLog.args as {
-              to: string;
-              verifier: string;
-              amount: bigint;
-              intentId: bigint;
-            };
-
-            const intentIdNumber = Number(newIntentId);
-            setIntentId(intentIdNumber);
-            setSearchIntentId(intentIdNumber);
-            handleRefreshMyIntentId();
-          }
-        } catch (error) {
-          console.error("Failed to parse IntentSignaled event:", error);
-        }
-      },
-    });
-
-  const {
-    writeAndWait: fulfillIntentWrite,
-    isLoading: isFulfillIntentLoading,
-  } = useContractWrite({
-    onSuccess: (receipt) => {
-      // fulfillIntent 성공 시 처리
-      try {
-        const intentFulfilledEvent = receipt.logs.find((log: any) => {
-          const intentFulfilledTopic = keccak256(
-            toBytes("IntentFulfilled(bytes32,address,address,address,uint256)")
-          );
-          return (
-            log.topics[0] === intentFulfilledTopic &&
-            log.address.toLowerCase() === ADDRESSES.ZK_MINTER.toLowerCase()
-          );
-        });
-
-        if (intentFulfilledEvent) {
-          const decodedLog = decodeEventLog({
-            abi: ZK_MINTER_ABI,
-            data: intentFulfilledEvent.data,
-            topics: intentFulfilledEvent.topics,
-          });
-
-          const { intentHash, verifier, owner, to, amount } =
-            decodedLog.args as {
-              intentHash: string;
-              verifier: string;
-              owner: string;
-              to: string;
-              amount: bigint;
-            };
-
-          setFulfillmentResult({
-            success: true,
-            intentHash,
-            verifier,
-            owner,
-            to,
-            amount,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        console.error("Failed to parse IntentFulfilled event:", error);
-      }
-    },
-  });
 
   useEffect(() => {
     handleRefreshMyIntentId();
@@ -182,33 +119,11 @@ export default function Home() {
     WorkflowStep.CONNECT
   );
 
-  // signalIntent 관련
-  const [toAddress, setToAddress] = useState("");
-  const [amount, setAmount] = useState("");
   const [intentId, setIntentId] = useState<number | null>(null);
   const [searchIntentId, setSearchIntentId] = useState<number | null>(null);
-  const [receiverTokenBalance, setReceiverTokenBalance] = useState<
-    bigint | undefined
-  >(undefined);
-  const [intentDetails, setIntentDetails] = useState<{
-    owner: string;
-    to: string;
-    amount: bigint;
-    timestamp: number;
-    verifier: string;
-  } | null>(null);
-
-  const readReceiverTokenBalance = async (to: string) => {
-    if (!to) return;
-
-    const balance = await publicClient?.readContract({
-      address: ADDRESSES.TOKEN,
-      abi: MOCK_USDT_ABI,
-      functionName: "balanceOf",
-      args: [to as `0x${string}`],
-    });
-    setReceiverTokenBalance(balance);
-  };
+  const [intentDetails, setIntentDetails] = useState<IntentDetails | null>(
+    null
+  );
 
   const [issueDate, setIssueDate] = useState("");
   const [certificateNumber, setCertificateNumber] = useState("");
@@ -232,39 +147,14 @@ export default function Home() {
     } else if (!isConnected) {
       setCurrentStep(WorkflowStep.CONNECT);
       setIntentId(null);
+      setProofResult(null);
+      setIssueDate("");
+      setCertificateNumber("");
+      setFulfillmentResult(null);
+      setSearchIntentId(null);
+      setIntentDetails(null);
     }
   }, [isConnected, currentStep]);
-
-  const disableNextStep = !intentId || !intentDetails?.amount;
-
-  // signalIntent 호출
-  const handleSignalIntent = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!toAddress || !amount || !address) {
-      setError("Please fill in all required fields");
-      return;
-    }
-    try {
-      await signalIntentWrite({
-        address: ADDRESSES.ZK_MINTER,
-        abi: ZK_MINTER_ABI,
-        functionName: "signalIntent",
-        args: [
-          toAddress as `0x${string}`,
-          parseUnits(amount, 18),
-          ADDRESSES.TOSS_BANK_VERIFIER,
-        ],
-      });
-      // 성공 시 onSuccess 콜백에서 자동으로 intentId 설정됨
-    } catch (error) {
-      setError(
-        `Intent signal failed: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
-    }
-  };
 
   // 내 intentId 조회 함수 (address 기반)
   const handleRefreshMyIntentId = async () => {
@@ -340,203 +230,6 @@ export default function Home() {
     }
   };
 
-  // ZK Proof 생성
-  const handleGenerateProof = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    freeError();
-
-    try {
-      const formattedDate = issueDate.replace(
-        /(\d{4})(\d{2})(\d{2})/,
-        "$1-$2-$3"
-      );
-
-      const response = await axios.post(
-        `${BASE_URL}/api/generate-receipt`,
-        {
-          issuedDate: formattedDate,
-          issueNumber: certificateNumber,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      setProofResult(response.data);
-      setCurrentStep(WorkflowStep.FULFILL);
-      freeError();
-    } catch (error) {
-      console.error("API Error:", error);
-      setError("Failed to generate ZK Proof. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const formatProofForContract = (receiptData: any) => {
-    if (!receiptData) {
-      throw new Error("Invalid receipt data");
-    }
-
-    const receipt = receiptData.data.receipt;
-    const claim = receipt.claim;
-    const signatures = receipt.signatures;
-
-    let claimSignatureHex = signatures.claimSignature;
-    if (
-      signatures.claimSignature &&
-      typeof signatures.claimSignature === "object"
-    ) {
-      claimSignatureHex =
-        "0x" + Buffer.from(signatures.claimSignature).toString("hex");
-    }
-
-    const proofObject = {
-      claimInfo: {
-        provider: claim.provider,
-        parameters: claim.parameters,
-        context: claim.context,
-      },
-      signedClaim: {
-        claim: {
-          identifier: claim.identifier,
-          owner: claim.owner,
-          timestampS: claim.timestampS,
-          epoch: claim.epoch,
-        },
-        signatures: [claimSignatureHex],
-      },
-      isAppclipProof: false,
-    };
-
-    return proofObject;
-  };
-
-  // proof 객체를 바이트로 인코딩하는 함수 (ABI 인코딩 사용)
-  const encodeProofToBytes = (proofObject: any) => {
-    try {
-      // ReclaimProof 구조체에 맞게 ABI 인코딩
-      const encodedProof = encodeAbiParameters(
-        [
-          {
-            type: "tuple",
-            components: [
-              {
-                type: "tuple",
-                name: "claimInfo",
-                components: [
-                  { type: "string", name: "provider" },
-                  { type: "string", name: "parameters" },
-                  { type: "string", name: "context" },
-                ],
-              },
-              {
-                type: "tuple",
-                name: "signedClaim",
-                components: [
-                  {
-                    type: "tuple",
-                    name: "claim",
-                    components: [
-                      { type: "bytes32", name: "identifier" },
-                      { type: "address", name: "owner" },
-                      { type: "uint32", name: "timestampS" },
-                      { type: "uint32", name: "epoch" },
-                    ],
-                  },
-                  { type: "bytes[]", name: "signatures" },
-                ],
-              },
-              { type: "bool", name: "isAppclipProof" },
-            ],
-          },
-        ],
-        [
-          {
-            claimInfo: {
-              provider: proofObject.claimInfo.provider,
-              parameters: proofObject.claimInfo.parameters,
-              context: proofObject.claimInfo.context,
-            },
-            signedClaim: {
-              claim: {
-                identifier: proofObject.signedClaim.claim
-                  .identifier as `0x${string}`,
-                owner: proofObject.signedClaim.claim.owner as `0x${string}`,
-                timestampS: proofObject.signedClaim.claim.timestampS,
-                epoch: proofObject.signedClaim.claim.epoch,
-              },
-              signatures: proofObject.signedClaim.signatures,
-            },
-            isAppclipProof: false,
-          },
-        ]
-      );
-
-      return encodedProof;
-    } catch (error) {
-      console.error("ABI encoding error:", error);
-      throw new Error("Failed to ABI encode proof: " + error);
-    }
-  };
-
-  // fulfillIntent 호출
-  const handleFulfillIntent = async () => {
-    if (!intentId || !proofResult) {
-      console.error("Missing intentId or proofResult");
-      setError("Missing intentId or proofResult");
-      return;
-    }
-    try {
-      setFulfillmentResult(null); // 이전 결과 초기화
-
-      // result 데이터를 컨트랙트가 요구하는 형태로 변환
-      const formattedProof = formatProofForContract(proofResult);
-
-      // proof 객체를 바이트로 인코딩
-      const encodedProof = encodeProofToBytes(formattedProof);
-
-      console.log("Encoded proof:", encodedProof);
-      console.log("intentId", intentId);
-
-      await fulfillIntentWrite({
-        address: ADDRESSES.ZK_MINTER,
-        abi: ZK_MINTER_ABI,
-        functionName: "fulfillIntent",
-        args: [
-          encodedProof, // _paymentProof as bytes
-          BigInt(intentId), // intentId
-        ],
-      });
-    } catch (error) {
-      console.error("Failed to fulfillIntent:", error);
-      setError(
-        `Token minting failed: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
-      setFulfillmentResult({ success: false });
-    }
-  };
-
-  const getNetworkName = (chainId: number) => {
-    switch (chainId) {
-      case 1:
-        return "Ethereum Mainnet";
-      case 11155111:
-        return "Sepolia Testnet";
-      case 31337:
-        return "Anvil Local";
-      case 17000:
-        return "Holsky Testnet";
-      default:
-        return `Chain ID: ${chainId}`;
-    }
-  };
-
   // 강제 연결 해제 함수
   const handleForceDisconnect = () => {
     disconnect();
@@ -545,629 +238,65 @@ export default function Home() {
     setProofResult(null);
     setIssueDate("");
     setCertificateNumber("");
-    setToAddress("");
-    setAmount("");
-  };
-
-  // 계좌번호 복사 함수
-  const handleCopyAccountNumber = async () => {
-    try {
-      await navigator.clipboard.writeText("100202642943");
-      window.alert("Copied");
-    } catch (err) {
-      console.error("Failed to copy account number:", err);
-    }
   };
 
   const renderStepContent = () => {
     switch (currentStep) {
       case WorkflowStep.CONNECT:
-        return (
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              Step 1: Connect Wallet
-            </h2>
-
-            <p className="text-gray-600 mb-8">
-              Connect your wallet to get started with secure, private, and
-              verifiable cross-chain transfers.
-            </p>
-            <div className="flex justify-center">
-              <ConnectButton />
-            </div>
-            {/* Application Description */}
-
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-8 mb-8 max-w-4xl mx-auto mt-8">
-              <div className="text-left space-y-4 text-gray-700">
-                <p className="text-lg leading-relaxed">
-                  A revolutionary blockchain application that bridges
-                  traditional banking with decentralized finance using
-                  Zero-Knowledge proofs.
-                </p>
-
-                <div className="grid md:grid-cols-2 gap-6 mt-6">
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <h4 className="font-semibold text-blue-600 mb-2">
-                      🔒 Privacy-First
-                    </h4>
-                    <p className="text-sm">
-                      Generate cryptographic proofs of your Toss bank transfers
-                      without revealing sensitive transaction details.
-                    </p>
-                  </div>
-
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <h4 className="font-semibold text-green-600 mb-2">
-                      🔄 Seamless Bridge
-                    </h4>
-                    <p className="text-sm">
-                      Convert your traditional bank transfers into blockchain
-                      tokens through automated escrow mechanisms.
-                    </p>
-                  </div>
-
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <h4 className="font-semibold text-purple-600 mb-2">
-                      ⚡ Instant Verification
-                    </h4>
-                    <p className="text-sm">
-                      Real-time validation of bank transfers using TLS
-                      attestation and zero-knowledge cryptography.
-                    </p>
-                  </div>
-
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <h4 className="font-semibold text-orange-600 mb-2">
-                      🌐 Cross-Chain Ready
-                    </h4>
-                    <p className="text-sm">
-                      Built for interoperability across multiple blockchain
-                      networks and traditional financial systems.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="bg-blue-100 p-4 rounded-lg mt-6">
-                  <p className="text-sm text-blue-800">
-                    <strong>How it works:</strong> Create an intent → Transfer
-                    via Toss → Generate ZK proof → Mint tokens
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
+        return <Connect />;
       case WorkflowStep.SIGNAL:
         return (
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              Step 2: Intent Management
-            </h2>
-            {/* 나의 Intent Id */}
-
-            <p className="text-gray-600 mb-8">
-              Click <strong>Lookup</strong> for looking up your Intent.
-              <br />
-              If you don&apos;t have an Intent, click{" "}
-              <strong>Create New</strong> for creating a new Intent.
-              <br />
-              And Click <strong>Lookup</strong> for refresh.
-            </p>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
-              <h3 className="text-lg font-semibold text-blue-800 mb-4">
-                🔍 My Intent
-              </h3>
-              {searchIntentId && (
-                <div className="mt-4 space-y-3">
-                  {intentDetails && (
-                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                      <h4 className="font-semibold text-blue-900 mb-3">
-                        📋 Intent Details
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                        <div>
-                          <span className="font-medium text-blue-800">Id:</span>
-                          <p className="text-blue-700 font-mono">{intentId}</p>
-                        </div>
-                        <div>
-                          <span className="font-medium text-blue-800">
-                            Owner:
-                          </span>
-                          <p className="text-blue-700 font-mono">
-                            {intentDetails.owner.slice(0, 6)}...
-                            {intentDetails.owner.slice(-4)}
-                          </p>
-                        </div>
-                        <div>
-                          <span className="font-medium text-blue-800">
-                            Receiver:
-                          </span>
-                          <p className="text-blue-700 font-mono">
-                            {intentDetails.to.slice(0, 6)}...
-                            {intentDetails.to.slice(-4)}
-                          </p>
-                        </div>
-                        <div>
-                          <span className="font-medium text-blue-800">
-                            Amount:
-                          </span>
-                          <p className="text-blue-700">
-                            {formatUnits(intentDetails.amount, 18)} KRW_TEST
-                          </p>
-                        </div>
-                        <div>
-                          <span className="font-medium text-blue-800">
-                            Created Time:
-                          </span>
-                          <p className="text-blue-700">
-                            {new Date(
-                              intentDetails.timestamp * 1000
-                            ).toLocaleString()}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Receiver token balance*/}
-                      <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                        <h5 className="font-medium text-yellow-800 mb-2">
-                          💰 Receiver Info
-                        </h5>
-
-                        <div className="flex items-center gap-2">
-                          <p className="text-blue-700 text-lg font-semibold">
-                            {receiverTokenBalance
-                              ? formatUnits(receiverTokenBalance, 18)
-                              : "0"}{" "}
-                            KRW_TEST
-                          </p>
-
-                          <button
-                            onClick={() =>
-                              readReceiverTokenBalance(intentDetails.to)
-                            }
-                            className="text-blue-700 hover:text-blue-900 transition-colors duration-200 p-2 rounded-full hover:bg-blue-50"
-                            title="Refresh balance"
-                          >
-                            <svg
-                              width="20"
-                              height="20"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className="inline-block"
-                            >
-                              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-                              <path d="M21 3v5h-5" />
-                              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-                              <path d="M3 21v-5h5" />
-                            </svg>
-                          </button>
-                        </div>
-                        <p className="text-xs text-yellow-600 mt-1">
-                          Address: {intentDetails.to}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-              <Button
-                onClick={handleRefreshMyIntentId}
-                disabled={isLoading}
-                className={`bg-blue-500 hover:bg-blue-600 text-white font-medium px-6 py-2 mt-4 rounded-lg flex items-center gap-2 ${
-                  isLoading ? "bg-gray-400" : "bg-blue-500"
-                }`}
-              >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="m21 21-4.35-4.35" />
-                </svg>
-                {isLoading ? "Loading..." : "Lookup"}
-              </Button>
-            </div>
-
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                ➕ Enroll Your Intent
-              </h3>
-              <p className="text-gray-600 mb-6">
-                If you dont have an existing Intent or want to create a new one,
-                please enter the information below.
-              </p>
-
-              <form onSubmit={handleSignalIntent} className="space-y-6">
-                <div className="space-y-3">
-                  <Label
-                    htmlFor="toAddress"
-                    className="text-lg font-medium text-gray-700"
-                  >
-                    Recipient Address
-                  </Label>
-                  <Input
-                    id="toAddress"
-                    type="text"
-                    value={toAddress}
-                    disabled={!!intentId}
-                    onChange={(e) => setToAddress(e.target.value)}
-                    placeholder="0x..."
-                    className="h-14 text-base border-gray-300 rounded-lg px-4"
-                  />
-                </div>
-
-                <div className="space-y-3">
-                  <Label
-                    htmlFor="amount"
-                    className="text-lg font-medium text-gray-700"
-                  >
-                    Amount (KRW_TEST)
-                  </Label>
-                  <Input
-                    id="amount"
-                    type="text"
-                    value={amount}
-                    disabled={!!intentId}
-                    onChange={(e) => setAmount(e.target.value)}
-                    placeholder="1.0"
-                    className="h-14 text-base border-gray-300 rounded-lg px-4"
-                  />
-                </div>
-
-                <Button
-                  type="submit"
-                  className="bg-blue-500 hover:bg-blue-600 text-white font-medium text-lg px-8 py-4 rounded-lg h-auto"
-                  disabled={
-                    !toAddress || !amount || isSignalIntentLoading || !!intentId
-                  }
-                >
-                  {isSignalIntentLoading
-                    ? "Creating Intent..."
-                    : "Create New Intent"}
-                </Button>
-              </form>
-            </div>
-
-            {/* 다음 단계로 건너뛰기 */}
-            <div className="text-left">
-              {disableNextStep ? (
-                <p className="text-gray-600 mb-4">
-                  Please lookup intent details first.
-                </p>
-              ) : (
-                <p className="text-gray-600 mb-4">
-                  If you have an Intent, you can proceed to the next step.
-                </p>
-              )}
-
-              <Button
-                onClick={() => {
-                  setCurrentStep(WorkflowStep.TRANSFER);
-                  freeError();
-                }}
-                disabled={disableNextStep}
-                variant="outline"
-                className="font-medium text-lg px-6 py-3 rounded-lg"
-              >
-                Next →
-              </Button>
-            </div>
-          </div>
+          <Signal
+            intentId={intentId}
+            searchIntentId={searchIntentId}
+            intentDetails={intentDetails}
+            setIntentId={setIntentId}
+            setSearchIntentId={setSearchIntentId}
+            handleRefreshMyIntentId={handleRefreshMyIntentId}
+            setError={setError}
+            setCurrentStep={setCurrentStep}
+            freeError={freeError}
+            isLoading={isLoading}
+          />
         );
-
       case WorkflowStep.TRANSFER:
         return (
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              Step 3: Toss Transfer
-            </h2>
-
-            {/* 토스 송금 데모 비디오 */}
-            <div className="mb-8">
-              <video
-                controls
-                className="w-full max-w-2xl mx-auto rounded-lg shadow-lg h-[640px]"
-                poster="/tossbank_transfer_korean_thumbnail.jpg"
-              >
-                <source src="/tossbank_transfer_korean_.mp4" type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            </div>
-
-            <p className="text-gray-600 mb-8">
-              1. Send fiat money to the recipient via Toss app.
-              <br />
-              2. Click <strong>Next</strong> for proceeding to the next step.
-            </p>
-
-            {/* 토스 송금 안내 - Intent ID가 있을 때만 표시 */}
-            {intentId && intentDetails?.amount && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
-                <h3 className="text-lg font-semibold text-yellow-800 mb-4">
-                  📱 Send money via Toss app
-                </h3>
-                <div className="space-y-2 text-yellow-700">
-                  <p>
-                    <strong>Recipient Name:</strong> 이현민 (Modori Tossbank
-                    account)
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <strong>Bank Account:</strong>{" "}
-                    <button
-                      onClick={handleCopyAccountNumber}
-                      className="text-blue-600 hover:text-blue-800 font-mono bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded border border-blue-200 transition-colors duration-200 flex items-center gap-2"
-                      title="Click to copy account number"
-                    >
-                      <span>100202642943</span>
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <rect
-                          width="14"
-                          height="14"
-                          x="8"
-                          y="8"
-                          rx="2"
-                          ry="2"
-                        />
-                        <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
-                      </svg>
-                    </button>
-                    (토스뱅크)
-                  </p>
-                  <p>
-                    <strong>Transfer Memo:</strong>{" "}
-                    <code className="bg-yellow-100 px-2 py-1 rounded">
-                      {intentId}
-                    </code>
-                  </p>
-                  <p>
-                    <strong>Amount:</strong>{" "}
-                    {formatUnits(intentDetails?.amount, 18)} KRW
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {intentId && (
-              <p className="text-gray-600 mb-8">
-                After transfer, click <strong>Next</strong>
-              </p>
-            )}
-
-            {!intentId && (
-              <p className="text-gray-600 mb-6">
-                Please lookup Intent ID first. (click previous)
-              </p>
-            )}
-
-            <div className="flex gap-4">
-              <Button
-                onClick={() => setCurrentStep(WorkflowStep.SIGNAL)}
-                variant="outline"
-                className="font-medium text-lg px-6 py-3 rounded-lg"
-              >
-                ← Previous
-              </Button>
-
-              <Button
-                onClick={() => {
-                  setCurrentStep(WorkflowStep.PROOF);
-                  freeError();
-                }}
-                disabled={!intentId}
-                variant="outline"
-                className="font-medium text-lg px-6 py-3 rounded-lg"
-              >
-                Next →
-              </Button>
-            </div>
-          </div>
+          <Transfer
+            intentId={intentId}
+            intentDetails={intentDetails}
+            setCurrentStep={setCurrentStep}
+            freeError={freeError}
+          />
         );
 
       case WorkflowStep.PROOF:
         return (
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              Step 4: ZK Proof Generation
-            </h2>
-            <ul className="text-gray-600">
-              <p className="text-gray-600 mb-8">
-                Click <strong>Generate ZK Proof</strong> for generating ZK
-                Proof.
-              </p>
-              <li>
-                &apos;Generate ZK Proof&apos; button requires remote server to
-                generate zk Proof with eth signed
-                <br />
-                - remote server generates tls proof using attestor-server for
-                the Toss transfer
-                <br />
-                - remote server and attestor-server connected via websocket
-                <br />
-                - attestor-server validates the proof and signs with its private
-                key
-                <br />- remote server sends the proof to the attestor-server
-              </li>
-            </ul>
-
-            {/* intentId */}
-            <div className="space-y-3 my-6">
-              <p className="text-gray-600 mb-4 bg-gray-100 p-4 rounded-lg">
-                <strong>Intent ID :</strong> {intentId}
-              </p>
-            </div>
-
-            <form onSubmit={handleGenerateProof} className="space-y-6">
-              <div className="space-y-3">
-                <Label
-                  htmlFor="issueDate"
-                  className="text-lg font-medium text-gray-700"
-                >
-                  Issue Date
-                </Label>
-                <Input
-                  id="issueDate"
-                  type="text"
-                  value={issueDate}
-                  onChange={(e) => setIssueDate(e.target.value)}
-                  placeholder="Enter certificate issue date (e.g., 20250618)"
-                  className="h-14 text-base border-gray-300 rounded-lg px-4 placeholder:text-gray-400"
-                />
-              </div>
-
-              <div className="space-y-3">
-                <Label
-                  htmlFor="certificateNumber"
-                  className="text-lg font-medium text-gray-700"
-                >
-                  Certificate Issue Number
-                </Label>
-                <Input
-                  id="certificateNumber"
-                  type="text"
-                  value={certificateNumber}
-                  onChange={(e) => setCertificateNumber(e.target.value)}
-                  placeholder="Please enter the certificate issue number."
-                  className="h-14 text-base border-gray-300 rounded-lg px-4 placeholder:text-gray-400"
-                />
-              </div>
-
-              <div className="flex gap-4">
-                <Button
-                  type="button"
-                  onClick={() => setCurrentStep(WorkflowStep.TRANSFER)}
-                  variant="outline"
-                  className="font-medium text-lg px-6 py-3 rounded-lg"
-                >
-                  ← Previous
-                </Button>
-
-                <Button
-                  type="submit"
-                  className={`bg-blue-500 hover:bg-blue-600 text-white font-medium text-lg px-8 py-3 rounded-lg ${
-                    isLoading ? "bg-gray-400" : "bg-blue-500"
-                  }`}
-                  disabled={!issueDate || !certificateNumber || isLoading}
-                >
-                  Generate ZK Proof
-                </Button>
-              </div>
-            </form>
-          </div>
+          <Proof
+            issueDate={issueDate}
+            setIssueDate={setIssueDate}
+            certificateNumber={certificateNumber}
+            setCertificateNumber={setCertificateNumber}
+            intentId={intentId}
+            setCurrentStep={setCurrentStep}
+            isLoading={isLoading}
+            setError={setError}
+            freeError={freeError}
+            setIsLoading={setIsLoading}
+            setProofResult={setProofResult}
+          />
         );
-
       case WorkflowStep.FULFILL:
         return (
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              Step 5: Token Minting
-            </h2>
-            <p className="text-gray-600 ">ZK Proof has been generated.</p>
-            <p className="text-gray-600 mb-8">
-              Click <strong>Mint Tokens</strong> for minting tokens.
-            </p>
-
-            <div className="space-y-3">
-              <Label
-                htmlFor="issueDate"
-                className="text-lg font-medium text-gray-700"
-              >
-                Issue Date
-              </Label>
-              <Input
-                id="issueDate"
-                type="text"
-                value={issueDate}
-                disabled={true}
-                placeholder="Enter certificate issue date (e.g., 20250618)"
-                className="h-14 text-base border-gray-300 rounded-lg px-4 placeholder:text-gray-400"
-              />
-            </div>
-
-            <div className="space-y-3">
-              <Label
-                htmlFor="certificateNumber"
-                className="text-lg font-medium text-gray-700"
-              >
-                Certificate Issue Number
-              </Label>
-              <Input
-                id="certificateNumber"
-                type="text"
-                value={certificateNumber}
-                disabled={true}
-                placeholder="Please enter the certificate issue number.(e.g, 1234-ABCD-EFGHIJKL)"
-                className="h-14 text-base border-gray-300 rounded-lg px-4 placeholder:text-gray-400"
-              />
-            </div>
-
-            {/* intentId */}
-            <div className="space-y-3 my-6">
-              <p className="text-gray-600 mb-4 bg-gray-100 p-4 rounded-lg">
-                <strong>Intent ID :</strong> {intentId}
-              </p>
-            </div>
-
-            <div className="flex gap-4">
-              <Button
-                onClick={() => setCurrentStep(WorkflowStep.PROOF)}
-                variant="outline"
-                className="font-medium text-lg px-6 py-3 rounded-lg"
-              >
-                ← Previous
-              </Button>
-
-              <Button
-                onClick={handleFulfillIntent}
-                className="font-medium text-lg px-6 py-3 rounded-lg bg-blue-500 hover:bg-blue-600 text-white"
-                disabled={
-                  isFulfillIntentLoading ||
-                  !intentId ||
-                  fulfillmentResult?.success
-                }
-              >
-                {isFulfillIntentLoading
-                  ? "Minting Tokens..."
-                  : fulfillmentResult?.success
-                  ? "Minting Complete"
-                  : "Mint Tokens"}
-              </Button>
-            </div>
-
-            {fulfillmentResult && (
-              <FulfillmentResult fulfillmentResult={fulfillmentResult} />
-            )}
-
-            {proofResult && (
-              <>
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 my-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                    ✅ Proof Generation Completed
-                  </h3>
-                  <ProofResultComponent proofResult={proofResult} />
-                </div>
-              </>
-            )}
-          </div>
+          <FulFill
+            issueDate={issueDate}
+            certificateNumber={certificateNumber}
+            intentId={intentId}
+            setCurrentStep={setCurrentStep}
+            fulfillmentResult={fulfillmentResult}
+            proofResult={proofResult}
+            setError={setError}
+            setFulfillmentResult={setFulfillmentResult}
+          />
         );
 
       default:
@@ -1193,111 +322,85 @@ export default function Home() {
           </div>
 
           {currentStep !== WorkflowStep.CONNECT && (
-            <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex justify-between items-center">
-                <div>
-                  <div className="flex items-center gap-4 mb-2">
-                    <p className="text-blue-800">
-                      <strong>Connection Status:</strong>{" "}
-                      {isConnected ? "Connected" : "Disconnected"}
-                    </p>
-                    <div
-                      className="text-blue-800 cursor-pointer hover:bg-blue-50 transition-colors duration-200 px-2 py-1 rounded-lg"
-                      onClick={openFaucetLink}
-                    >
-                      <strong>Network:</strong> {getNetworkName(chainId)}
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <ConnectButton />
-                    {isConnected && (
-                      <Button
-                        onClick={handleForceDisconnect}
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 border-red-300 hover:bg-red-50 h-10"
-                      >
-                        Disconnect
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
+            <WalletStatus
+              isConnected={isConnected}
+              chainId={chainId}
+              openFaucetLink={openFaucetLink}
+              handleForceDisconnect={handleForceDisconnect}
+            />
           )}
 
-          {/* 단계별 콘텐츠 */}
           {renderStepContent()}
 
-          {/* 에러 메시지 */}
-          {error && (
-            <div className="mt-8 p-6 bg-red-50 border border-red-200 rounded-lg">
-              <h3 className="text-lg font-semibold text-red-900 mb-2">
-                Error
-                <button className="cursor-pointer ml-2" onClick={freeError}>
-                  ❌
-                </button>
-              </h3>
-              <p className="text-red-700">{error}</p>
-            </div>
-          )}
+          {/* <ErrorMessage error={error} freeError={freeError} /> */}
         </div>
       </div>
     </div>
   );
 }
 
-const TestProofs = ({
-  testData,
-  handleTestDataSelect,
+const WalletStatus = ({
+  isConnected,
+  chainId,
+  openFaucetLink,
+  handleForceDisconnect,
 }: {
-  testData: {
-    note: number;
-    issueDate: string;
-    certificateNumber: string;
-  }[];
-  handleTestDataSelect: (data: {
-    issueDate: string;
-    certificateNumber: string;
-  }) => void;
+  isConnected: boolean;
+  chainId: number;
+  openFaucetLink: () => void;
+  handleForceDisconnect: () => void;
 }) => {
   return (
-    <div className="bg-white rounded-lg shadow-sm p-8">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Test Data</h2>
-      <p className="text-gray-600 mb-6">
-        Click the data below to automatically fill in the form.
-      </p>
-
-      <div className="grid gap-4">
-        {testData.map(
-          (
-            data: {
-              note: number;
-              issueDate: string;
-              certificateNumber: string;
-            },
-            index: number
-          ) => (
+    <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+      <div className="flex justify-between items-center">
+        <div>
+          <div className="flex items-center gap-4 mb-2">
+            <p className="text-blue-800">
+              <strong>Connection Status:</strong>{" "}
+              {isConnected ? "Connected" : "Disconnected"}
+            </p>
             <div
-              key={index}
-              className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
-              onClick={() => handleTestDataSelect(data)}
+              className="text-blue-800 cursor-pointer hover:bg-blue-50 transition-colors duration-200 px-2 py-1 rounded-lg"
+              onClick={openFaucetLink}
             >
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="font-medium text-gray-900">NOTE: {data.note}</p>
-                  <p className="font-medium text-gray-900">
-                    Issue Date: {data.issueDate}
-                  </p>
-                  <p className="text-gray-600">
-                    Certificate Issue Number: {data.certificateNumber}
-                  </p>
-                </div>
-              </div>
+              <strong>Network:</strong> {getNetworkName(chainId)}
             </div>
-          )
-        )}
+          </div>
+          <div className="flex gap-2">
+            <ConnectButton />
+            {isConnected && (
+              <Button
+                onClick={handleForceDisconnect}
+                variant="outline"
+                size="sm"
+                className="text-red-600 border-red-300 hover:bg-red-50 h-10"
+              >
+                Disconnect
+              </Button>
+            )}
+          </div>
+        </div>
       </div>
+    </div>
+  );
+};
+
+const ErrorMessage = ({
+  error,
+  freeError,
+}: {
+  error: string | null;
+  freeError: () => void;
+}) => {
+  if (!error) return null;
+  return (
+    <div className="mt-8 p-6 bg-red-50 border border-red-200 rounded-lg">
+      <h3 className="text-lg font-semibold text-red-900 mb-2">
+        Error
+        <button className="cursor-pointer ml-2" onClick={freeError}>
+          <p className="text-red-700">{error}</p>
+        </button>
+      </h3>
     </div>
   );
 };
