@@ -1,7 +1,10 @@
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 // import { mainnet, sepolia } from "wagmi/chains";
+import { rabbyWallet } from "@rainbow-me/rainbowkit/wallets";
+import { rainbowWallet } from "@rainbow-me/rainbowkit/wallets";
+import { metaMaskWallet } from "@rainbow-me/rainbowkit/wallets";
 
-export const holsky = {
+export const holesky = {
   id: 17000,
   name: "Holesky Test Network",
   nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
@@ -28,7 +31,13 @@ export const anvil = {
 export const config = getDefaultConfig({
   appName: "Genie",
   projectId: "YOUR_PROJECT_ID",
-  chains: [holsky],
+  chains: [holesky],
+  wallets: [
+    {
+      groupName: "Recommended",
+      wallets: [rabbyWallet, rainbowWallet, metaMaskWallet],
+    },
+  ],
   // chains: [anvil, holsky, mainnet, sepolia],
   ssr: true, // Next.js에서 SSR 사용하는 경우
 });

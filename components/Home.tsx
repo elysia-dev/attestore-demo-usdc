@@ -5,6 +5,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
+
 import {
   useAccount,
   useWriteContract,
@@ -245,6 +246,10 @@ export default function Home() {
 
   const [proofResult, setProofResult] = useState<ProofResult | null>(null);
 
+  const freeError = () => {
+    setError(null);
+  };
+
   // 지갑 연결 상태가 변경될 때 단계 업데이트
   React.useEffect(() => {
     if (isConnected && currentStep === "connect") {
@@ -364,7 +369,7 @@ export default function Home() {
   const handleGenerateProof = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError(null);
+    freeError();
 
     try {
       const formattedDate = issueDate.replace(
@@ -387,6 +392,7 @@ export default function Home() {
 
       setProofResult(response.data);
       setCurrentStep("fulfill");
+      freeError();
     } catch (error) {
       console.error("API Error:", error);
       setError("Failed to generate ZK Proof. Please try again.");
@@ -659,7 +665,7 @@ export default function Home() {
                             Amount:
                           </span>
                           <p className="text-blue-700">
-                            {formatUnits(intentDetails.amount, 18)} USDT
+                            {formatUnits(intentDetails.amount, 18)} KRW_TEST
                           </p>
                         </div>
                         <div>
@@ -849,7 +855,10 @@ export default function Home() {
                 </p>
               )}
               <Button
-                onClick={() => setCurrentStep("transfer")}
+                onClick={() => {
+                  setCurrentStep("transfer");
+                  freeError();
+                }}
                 disabled={disableNextStep}
                 variant="outline"
                 className="bg-green-500 hover:bg-green-600 text-white border-green-500 font-medium text-lg px-8 py-3 rounded-lg"
@@ -945,7 +954,10 @@ export default function Home() {
               </Button>
 
               <Button
-                onClick={() => setCurrentStep("proof")}
+                onClick={() => {
+                  setCurrentStep("proof");
+                  freeError();
+                }}
                 variant="outline"
                 className="font-medium text-lg px-6 py-3 rounded-lg"
               >
@@ -1226,10 +1238,7 @@ export default function Home() {
             <div className="mt-8 p-6 bg-red-50 border border-red-200 rounded-lg">
               <h3 className="text-lg font-semibold text-red-900 mb-2">
                 Error
-                <button
-                  className="cursor-pointer ml-2"
-                  onClick={() => setError(null)}
-                >
+                <button className="cursor-pointer ml-2" onClick={freeError}>
                   ❌
                 </button>
               </h3>
@@ -1437,7 +1446,7 @@ const FulfillmentResult = ({
               <p className="text-green-700">
                 {fulfillmentResult.amount &&
                   formatUnits(fulfillmentResult.amount, 18)}{" "}
-                USDT
+                KRW_TEST
               </p>
             </div>
             <div>
