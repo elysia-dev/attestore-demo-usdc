@@ -1201,9 +1201,19 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-12">
-            ZK Escrow Transfer System
-          </h1>
+          <div className="flex justify-between items-center mb-12">
+            <h1 className="text-4xl font-bold text-gray-900">
+              ZK Escrow Transfer System
+            </h1>
+            <a
+              href="https://modoripage.notion.site/Genie-Guide-223f2ffdc30a803eb50eef01f2a43a33?source=copy_link"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2 shadow-sm hover:shadow-md"
+            >
+              📖 User Guide
+            </a>
+          </div>
 
           {currentStep !== "connect" && (
             <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
