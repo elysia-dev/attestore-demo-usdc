@@ -2,6 +2,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+// Extend window object for Ethereum provider
+declare global {
+  interface Window {
+    ethereum?: any;
+  }
+}
+
 import React, { useEffect, useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 
@@ -239,6 +246,30 @@ export default function Home() {
     setCertificateNumber("");
   };
 
+  // KRW 토큰을 지갑에 추가하는 함수
+  const handleAddTokenToWallet = async () => {
+    try {
+      if (typeof window.ethereum !== "undefined") {
+        await window.ethereum.request({
+          method: "wallet_watchAsset",
+          params: {
+            type: "ERC20",
+            options: {
+              address: ADDRESSES.TOKEN,
+              symbol: "KRW",
+              decimals: 18,
+              image: "", // 토큰 이미지 URL이 있다면 추가
+            },
+          },
+        });
+      } else {
+        alert("MetaMask or compatible wallet not found");
+      }
+    } catch (error) {
+      console.error("Failed to add token to wallet:", error);
+    }
+  };
+
   const renderStepContent = () => {
     switch (currentStep) {
       case WorkflowStep.CONNECT:
@@ -327,6 +358,7 @@ export default function Home() {
               chainId={chainId}
               openFaucetLink={openFaucetLink}
               handleForceDisconnect={handleForceDisconnect}
+              handleAddTokenToWallet={handleAddTokenToWallet}
             />
           )}
 
@@ -344,11 +376,13 @@ const WalletStatus = ({
   chainId,
   openFaucetLink,
   handleForceDisconnect,
+  handleAddTokenToWallet,
 }: {
   isConnected: boolean;
   chainId: number;
   openFaucetLink: () => void;
   handleForceDisconnect: () => void;
+  handleAddTokenToWallet: () => void;
 }) => {
   return (
     <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -369,14 +403,36 @@ const WalletStatus = ({
           <div className="flex gap-2">
             <ConnectButton />
             {isConnected && (
-              <Button
-                onClick={handleForceDisconnect}
-                variant="outline"
-                size="sm"
-                className="text-red-600 border-red-300 hover:bg-red-50 h-10"
-              >
-                Disconnect
-              </Button>
+              <>
+                <Button
+                  onClick={handleAddTokenToWallet}
+                  variant="outline"
+                  size="sm"
+                  className="text-blue-600 border-blue-300 hover:bg-blue-50 h-10 flex items-center gap-1"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="16" />
+                    <line x1="8" y1="12" x2="16" y2="12" />
+                  </svg>
+                  Add KRW Token
+                </Button>
+                <Button
+                  onClick={handleForceDisconnect}
+                  variant="outline"
+                  size="sm"
+                  className="text-red-600 border-red-300 hover:bg-red-50 h-10"
+                >
+                  Disconnect
+                </Button>
+              </>
             )}
           </div>
         </div>
