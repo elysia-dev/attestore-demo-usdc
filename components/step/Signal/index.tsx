@@ -137,8 +137,6 @@ export default function Signal({
   };
 
   const disableNextStep = !intentId || !intentDetails?.amount;
-  console.log("intentDetails", intentDetails);
-  console.log("disableNextStep", disableNextStep);
   return (
     <>
       <div>

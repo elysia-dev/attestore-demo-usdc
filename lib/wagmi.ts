@@ -28,7 +28,7 @@ export const anvil = {
   testnet: true,
 } as const;
 
-const isLocal = process.env.NODE_ENV === "development";
+const isLocal = process.env.NEXT_PUBLIC_CHAIN_NETWORK === "local";
 
 export const config = getDefaultConfig({
   appName: "Genie",
