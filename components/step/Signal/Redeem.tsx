@@ -16,6 +16,7 @@ import { ZK_MINTER_ABI } from "@/lib/wagmi";
 import { useState } from "react";
 import { useAccount, usePublicClient } from "wagmi";
 import { useContractWrite } from "@/hooks/useContractWrite";
+import { TOKEN_SYMBOL } from "@/constant";
 
 export default function Redeem({
   setError,
@@ -322,7 +323,7 @@ export default function Redeem({
         <div className="flex items-center gap-2">
           <p className="text-yellow-700 text-lg font-semibold">
             {userTokenBalance ? formatUnits(userTokenBalance, 18) : "0"}{" "}
-            KRW_TEST
+            {TOKEN_SYMBOL}
           </p>
           <button
             onClick={readUserTokenBalance}
@@ -376,7 +377,7 @@ export default function Redeem({
               <div>
                 <span className="font-medium text-orange-800">Amount:</span>
                 <p className="text-orange-700">
-                  {formatUnits(redeemDetails.amount, 18)} KRW_TEST
+                  {formatUnits(redeemDetails.amount, 18)} {TOKEN_SYMBOL}
                 </p>
               </div>
               <div>
@@ -441,7 +442,7 @@ export default function Redeem({
                 htmlFor="amount"
                 className="text-lg font-medium text-gray-700"
               >
-                Amount (KRW_TEST)
+                Amount ({TOKEN_SYMBOL})
               </Label>
               <Input
                 id="amount"

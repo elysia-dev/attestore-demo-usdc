@@ -17,6 +17,7 @@ import { useState } from "react";
 import { useAccount, usePublicClient } from "wagmi";
 import { useContractWrite } from "@/hooks/useContractWrite";
 import Redeem from "./Redeem";
+import { TOKEN_SYMBOL } from "@/constant";
 
 enum SignalMode {
   ONRAMP = "onramp",
@@ -274,7 +275,8 @@ export default function Signal({
                             Amount:
                           </span>
                           <p className="text-blue-700">
-                            {formatUnits(intentDetails.amount, 18)} KRW_TEST
+                            {formatUnits(intentDetails.amount, 18)}{" "}
+                            {TOKEN_SYMBOL}
                           </p>
                         </div>
                         <div>
@@ -300,7 +302,7 @@ export default function Signal({
                             {receiverTokenBalance
                               ? formatUnits(receiverTokenBalance, 18)
                               : "0"}{" "}
-                            KRW_TEST
+                            {TOKEN_SYMBOL}
                           </p>
 
                           <button
@@ -393,7 +395,7 @@ export default function Signal({
                     htmlFor="amount"
                     className="text-lg font-medium text-gray-700"
                   >
-                    Amount (KRW_TEST)
+                    Amount ({TOKEN_SYMBOL})
                   </Label>
                   <Input
                     id="amount"

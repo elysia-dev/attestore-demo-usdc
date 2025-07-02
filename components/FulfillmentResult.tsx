@@ -1,5 +1,6 @@
 import { formatUnits } from "viem";
 import { FulfillmentResult } from "./Home";
+import { TOKEN_SYMBOL } from "@/constant";
 
 export default function FulfillmentResultComponent({
   fulfillmentResult,
@@ -53,7 +54,7 @@ export default function FulfillmentResultComponent({
               <p className="text-green-700">
                 {fulfillmentResult.amount &&
                   formatUnits(fulfillmentResult.amount, 18)}{" "}
-                KRW_TEST
+                {TOKEN_SYMBOL}
               </p>
             </div>
             <div>
