@@ -3,29 +3,16 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 import { useAccount, useChainId, useDisconnect, usePublicClient } from "wagmi";
-import {
-  formatUnits,
-  keccak256,
-  toBytes,
-  decodeEventLog,
-  parseUnits,
-  encodeAbiParameters,
-} from "viem";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { BASE_URL, faucetLink } from "@/constant";
+import { faucetLink } from "@/constant";
 import ADDRESSES from "@/lib/addresses";
-import { ZK_MINTER_ABI, MOCK_USDT_ABI } from "@/lib/wagmi";
-import { useContractWrite } from "@/hooks/useContractWrite";
-import FulfillmentResult from "./FulfillmentResult";
-import ProofResultComponent from "./ProofResult";
+import { ZK_MINTER_ABI } from "@/lib/wagmi";
 import Connect from "./step/Connect";
-import Signal from "./step/Signal";
+import Signal from "./step/Signal/index";
+import Redeem from "./step/Signal/Redeem";
 import Transfer from "./step/Transfer";
 import Proof from "./step/Proof";
 import FulFill from "./step/FulFill";
@@ -52,6 +39,18 @@ export type IntentDetails = {
   amount: bigint;
   timestamp: number;
   verifier: string;
+};
+
+export type RedeemDetails = {
+  owner: string;
+  amount: bigint;
+  timestamp: number;
+};
+
+export type RedeemResult = {
+  success: boolean;
+  redeemId?: number;
+  txHash?: string;
 };
 
 export type ProofResult = {
@@ -259,6 +258,7 @@ export default function Home() {
             isLoading={isLoading}
           />
         );
+
       case WorkflowStep.TRANSFER:
         return (
           <Transfer
