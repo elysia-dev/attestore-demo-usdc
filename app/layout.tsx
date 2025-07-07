@@ -46,7 +46,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${jakartaSans.variable} ${chivoMono.variable} antialiased`}
       >
         <Header />
-        <Providers>{children}</Providers>
+        <Providers>
+          <div className="pt-[84px]">{children}</div>
+        </Providers>
       </body>
     </html>
   );

@@ -335,23 +335,10 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
-          <div className="flex justify-between items-center mb-12">
-            <h1 className="text-4xl font-bold text-gray-900">
-              ZK Escrow Transfer System
-            </h1>
-            <a
-              href="https://modoripage.notion.site/Genie-Guide-223f2ffdc30a803eb50eef01f2a43a33?source=copy_link"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2 shadow-sm hover:shadow-md"
-            >
-              📖 User Guide
-            </a>
-          </div>
-
+    <main className="min-h-screen bg-white pb-12 pt-[110px] px-4">
+      <div className="max-w-container mx-auto">
+        <h1 className="title">ZK Escrow Transfer System</h1>
+        <section className="mt-15 p-15 bg-gray-300 rounded-[10px] border border-gray-border">
           {currentStep !== WorkflowStep.CONNECT && (
             <WalletStatus
               isConnected={isConnected}
@@ -365,9 +352,9 @@ export default function Home() {
           {renderStepContent()}
 
           {/* <ErrorMessage error={error} freeError={freeError} /> */}
-        </div>
+        </section>
       </div>
-    </div>
+    </main>
   );
 }
 
@@ -385,59 +372,53 @@ const WalletStatus = ({
   handleAddTokenToWallet: () => void;
 }) => {
   return (
-    <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-      <div className="flex justify-between items-center">
-        <div>
-          <div className="flex items-center gap-4 mb-2">
-            <p className="text-blue-800">
-              <strong>Connection Status:</strong>{" "}
-              {isConnected ? "Connected" : "Disconnected"}
-            </p>
+    <section className="mb-5 px-5 py-[15px] bg-white border border-gray-border rounded-[10px] space-y-[15px]">
+      <section className="flex justify-between items-center">
+        <ConnectButton />
+        <div className="flex">
+          <p className="label">
+            <strong>· Connection Status:&nbsp;</strong>
+            {isConnected ? "Connected" : "Disconnected"}
+          </p>
+          <span className="label mx-1">/</span>
+          <div className="label flex items-center">
+            <strong>· Network:&nbsp;</strong>
             <div
-              className="text-blue-800 cursor-pointer hover:bg-blue-50 transition-colors duration-200 px-2 py-1 rounded-lg"
               onClick={openFaucetLink}
+              className="cursor-pointer hover:underline transition-all duration-200"
             >
-              <strong>Network:</strong> {getNetworkName(chainId)}
+              {getNetworkName(chainId)}
             </div>
           </div>
-          <div className="flex gap-2">
-            <ConnectButton />
-            {isConnected && (
-              <>
-                <Button
-                  onClick={handleAddTokenToWallet}
-                  variant="outline"
-                  size="sm"
-                  className="text-blue-600 border-blue-300 hover:bg-blue-50 h-10 flex items-center gap-1"
-                >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="12" y1="8" x2="12" y2="16" />
-                    <line x1="8" y1="12" x2="16" y2="12" />
-                  </svg>
-                  Add KRW Token
-                </Button>
-                <Button
-                  onClick={handleForceDisconnect}
-                  variant="outline"
-                  size="sm"
-                  className="text-red-600 border-red-300 hover:bg-red-50 h-10"
-                >
-                  Disconnect
-                </Button>
-              </>
-            )}
-          </div>
         </div>
-      </div>
-    </div>
+      </section>
+      <section className="flex justify-between items-center">
+        {isConnected && (
+          <Button
+            onClick={handleAddTokenToWallet}
+            variant="outlineBlue"
+            size="max"
+          >
+            <svg
+              width="21"
+              height="20"
+              viewBox="0 0 21 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M10.5 7.5V12.5M13 10H8M18 10C18 10.9849 17.806 11.9602 17.4291 12.8701C17.0522 13.7801 16.4997 14.6069 15.8033 15.3033C15.1069 15.9997 14.2801 16.5522 13.3701 16.9291C12.4602 17.306 11.4849 17.5 10.5 17.5C9.51509 17.5 8.53982 17.306 7.62987 16.9291C6.71993 16.5522 5.89314 15.9997 5.1967 15.3033C4.50026 14.6069 3.94781 13.7801 3.5709 12.8701C3.19399 11.9602 3 10.9849 3 10C3 8.01088 3.79018 6.10322 5.1967 4.6967C6.60322 3.29018 8.51088 2.5 10.5 2.5C12.4891 2.5 14.3968 3.29018 15.8033 4.6967C17.2098 6.10322 18 8.01088 18 10Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            Add KRW Token
+          </Button>
+        )}
+      </section>
+    </section>
   );
 };
 
