@@ -10,7 +10,6 @@ declare global {
 }
 
 import React, { useEffect, useState } from "react";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 import { useAccount, useChainId, useDisconnect, usePublicClient } from "wagmi";
 import { Button } from "@/components/ui/button";
@@ -23,6 +22,7 @@ import Redeem from "./step/Signal/Redeem";
 import Transfer from "./step/Transfer";
 import Proof from "./step/Proof";
 import FulFill from "./step/FulFill";
+import CustomConnectButton from "./utils/CustomConnectButton";
 
 export enum WorkflowStep {
   CONNECT = "connect",
@@ -374,7 +374,7 @@ const WalletStatus = ({
   return (
     <section className="mb-5 px-5 py-[15px] bg-white border border-gray-border rounded-[10px] space-y-[15px]">
       <section className="flex justify-between items-center">
-        <ConnectButton />
+        <CustomConnectButton />
         <div className="flex">
           <p className="label">
             <strong>· Connection Status:&nbsp;</strong>
