@@ -3,6 +3,70 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+  --color-gray-100: #f4f4f4;
+  --color-gray-200: #fafafa;
+  --color-gray-300: #f9fafc;
+  --color-gray-400: #dbdbdb;
+  --color-gray-500: #b2b2b2;
+  --color-gray-600: #494949;
+
+  --color-blue-200: #eef3ff;
+  --color-blue-400: #0074e5;
+  --color-blue-600: #18467c;
+
+  --color-red-100: #ffeeee;
+  --color-red-400: #ff3636;
+
+  --color-gray-border: var(--color-gray-400);
+  --color-blue-primary: var(--color-blue-400);
+  --color-red-primary: var(--color-red-400);
+
+  --shadow-md: 0px 0px 4px 0px rgba(0, 0, 0, 0.15);
+  --shadow-inner: inset 0 0 4px 0 rgba(0, 0, 0, 0.08);
+
+  --font-chivo-mono: var(--font-chivo-mono);
+
+  /* override */
+  --color-black: #171717;
+  --container-lg: 914px;
+
+  --container-container: var(--container-lg);
+}
+
+@utility title {
+  font-size: 70px;
+  font-weight: 700;
+  line-height: 88px;
+  font-family: var(--font-jakarta-sans);
+}
+
+@utility header {
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 35px;
+}
+
+@utility body {
+  font-size: 18px;
+  line-height: 23px;
+}
+
+@utility button-text {
+  font-size: 15px;
+  line-height: 19px;
+}
+
+@utility text {
+  font-size: 15px;
+  line-height: 19px;
+}
+
+@utility label {
+  font-size: 13px;
+  line-height: 16px;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -118,6 +182,22 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  p,
+  label,
+  input,
+  span,
+  button,
+  strong,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--color-black);
+    font-family: var(--font-jakarta-sans);
   }
 
   /* 모든 버튼 요소에 포인터 커서 적용 */
