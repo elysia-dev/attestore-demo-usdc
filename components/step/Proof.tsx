@@ -66,42 +66,38 @@ export default function Proof({
     }
   };
   return (
-    <div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">
-        Step 4: ZK Proof Generation
-      </h2>
-      <ul className="text-gray-600">
-        <p className="text-gray-600 mb-8">
-          Click <strong>Generate ZK Proof</strong> for generating ZK Proof.
+    <section>
+      <h2 className="header text-center">Step 4: ZK Proof Generation</h2>
+      <section className="mt-[30px] bg-white border border-gray-border rounded-[10px] py-[30px] px-[20px]">
+        <p className="body font-bold">
+          <strong className="text-blue-primary w-4">◆</strong> Click Generate ZK
+          Proof for generating ZK Proof.
         </p>
-        <li>
-          &apos;Generate ZK Proof&apos; button requires remote server to
-          generate zk Proof with eth signed
-          <br />
-          - remote server generates tls proof using attestor-server for the Toss
-          transfer
-          <br />
-          - remote server and attestor-server connected via websocket
-          <br />
-          - attestor-server validates the proof and signs with its private key
-          <br />- remote server sends the proof to the attestor-server
-        </li>
-      </ul>
-
-      {/* intentId */}
-      <div className="space-y-3 my-6">
-        <p className="text-gray-600 mb-4 bg-gray-100 p-4 rounded-lg">
-          <strong>Intent ID :</strong> {intentId}
-        </p>
-      </div>
-
+        <div className="space-y-[5px] text text-gray-600 pl-4 mt-[15px]">
+          <p>
+            &apos;Generate ZK Proof&apos; button requires remote server to
+            generate zk Proof with eth signed
+          </p>
+          <p>
+            · remote server generates tls proof using attestor-server for the
+            Toss transfer
+            <br />
+            · remote server and attestor-server connected via websocket
+            <br />
+            · attestor-server validates the proof and signs with its private key
+            <br />· remote server sends the proof to the attestor-server
+          </p>
+        </div>
+      </section>
       <form onSubmit={handleGenerateProof} className="space-y-6">
-        <div className="space-y-3">
-          <Label
-            htmlFor="issueDate"
-            className="text-lg font-medium text-gray-700"
-          >
-            Issue Date
+        <section className="mt-5 p-5 bg-white border border-gray-border rounded-[10px] space-y-2.5">
+          {/* intentId */}
+          <p className="text font-semibold">· Intent ID</p>
+          <div className="mt-[5px] border border-gray-border rounded-[10px] py-2.5 px-[15px] bg-gray-200">
+            <p className="text">{intentId}</p>
+          </div>
+          <Label htmlFor="issueDate" className="text font-semibold">
+            · Issue Date
           </Label>
           <Input
             id="issueDate"
@@ -109,16 +105,10 @@ export default function Proof({
             value={issueDate}
             onChange={(e) => setIssueDate(e.target.value)}
             placeholder="Enter certificate issue date (e.g., 20250618)"
-            className="h-14 text-base border-gray-300 rounded-lg px-4 placeholder:text-gray-400"
+            className="mt-[5px] h-auto text border border-gray-border rounded-[10px] py-2.5 px-[15px] bg-white placeholder:text-gray-400"
           />
-        </div>
-
-        <div className="space-y-3 my-6">
-          <Label
-            htmlFor="certificateNumber"
-            className="text-lg font-medium text-gray-700"
-          >
-            Certificate Issue Number
+          <Label htmlFor="certificateNumber" className="text font-semibold">
+            · Certificate Issue Number
           </Label>
           <Input
             id="certificateNumber"
@@ -126,31 +116,60 @@ export default function Proof({
             value={certificateNumber}
             onChange={(e) => setCertificateNumber(e.target.value)}
             placeholder="Please enter the certificate issue number."
-            className="h-14 text-base border-gray-300 rounded-lg px-4 placeholder:text-gray-400"
+            className="mt-[5px] h-auto text border border-gray-border rounded-[10px] py-2.5 px-[15px] bg-white placeholder:text-gray-400"
           />
-        </div>
+        </section>
 
-        <div className="flex gap-4">
+        <div className="flex gap-2.5">
           <Button
             type="button"
             onClick={() => setCurrentStep(WorkflowStep.TRANSFER)}
             variant="outline"
-            className="font-medium text-lg px-6 py-3 rounded-lg"
+            className="flex-1"
           >
-            ← Previous
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="21"
+              height="21"
+              viewBox="0 0 21 21"
+              fill="none"
+            >
+              <path
+                d="M9.25 16.75L3 10.5M3 10.5L9.25 4.25M3 10.5H18"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            Previous
           </Button>
 
           <Button
             type="submit"
-            className={`bg-blue-500 hover:bg-blue-600 text-white font-medium text-lg px-8 py-3 rounded-lg ${
-              isLoading ? "bg-gray-400" : "bg-blue-500"
-            }`}
+            variant="default"
+            className="flex-1"
             disabled={!issueDate || !certificateNumber || isLoading}
           >
             Generate ZK Proof
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="21"
+              height="21"
+              viewBox="0 0 21 21"
+              fill="none"
+            >
+              <path
+                d="M11.75 16.75L18 10.5M18 10.5L11.75 4.25M18 10.5H3"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </Button>
         </div>
       </form>
-    </div>
+    </section>
   );
 }
