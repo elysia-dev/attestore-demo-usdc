@@ -25,96 +25,101 @@ export default function Transfer({
   freeError: () => void;
 }) {
   return (
-    <div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">
-        Step 3: Toss Transfer
-      </h2>
+    <section className="space-y-[20px]">
+      <h2 className="header text-center">Step 3: Toss Transfer</h2>
 
       {/* 토스 송금 데모 비디오 */}
-      <div className="mb-8">
-        <video
-          controls
-          className="w-full max-w-2xl mx-auto rounded-lg shadow-lg h-[640px]"
-          poster="/tossbank_transfer_korean_thumbnail.jpg"
+      <section className="py-[30px] mt-[30px] px-5 rounded-[10px] bg-white border border-gray-border">
+        <div
+          className="flex justify-center items-center rounded-[10px] border border-gray-border overflow-hidden"
+          style={{
+            backgroundImage: "url('/video_background.png')",
+          }}
         >
-          <source src="/tossbank_transfer_korean_.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-      </div>
-
-      <p className="text-gray-600 mb-8">
-        1. Send fiat money to the recipient via Toss app.
-        <br />
-        2. Click <strong>Next</strong> for proceeding to the next step.
-      </p>
+          <video
+            controls
+            className="w-full rounded-lg h-[640px]"
+            poster="/tossbank_transfer_korean_thumbnail.jpg"
+          >
+            <source src="/tossbank_transfer_korean_.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <p className="text-gray-600 mt-[20px] text">
+          1. Send fiat money to the recipient via <strong>Toss app.</strong>
+          <br />
+          2. Click Next for proceeding to the next step.
+          <br />
+          3. The transfer must be made to the Toss account.
+        </p>
+      </section>
 
       {/* 토스 송금 안내 - Intent ID가 있을 때만 표시 */}
       {intentId && intentDetails?.amount && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
-          <h3 className="text-lg font-semibold text-yellow-800 mb-4">
-            📱 Send money via Toss app
+        <section className="bg-white border border-gray-border rounded-[10px] py-[30px] px-[20px]">
+          <h3 className="body">
+            <span className="text-blue-primary">◆</span> Send money via Toss app
           </h3>
-          <div className="space-y-2 text-yellow-700">
-            <p>
-              <strong>Recipient Name:</strong> 이현민 (Modori Tossbank account)
+          <section className="border border-gray-border rounded-[10px] p-5 space-y-2.5 bg-gray-300 mt-5">
+            <p className="text">
+              · Recipient Name : <strong>이 현 민</strong> (Modori Tossbank
+              account)
             </p>
-            <p className="flex items-center gap-2">
-              <strong>Bank Account:</strong>{" "}
+            <p className="flex items-center gap-[5px] text">
+              · Bank Account :
               <button
                 onClick={handleCopyAccountNumber}
-                className="text-blue-600 hover:text-blue-800 font-mono bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded border border-blue-200 transition-colors duration-200 flex items-center gap-2"
+                className="flex items-center gap-[5px] text-blue-primary bg-white border border-blue-primary rounded-full px-5 py-1.5 transition-colors duration-200 hover:bg-blue-primary hover:text-white"
                 title="Click to copy account number"
               >
-                <span>100202642943</span>
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
-                  <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
-                </svg>
+                <strong className="text-inherit">토스뱅크 100202642943</strong>
+                <CopyButtonIcon />
               </button>
-              (토스뱅크)
             </p>
-            <p>
-              <strong>Transfer Memo:</strong>{" "}
-              <code className="bg-yellow-100 px-2 py-1 rounded">
-                {intentId}
-              </code>
+            <p className="text">
+              · Transfer Memo :{" "}
+              <strong className="text-blue-primary">{intentId}</strong>
             </p>
-            <p>
-              <strong>Amount:</strong> {formatUnits(intentDetails?.amount, 18)}{" "}
-              KRW
+            <p className="text">
+              · Amount :{" "}
+              <strong>{formatUnits(intentDetails?.amount, 18)} KRW</strong>
             </p>
-          </div>
-        </div>
+          </section>
+        </section>
       )}
 
       {intentId && (
-        <p className="text-gray-600 mb-8">
-          After transfer, click <strong>Next</strong>
-        </p>
+        <p className="text-gray-600 text mb-2.5">After transfer, click Next</p>
       )}
 
       {!intentId && (
-        <p className="text-gray-600 mb-6">
+        <p className="text-gray-600 text mb-2.5">
           Please lookup Intent ID first. (click previous)
         </p>
       )}
 
-      <div className="flex gap-4">
+      <div className="flex gap-2.5">
         <Button
           onClick={() => setCurrentStep(WorkflowStep.SIGNAL)}
           variant="outline"
-          className="font-medium text-lg px-6 py-3 rounded-lg"
+          className="flex-1"
         >
-          ← Previous
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="21"
+            height="21"
+            viewBox="0 0 21 21"
+            fill="none"
+          >
+            <path
+              d="M9.25 16.75L3 10.5M3 10.5L9.25 4.25M3 10.5H18"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          Previous
         </Button>
 
         <Button
@@ -123,12 +128,45 @@ export default function Transfer({
             freeError();
           }}
           disabled={!intentId}
-          variant="outline"
-          className="font-medium text-lg px-6 py-3 rounded-lg"
+          variant="default"
+          className="flex-1"
         >
-          Next →
+          Next
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="21"
+            height="21"
+            viewBox="0 0 21 21"
+            fill="none"
+          >
+            <path
+              d="M11.75 16.75L18 10.5M18 10.5L11.75 4.25M18 10.5H3"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </Button>
       </div>
-    </div>
+    </section>
   );
 }
+
+const CopyButtonIcon = () => {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+      <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+    </svg>
+  );
+};
