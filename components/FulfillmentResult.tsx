@@ -1,6 +1,7 @@
 import { formatUnits } from "viem";
 import { FulfillmentResult } from "./Home";
 import { TOKEN_SYMBOL } from "@/constant";
+import { Button } from "./ui/button";
 
 export default function FulfillmentResultComponent({
   fulfillmentResult,
@@ -9,64 +10,70 @@ export default function FulfillmentResultComponent({
 }) {
   if (!fulfillmentResult?.success) return null;
   return (
-    <div
-      className={`p-6 border rounded-lg my-6 ${
-        fulfillmentResult.success
-          ? "bg-green-50 border-green-200"
-          : "bg-red-50 border-red-200"
-      }`}
-    >
-      {fulfillmentResult.success && (
-        <div className="space-y-3 text-sm">
-          <h4 className="font-semibold text-gray-800 mb-3">
-            ✅ Minting Completed
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div>
-              <span className="font-medium text-green-800">Intent Hash:</span>
-              <p className="text-green-700 font-mono break-all">
+    <section>
+      <h2 className="header text-center">Minting Completed</h2>
+      <section className="mt-[30px] bg-white border border-gray-border rounded-[10px] py-[30px] px-[20px]">
+        <p className="body font-bold">🎉 Minting Info</p>
+        <section className="px-5 py-[15px] border mt-2.5 border-gray-border rounded-[10px] bg-gray-200">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-[15px]">
+            <div className="text">
+              <span className="text-gray-600 font-chivo-mono">
+                Intent Hash :
+              </span>
+              <p className="font-chivo-mono break-all">
                 {fulfillmentResult.intentHash}
               </p>
             </div>
-            <div>
-              <span className="font-medium text-green-800">Verifier:</span>
-              <p className="text-green-700 font-mono">
+            <div className="text">
+              <span className="text-gray-600 font-chivo-mono">Verifier :</span>
+              <p className="font-chivo-mono">
                 {fulfillmentResult.verifier?.slice(0, 6)}...
                 {fulfillmentResult.verifier?.slice(-4)}
               </p>
             </div>
-            <div>
-              <span className="font-medium text-green-800">Owner:</span>
-              <p className="text-green-700 font-mono">
+            <div className="text">
+              <span className="text-gray-600 font-chivo-mono">Owner :</span>
+              <p className="font-chivo-mono">
                 {fulfillmentResult.owner?.slice(0, 6)}...
                 {fulfillmentResult.owner?.slice(-4)}
               </p>
             </div>
-            <div>
-              <span className="font-medium text-green-800">Receiver:</span>
-              <p className="text-green-700 font-mono">
+            <div className="text">
+              <span className="text-gray-600 font-chivo-mono">Receiver :</span>
+              <p className="font-chivo-mono">
                 {fulfillmentResult.to?.slice(0, 6)}...
                 {fulfillmentResult.to?.slice(-4)}
               </p>
             </div>
-            <div>
-              <span className="font-medium text-green-800">Amount:</span>
-              <p className="text-green-700">
+            <div className="text">
+              <span className="text-gray-600 font-chivo-mono">Amount :</span>
+              <p className="font-chivo-mono">
                 {fulfillmentResult.amount &&
                   formatUnits(fulfillmentResult.amount, 18)}{" "}
                 {TOKEN_SYMBOL}
               </p>
             </div>
-            <div>
-              <span className="font-medium text-green-800">Transaction:</span>
-              <p className="text-green-700 font-mono">
+            <div className="text">
+              <span className="text-gray-600 font-chivo-mono">
+                Transaction :
+              </span>
+              <p className="font-chivo-mono">
                 {fulfillmentResult.txHash?.slice(0, 6)}...
                 {fulfillmentResult.txHash?.slice(-4)}
               </p>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        </section>
+      </section>
+      <Button
+        onClick={() => {
+          window.location.href = "/";
+        }}
+        className="mt-5"
+        size="max"
+      >
+        Go to History
+      </Button>
+    </section>
   );
 }

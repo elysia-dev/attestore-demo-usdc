@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Label } from "@radix-ui/react-label";
 import { WorkflowStep, FulfillmentResult, ProofResult } from "../Home";
-import ProofResultComponent from "../ProofResult";
+// import ProofResultComponent from "../ProofResult";
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
 import FulfillmentResultComponent from "../FulfillmentResult";
 import { decodeEventLog, encodeAbiParameters, keccak256, toBytes } from "viem";
 import { useContractWrite } from "@/hooks/useContractWrite";
@@ -224,94 +222,120 @@ export default function FulFill({
     }
   };
   return (
-    <div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">
-        Step 5: Token Minting
-      </h2>
-      <p className="text-gray-600 ">ZK Proof has been generated.</p>
-      <p className="text-gray-600 mb-8">
-        Click <strong>Mint Tokens</strong> for minting tokens.
-      </p>
-
-      <div className="space-y-3">
-        <Label
-          htmlFor="issueDate"
-          className="text-lg font-medium text-gray-700"
-        >
-          Issue Date
-        </Label>
-        <Input
-          id="issueDate"
-          type="text"
-          value={issueDate}
-          disabled={true}
-          placeholder="Enter certificate issue date (e.g., 20250618)"
-          className="h-14 text-base border-gray-300 rounded-lg px-4 placeholder:text-gray-400"
-        />
-      </div>
-
-      <div className="space-y-3 my-6">
-        <Label
-          htmlFor="certificateNumber"
-          className="text-lg font-medium text-gray-700"
-        >
-          Certificate Issue Number
-        </Label>
-        <Input
-          id="certificateNumber"
-          type="text"
-          value={certificateNumber}
-          disabled={true}
-          placeholder="Please enter the certificate issue number.(e.g, 1234-ABCD-EFGHIJKL)"
-          className="h-14 text-base border-gray-300 rounded-lg px-4 placeholder:text-gray-400"
-        />
-      </div>
-
-      {/* intentId */}
-      <div className="space-y-3 my-6">
-        <p className="text-gray-600 mb-4 bg-gray-100 p-4 rounded-lg">
-          <strong>Intent ID :</strong> {intentId}
-        </p>
-      </div>
-
-      <div className="flex gap-4">
-        <Button
-          onClick={() => setCurrentStep(WorkflowStep.PROOF)}
-          variant="outline"
-          className="font-medium text-lg px-6 py-3 rounded-lg"
-        >
-          ← Previous
-        </Button>
-
-        <Button
-          onClick={handleFulfillIntent}
-          className="font-medium text-lg px-6 py-3 rounded-lg bg-blue-500 hover:bg-blue-600 text-white"
-          disabled={
-            isFulfillIntentLoading || !intentId || fulfillmentResult?.success
-          }
-        >
-          {isFulfillIntentLoading
-            ? "Minting Tokens..."
-            : fulfillmentResult?.success
-            ? "Minting Complete"
-            : "Mint Tokens"}
-        </Button>
-      </div>
-
-      {fulfillmentResult && (
+    <>
+      {fulfillmentResult?.success && (
         <FulfillmentResultComponent fulfillmentResult={fulfillmentResult} />
       )}
+      {!fulfillmentResult?.success && (
+        <section>
+          <h2 className="header text-center">Step 5: Token Minting</h2>
+          <section className="mt-[30px] bg-white border border-gray-border rounded-[10px] py-[30px] px-[20px]">
+            <p className="body font-bold">
+              <strong className="text-blue-primary w-4">◆</strong> Click Mint
+              Tokens
+            </p>
+            <p className="mt-[5px] text text-gray-600 pl-4">
+              ZK Proof has been generated.
+              <br />
+              Click Mint Tokens for minting tokens.
+            </p>
 
-      {proofResult && (
-        <>
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 my-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              ✅ Proof Generation Completed
-            </h3>
-            <ProofResultComponent proofResult={proofResult} />
+            <section className="mt-5 p-5 bg-gray-200 border border-gray-border rounded-[10px]">
+              <div className="p-5 bg-white border border-gray-border rounded-[10px] space-y-2.5">
+                <div>
+                  <p className="text font-semibold">· Intent ID</p>
+                  <div className="mt-[5px] border border-gray-border rounded-[5px] py-2.5 px-[15px] bg-gray-200">
+                    <p className="text">{intentId}</p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text font-semibold">· Issue Date</p>
+                  <div className="mt-[5px] border border-gray-border rounded-[5px] py-2.5 px-[15px] bg-gray-200">
+                    <p className="text">{issueDate}</p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text font-semibold">
+                    · Certificate Issue Number
+                  </p>
+                  <div className="mt-[5px] border border-gray-border rounded-[5px] py-2.5 px-[15px] bg-gray-200">
+                    <p className="text">{certificateNumber}</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </section>
+
+          <div className="flex gap-2.5 mt-5">
+            <Button
+              onClick={() => setCurrentStep(WorkflowStep.PROOF)}
+              variant="outline"
+              className="flex-1 bg-white"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="21"
+                height="21"
+                viewBox="0 0 21 21"
+                fill="none"
+              >
+                <path
+                  d="M9.25 16.75L3 10.5M3 10.5L9.25 4.25M3 10.5H18"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              Previous
+            </Button>
+
+            <Button
+              onClick={handleFulfillIntent}
+              className="flex-1"
+              disabled={
+                isFulfillIntentLoading ||
+                !intentId ||
+                fulfillmentResult?.success
+              }
+            >
+              {isFulfillIntentLoading
+                ? "Minting Tokens..."
+                : fulfillmentResult?.success
+                ? "Minting Complete"
+                : "Mint Tokens"}
+              {!isFulfillIntentLoading && !fulfillmentResult?.success && (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="21"
+                  height="21"
+                  viewBox="0 0 21 21"
+                  fill="none"
+                >
+                  <path
+                    d="M11.75 16.75L18 10.5M18 10.5L11.75 4.25M18 10.5H3"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
+            </Button>
           </div>
-        </>
+
+          {/* {proofResult && (
+            <>
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 my-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                  ✅ Proof Generation Completed
+                </h3>
+                <ProofResultComponent proofResult={proofResult} />
+              </div>
+            </>
+          )} */}
+        </section>
       )}
-    </div>
+    </>
   );
 }
