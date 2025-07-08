@@ -93,7 +93,6 @@ export type ProofResult = {
 export default function Home() {
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
-  const { disconnect } = useDisconnect();
   const publicClient = usePublicClient();
 
   useEffect(() => {
@@ -232,6 +231,8 @@ export default function Home() {
             setCurrentStep={setCurrentStep}
             freeError={freeError}
             isLoading={isLoading}
+            chainId={chainId}
+            isConnected={isConnected}
           />
         );
 

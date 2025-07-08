@@ -10,7 +10,7 @@ import {
   parseUnits,
   toBytes,
 } from "viem";
-import { RedeemDetails, RedeemResult, WorkflowStep } from "@/components/Home";
+import { RedeemResult } from "@/components/Home";
 import ADDRESSES from "@/lib/addresses";
 import { ZK_MINTER_ABI } from "@/lib/wagmi";
 import { useState } from "react";
@@ -19,23 +19,28 @@ import { useContractWrite } from "@/hooks/useContractWrite";
 import { TOKEN_SYMBOL } from "@/constant";
 
 export default function Redeem({
+  accountNumber,
+  amount,
+  handleRefreshRedeemDetails,
+  redeemId,
+  redeemResult,
+  setAccountNumber,
+  setAmount,
   setError,
-  setCurrentStep,
-  freeError,
-  isLoading,
+  setRedeemId,
+  setRedeemResult,
 }: {
+  accountNumber: string;
+  amount: string;
+  handleRefreshRedeemDetails: (targetRedeemId: number) => Promise<void>;
+  redeemId: number | null;
+  redeemResult: RedeemResult | null;
+  setAccountNumber: (accountNumber: string) => void;
+  setAmount: (amount: string) => void;
   setError: (error: string) => void;
-  setCurrentStep: (step: WorkflowStep) => void;
-  freeError: () => void;
-  isLoading: boolean;
+  setRedeemId: (redeemId: number) => void;
+  setRedeemResult: (redeemResult: RedeemResult) => void;
 }) {
-  const [redeemId, setRedeemId] = useState<number | null>(null);
-  const [redeemDetails, setRedeemDetails] = useState<RedeemDetails | null>(
-    null
-  );
-  const [redeemResult, setRedeemResult] = useState<RedeemResult | null>(null);
-  const [accountNumber, setAccountNumber] = useState("");
-  const [amount, setAmount] = useState("");
   const [userTokenBalance, setUserTokenBalance] = useState<bigint | undefined>(
     undefined
   );
@@ -105,68 +110,6 @@ export default function Redeem({
       }
     },
   });
-
-  const handleRefreshRedeemDetails = async (targetRedeemId: number) => {
-    if (!targetRedeemId) return;
-
-    try {
-      const redeemData = await publicClient?.readContract({
-        address: ADDRESSES.ZK_MINTER,
-        abi: ZK_MINTER_ABI,
-        functionName: "redeemRequests",
-        args: [BigInt(targetRedeemId)],
-      });
-
-      if (
-        redeemData &&
-        redeemData[0] !== "0x0000000000000000000000000000000000000000"
-      ) {
-        const [owner, amount, timestamp] = redeemData as [
-          string,
-          bigint,
-          bigint
-        ];
-        setRedeemDetails({
-          owner,
-          amount,
-          timestamp: Number(timestamp),
-        });
-      } else {
-        setRedeemDetails(null);
-        setError(`Redeem ID ${targetRedeemId} not found`);
-      }
-    } catch (error) {
-      console.error("Failed to lookup Redeem ID:", error);
-      setRedeemDetails(null);
-      setError(`Redeem ID ${targetRedeemId} not found`);
-    }
-  };
-
-  const handleRefreshMyRedeemId = async () => {
-    console.log("address", address);
-    if (!address) return;
-    try {
-      const userRedeemId = await publicClient?.readContract({
-        address: ADDRESSES.ZK_MINTER,
-        abi: ZK_MINTER_ABI,
-        functionName: "accountRedeemRequest",
-        args: [address],
-      });
-      console.log("userRedeemId", userRedeemId);
-
-      if (userRedeemId && Number(userRedeemId) > 0) {
-        const newRedeemId = Number(userRedeemId);
-        setRedeemId(newRedeemId);
-        handleRefreshRedeemDetails(newRedeemId);
-      } else {
-        setError("No Redeem request found");
-        setRedeemDetails(null);
-      }
-    } catch (error) {
-      console.error("Failed to lookup Redeem ID:", error);
-      setError("Failed to lookup Redeem ID");
-    }
-  };
 
   const checkAllowance = async (redeemAmount: bigint): Promise<boolean> => {
     if (!address || !publicClient) return false;
@@ -275,59 +218,19 @@ export default function Redeem({
     }
   };
 
-  const { writeAndWait: cancelRedeemWrite, isLoading: isCancelRedeemLoading } =
-    useContractWrite({
-      onSuccess: () => {
-        setRedeemId(null);
-        setRedeemDetails(null);
-        setRedeemResult(null);
-        setAccountNumber("");
-        setAmount("");
-      },
-    });
-
-  const handleCancelRedeem = async () => {
-    if (!redeemId) return;
-
-    try {
-      await cancelRedeemWrite({
-        address: ADDRESSES.ZK_MINTER,
-        abi: ZK_MINTER_ABI,
-        functionName: "cancelRedeem",
-        args: [BigInt(redeemId)],
-      });
-    } catch (error) {
-      setError(
-        `Cancel redeem failed: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
-    }
-  };
-
   return (
-    <div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">
-        Step 2: Offramp (Redeem Tokens)
-      </h2>
-      <p className="text-gray-600 mb-8">
-        Redeem your tokens for fiat currency. Enter your bank account number and
-        the amount you want to redeem.
-      </p>
-
+    <section className="mt-5 p-5 bg-gray-300 rounded-[10px] border border-gray-border">
       {/* Current Balance */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
-        <h3 className="text-lg font-semibold text-yellow-800 mb-4">
-          💰 Your Token Balance
-        </h3>
-        <div className="flex items-center gap-2">
-          <p className="text-yellow-700 text-lg font-semibold">
+      <h3 className="body font-bold">Your Token Balance</h3>
+      <section className="mt-[5px] rounded-[10px] bg-blue-200 px-[15px] py-2.5 border border-gray-border">
+        <div className="flex items-center justify-between">
+          <p className="text-blue-primary text font-bold">
             {userTokenBalance ? formatUnits(userTokenBalance, 18) : "0"}{" "}
             {TOKEN_SYMBOL}
           </p>
           <button
             onClick={readUserTokenBalance}
-            className="text-yellow-700 hover:text-yellow-900 transition-colors duration-200 p-2 rounded-full hover:bg-yellow-50"
+            className="text-blue-primary hover:text-blue-primary/50 transition-colors duration-200"
             title="Refresh balance"
           >
             <svg
@@ -347,140 +250,76 @@ export default function Redeem({
             </svg>
           </button>
         </div>
-      </div>
-
-      {/* Existing Redeem Request */}
-      <div className="bg-orange-50 border border-orange-200 rounded-lg p-6 mb-6">
-        <h3 className="text-lg font-semibold text-orange-800 mb-4">
-          🔍 My Redeem Request
-        </h3>
-        <div className="flex gap-4 mb-4">
-          <Button
-            onClick={handleRefreshMyRedeemId}
-            disabled={isLoading}
-            className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-6 py-2 rounded-lg"
-          >
-            {isLoading ? "Loading..." : "Lookup My Request"}
-          </Button>
-        </div>
-
-        {redeemId && redeemDetails && (
-          <div className="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-            <h4 className="font-semibold text-orange-900 mb-3">
-              📋 Redeem Request Details
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-              <div>
-                <span className="font-medium text-orange-800">Redeem ID:</span>
-                <p className="text-orange-700 font-mono">{redeemId}</p>
-              </div>
-              <div>
-                <span className="font-medium text-orange-800">Amount:</span>
-                <p className="text-orange-700">
-                  {formatUnits(redeemDetails.amount, 18)} {TOKEN_SYMBOL}
-                </p>
-              </div>
-              <div>
-                <span className="font-medium text-orange-800">Status:</span>
-                <p className="text-orange-700">
-                  Pending (Awaiting fulfillment)
-                </p>
-              </div>
-              <div>
-                <span className="font-medium text-orange-800">
-                  Created Time:
-                </span>
-                <p className="text-orange-700">
-                  {new Date(redeemDetails.timestamp * 1000).toLocaleString()}
-                </p>
-              </div>
-            </div>
-            <div className="mt-4">
-              <Button
-                onClick={handleCancelRedeem}
-                disabled={isCancelRedeemLoading}
-                variant="outline"
-                className="text-red-600 border-red-300 hover:bg-red-50"
-              >
-                {isCancelRedeemLoading ? "Cancelling..." : "Cancel Request"}
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
+        <p className="text font-chivo-mono text-gray-600 mt-[5px]">
+          Address: {address}
+        </p>
+      </section>
 
       {/* Create New Redeem Request */}
       {!redeemId && (
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            ➕ Create Redeem Request
-          </h3>
-          <p className="text-gray-600 mb-6">
+        <div className="mt-5">
+          <h3 className="body font-semibold">Create Redeem Request</h3>
+          <p className="text mt-[5px] text-gray-600">
             Enter your bank account details and the amount you want to redeem.
           </p>
 
-          <form onSubmit={handleSignalRedeem} className="space-y-6">
-            <div className="space-y-3">
-              <Label
-                htmlFor="accountNumber"
-                className="text-lg font-medium text-gray-700"
-              >
-                Bank Account Number
-              </Label>
-              <Input
-                id="accountNumber"
-                type="text"
-                value={accountNumber}
-                onChange={(e) => setAccountNumber(e.target.value)}
-                placeholder="12345678"
-                className="h-14 text-base border-gray-300 rounded-lg px-4"
-              />
-            </div>
-
-            <div className="space-y-3">
-              <Label
-                htmlFor="amount"
-                className="text-lg font-medium text-gray-700"
-              >
-                Amount ({TOKEN_SYMBOL})
-              </Label>
-              <Input
-                id="amount"
-                type="text"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="1.0"
-                className="h-14 text-base border-gray-300 rounded-lg px-4"
-              />
-            </div>
-
-            {/* Progress indicator */}
-            {isProcessing && (
-              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-blue-800 font-medium">
-                    {processStep}
-                  </span>
-                  <span className="text-blue-600 text-sm">
-                    {processProgress.current}/{processProgress.total}
-                  </span>
-                </div>
-                <div className="w-full bg-blue-200 rounded-full h-2">
-                  <div
-                    className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                    style={{
-                      width: `${
-                        (processProgress.current / processProgress.total) * 100
-                      }%`,
-                    }}
-                  ></div>
-                </div>
+          <form onSubmit={handleSignalRedeem} className="space-y-5 mt-5">
+            <section className="p-5 border border-gray-border rounded-[10px] bg-white space-y-2.5">
+              <div className="space-y-[5px]">
+                <Label htmlFor="accountNumber" className="text font-semibold">
+                  · Bank Account Number
+                </Label>
+                <Input
+                  id="accountNumber"
+                  type="text"
+                  value={accountNumber}
+                  onChange={(e) => setAccountNumber(e.target.value)}
+                  placeholder="12345678"
+                  className="text border-gray-border rounded-[5px] py-2.5 px-[15px]"
+                />
               </div>
-            )}
+
+              <div className="space-y-[5px]">
+                <Label htmlFor="amount" className="text font-semibold">
+                  Amount ({TOKEN_SYMBOL})
+                </Label>
+                <Input
+                  id="amount"
+                  type="text"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder="1.0"
+                  className="text border-gray-border rounded-[5px] py-2.5 px-[15px]"
+                />
+              </div>
+
+              {/* Progress indicator */}
+              {isProcessing && (
+                <div className="p-5 border border-gray-border rounded-[10px] bg-gray-300 mt-5">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-gray-600 text">{processStep}</span>
+                    <span className="text-black text font-semibold">
+                      {processProgress.current}/{processProgress.total}
+                    </span>
+                  </div>
+                  <div className="w-full bg-white rounded-full h-2 border border-gray-border">
+                    <div
+                      className="bg-blue-primary h-2 rounded-full transition-all duration-300"
+                      style={{
+                        width: `${
+                          (processProgress.current / processProgress.total) *
+                          100
+                        }%`,
+                      }}
+                    ></div>
+                  </div>
+                </div>
+              )}
+            </section>
 
             <Button
               type="submit"
-              className="bg-orange-500 hover:bg-orange-600 text-white font-medium text-lg px-8 py-4 rounded-lg h-auto disabled:bg-gray-400"
+              className="disabled:bg-black/50 bg-black/75 text-white font-semibold hover:bg-black transition-colors duration-200"
               disabled={!accountNumber || !amount || isProcessing}
             >
               {isProcessing ? "Processing..." : "Create Redeem Request"}
@@ -491,40 +330,28 @@ export default function Redeem({
 
       {/* Success Message */}
       {redeemResult?.success && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
-          <h3 className="text-lg font-semibold text-green-800 mb-4">
-            ✅ Redeem Request Created Successfully
+        <section className="mt-5 p-5 bg-white rounded-[10px] border border-gray-border">
+          <h3 className="text font-semibold">
+            Redeem Request Created Successfully
           </h3>
-          <div className="space-y-2 text-sm">
-            <p className="text-green-700">
-              <span className="font-medium">Redeem ID:</span>{" "}
-              {redeemResult.redeemId}
-            </p>
-            <p className="text-green-700">
-              <span className="font-medium">Transaction Hash:</span>{" "}
-              <span className="font-mono">{redeemResult.txHash}</span>
-            </p>
-            <p className="text-green-600 mt-4">
-              Your tokens have been escrowed. The admin will process your
-              request and send fiat to your bank account.
-            </p>
-          </div>
-        </div>
+          <section className="border border-gray-border rounded-[10px] p-5 mt-5 bg-gray-300 space-y-[10px]">
+            <div className="text">
+              <span className="font-chivo-mono text-gray-600">Redeem ID:</span>{" "}
+              <p className="font-chivo-mono">{redeemResult?.redeemId}123</p>
+            </div>
+            <div className="text">
+              <span className="font-chivo-mono text-gray-600">
+                Transaction Hash:
+              </span>{" "}
+              <p className="font-chivo-mono">{redeemResult?.txHash}123</p>
+            </div>
+          </section>
+          <p className="text-blue-primary mt-4 text">
+            Your tokens have been escrowed. The admin will process your request
+            and send fiat to your bank account.
+          </p>
+        </section>
       )}
-
-      {/* Navigation */}
-      <div className="text-left">
-        <Button
-          onClick={() => {
-            setCurrentStep(WorkflowStep.SIGNAL);
-            freeError();
-          }}
-          variant="outline"
-          className="font-medium text-lg px-6 py-3 rounded-lg"
-        >
-          ← Back to Choose Action
-        </Button>
-      </div>
-    </div>
+    </section>
   );
 }
