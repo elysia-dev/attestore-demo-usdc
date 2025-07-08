@@ -20,6 +20,8 @@ import Redeem from "./step/Signal/Redeem";
 import Transfer from "./step/Transfer";
 import Proof from "./step/Proof";
 import FulFill from "./step/FulFill";
+import Image from "next/image";
+import { Button } from "./ui/button";
 
 export enum WorkflowStep {
   CONNECT = "connect",
@@ -286,9 +288,9 @@ export default function Home() {
         <h1 className="title">ZK Escrow Transfer System</h1>
         <section className="mt-15 p-15 bg-gray-300 rounded-[10px] border border-gray-border">
           {renderStepContent()}
-
-          {/* <ErrorMessage error={error} freeError={freeError} /> */}
         </section>
+
+        <ErrorMessage error={error} freeError={freeError} />
       </div>
     </main>
   );
@@ -302,14 +304,24 @@ const ErrorMessage = ({
   freeError: () => void;
 }) => {
   if (!error) return null;
+
   return (
-    <div className="mt-8 p-6 bg-red-50 border border-red-200 rounded-lg">
-      <h3 className="text-lg font-semibold text-red-900 mb-2">
-        Error
-        <button className="cursor-pointer ml-2" onClick={freeError}>
-          <p className="text-red-700">{error}</p>
-        </button>
-      </h3>
-    </div>
+    <section className="p-5 border border-red-primary rounded-[10px] bg-red-100 mt-2.5">
+      <div className="gap-[5px] flex items-center">
+        <Image src="/error.svg" alt="error" width={20} height={20} />
+        <p className="text-red-primary font-semibold body">Error Message</p>
+      </div>
+      <p className="mt-[5px] text ml-[25px]">{error}</p>
+
+      <div className="flex w-full justify-end">
+        <Button
+          onClick={freeError}
+          variant="outline"
+          className="text-red-primary border-red-primary hover:text-white hover:bg-red-primary"
+        >
+          Close
+        </Button>
+      </div>
+    </section>
   );
 };
