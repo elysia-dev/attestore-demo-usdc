@@ -273,6 +273,7 @@ export default function Home() {
             freeError={freeError}
             setIsLoading={setIsLoading}
             setProofResult={setProofResult}
+            proofResult={proofResult}
           />
         );
       case WorkflowStep.FULFILL:

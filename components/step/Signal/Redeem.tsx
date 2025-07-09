@@ -221,7 +221,9 @@ export default function Redeem({
   return (
     <section className="mt-5 p-5 bg-gray-300 rounded-[10px] border border-gray-border">
       {/* Current Balance */}
-      <h3 className="body font-bold">Your Token Balance</h3>
+      <p className="body font-bold">
+        <strong className="text-blue-primary w-4">◆</strong> Your Token Balance
+      </p>
       <section className="mt-[5px] rounded-[10px] bg-blue-200 px-[15px] py-2.5 border border-gray-border">
         <div className="flex items-center justify-between">
           <p className="text-blue-primary text font-bold">
@@ -258,10 +260,16 @@ export default function Redeem({
       {/* Create New Redeem Request */}
       {!redeemId && (
         <div className="mt-5">
-          <h3 className="body font-semibold">Create Redeem Request</h3>
-          <p className="text mt-[5px] text-gray-600">
-            Enter your bank account details and the amount you want to redeem.
+          <p className="body font-bold">
+            <strong className="text-blue-primary w-4">◆</strong> Create a Redeem
+            Request
           </p>
+          <div className="space-y-[5px] text text-gray-600 pl-4 mt-[15px]">
+            <p>
+              1. Enter your bank account details and the amount you want to
+              redeem.
+            </p>
+          </div>
 
           <form onSubmit={handleSignalRedeem} className="space-y-5 mt-5">
             <section className="p-5 border border-gray-border rounded-[10px] bg-white space-y-2.5">

@@ -99,11 +99,14 @@ const EnrollIntent = ({
 
   return (
     <section className="mt-5 p-5 bg-gray-300 rounded-[10px] border border-gray-border">
-      <h3 className="body font-semibold">Enroll Your Intent</h3>
-      <p className="text mt-[5px]">
-        If you dont have an existing Intent or want to create a new one, please
-        enter the information below.
+      <p className="body font-bold">
+        <strong className="text-blue-primary w-4">◆</strong> Enroll Your Intent
       </p>
+      <div className="space-y-[5px] text text-gray-600 pl-4 mt-[15px]">
+        <p>
+          1. Register who you want to send money to and how much.
+        </p>
+      </div>
 
       <form onSubmit={handleSignalIntent}>
         <section className="space-y-2.5 mt-5 p-5 border border-gray-border rounded-[10px] bg-white">
@@ -140,7 +143,7 @@ const EnrollIntent = ({
 
         <Button
           type="submit"
-          className="mt-5 bg-blue-600 hover:bg-blue-600/80"
+          className="mt-2.5 flex items-center gap-[5px]"
           disabled={
             !toAddress || !amount || isSignalIntentLoading || !!intentId
           }

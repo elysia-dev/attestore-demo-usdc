@@ -92,69 +92,53 @@ const RedeemRequest = ({
   };
 
   return (
-    <section className="mt-5 py-[30px] px-5 rounded-[10px] border border-gray-border bg-white">
-      <h3 className="font-bold body">
-        <span className="mr-1 w-4 inline-block text-blue-primary">◆</span>
-        Request Management
-      </h3>
-      {/* Existing Redeem Request */}
-      <div className="mt-5 border border-gray-border rounded-[10px] p-5 bg-gray-300">
-        <h3 className="font-semibold body">My Redeem Request</h3>
-        <Button
-          onClick={handleRefreshMyRedeemId}
-          disabled={isLoading}
-          className="mt-5"
-        >
-          {isLoading ? "Loading..." : "Lookup My Request"}
-        </Button>
-
-        {redeemId && redeemDetails && (
-          <section className="p-5 border border-gray-border rounded-[10px] bg-white mt-5">
-            <h4 className="font-semibold text">Redeem Request Details</h4>
-            <section className="border border-gray-border rounded-[10px] p-5 mt-5 bg-gray-300">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-[15px] gap-y-[10px]">
-                <div className="text">
-                  <span className="text-gray-600 font-chivo-mono">
-                    Redeem ID:
-                  </span>
-                  <p className="font-chivo-mono">{redeemId}</p>
-                </div>
-                <div className="text">
-                  <span className="text-gray-600 font-chivo-mono">Amount:</span>
-                  <p className="font-chivo-mono">
-                    {formatUnits(redeemDetails.amount, 18)} {TOKEN_SYMBOL}
-                  </p>
-                </div>
-                <div className="text">
-                  <span className="text-gray-600 font-chivo-mono">Status:</span>
-                  <p className="font-chivo-mono">
-                    Pending (Awaiting fulfillment)
-                  </p>
-                </div>
-                <div className="text">
-                  <span className="text-gray-600 font-chivo-mono">
-                    Created Time:
-                  </span>
-                  <p className="font-chivo-mono">
-                    {new Date(redeemDetails.timestamp * 1000).toLocaleString()}
-                  </p>
-                </div>
+    <div>
+      {redeemId && redeemDetails && (
+        <section className="p-5 border border-gray-border rounded-[10px] bg-white mt-5">
+          <h4 className="font-semibold text">· Redeem Request Details</h4>
+          <section className="border border-gray-border rounded-[10px] p-5 mt-5 bg-gray-300">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-[15px] gap-y-[10px]">
+              <div className="text">
+                <span className="text-gray-600 font-chivo-mono">
+                  Redeem ID:
+                </span>
+                <p className="font-chivo-mono">{redeemId}</p>
               </div>
-            </section>
-            <div className="mt-4">
-              <Button
-                onClick={handleCancelRedeem}
-                disabled={isCancelRedeemLoading}
-                variant="outline"
-                className="text-red-600 border-red-300 hover:bg-red-600 hover:text-white"
-              >
-                {isCancelRedeemLoading ? "Cancelling..." : "Cancel Request"}
-              </Button>
+              <div className="text">
+                <span className="text-gray-600 font-chivo-mono">Amount:</span>
+                <p className="font-chivo-mono">
+                  {formatUnits(redeemDetails.amount, 18)} {TOKEN_SYMBOL}
+                </p>
+              </div>
+              <div className="text">
+                <span className="text-gray-600 font-chivo-mono">Status:</span>
+                <p className="font-chivo-mono">
+                  Pending (Awaiting fulfillment)
+                </p>
+              </div>
+              <div className="text">
+                <span className="text-gray-600 font-chivo-mono">
+                  Created Time:
+                </span>
+                <p className="font-chivo-mono">
+                  {new Date(redeemDetails.timestamp * 1000).toLocaleString()}
+                </p>
+              </div>
             </div>
           </section>
-        )}
-      </div>
-    </section>
+          <div className="mt-4">
+            <Button
+              onClick={handleCancelRedeem}
+              disabled={isCancelRedeemLoading}
+              variant="outline"
+              className="text-red-600 border-red-300 hover:bg-red-600 hover:text-white"
+            >
+              {isCancelRedeemLoading ? "Cancelling..." : "Cancel Request"}
+            </Button>
+          </div>
+        </section>
+      )}
+    </div>
   );
 };
 

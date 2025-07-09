@@ -5,7 +5,7 @@ import {
   RedeemResult,
   WorkflowStep,
 } from "@/components/Home";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAccount, usePublicClient } from "wagmi";
 import ADDRESSES from "@/lib/addresses";
 import { cn } from "@/lib/utils";
@@ -62,6 +62,26 @@ export default function Signal({
 
   const publicClient = usePublicClient();
 
+  const readRedeemRequest = async () => {
+    if (!address) return;
+
+    try {
+      const redeemRequestId = await publicClient?.readContract({
+        address: ADDRESSES.ZK_MINTER,
+        abi: ZK_MINTER_ABI,
+        functionName: "accountRedeemRequest",
+        args: [address],
+      });
+
+      if (redeemRequestId && Number(redeemRequestId) > 0) {
+        setRedeemId(Number(redeemRequestId));
+        await handleRefreshRedeemDetails(Number(redeemRequestId));
+      }
+    } catch (error) {
+      console.error("Failed to read redeem request:", error);
+    }
+  };
+
   const handleRefreshRedeemDetails = async (targetRedeemId: number) => {
     if (!targetRedeemId) return;
 
@@ -101,41 +121,16 @@ export default function Signal({
   const disableNextStep = !intentId || !intentDetails?.amount;
   const isOnramp = mode === SignalMode.ONRAMP;
 
-  return (
-    <>
-      <section>
-        <div className="space-y-[30px] text-center">
-          <h2 className="header">Step 2: Intent Management</h2>
-          <WalletStatus isConnected={isConnected} chainId={chainId} />
-        </div>
-        <ToggleSignalMode isOnramp={isOnramp} setMode={setMode}>
-          {isOnramp && (
-            <EnrollIntent
-              address={address}
-              setError={setError}
-              setIntentId={setIntentId}
-              setSearchIntentId={setSearchIntentId}
-              handleRefreshMyIntentId={handleRefreshMyIntentId}
-              intentId={intentId}
-            />
-          )}
-          {!isOnramp && (
-            <Redeem
-              setError={setError}
-              redeemId={redeemId}
-              accountNumber={accountNumber}
-              amount={amount}
-              setRedeemId={setRedeemId}
-              handleRefreshRedeemDetails={handleRefreshRedeemDetails}
-              redeemResult={redeemResult}
-              setRedeemResult={setRedeemResult}
-              setAccountNumber={setAccountNumber}
-              setAmount={setAmount}
-            />
-          )}
-        </ToggleSignalMode>
+  useEffect(() => {
+    if (!isOnramp) {
+      readRedeemRequest();
+    }
+  }, [address, isOnramp, readRedeemRequest]);
 
-        {isOnramp && (
+  const renderSignalContent = () => {
+    if (isOnramp) {
+      if (intentId) {
+        return (
           <IntentManagement
             intentId={intentId}
             searchIntentId={searchIntentId}
@@ -143,8 +138,22 @@ export default function Signal({
             handleRefreshMyIntentId={handleRefreshMyIntentId}
             isLoading={isLoading}
           />
-        )}
-        {!isOnramp && (
+        );
+      } else {
+        return (
+          <EnrollIntent
+            address={address}
+            setError={setError}
+            setIntentId={setIntentId}
+            setSearchIntentId={setSearchIntentId}
+            handleRefreshMyIntentId={handleRefreshMyIntentId}
+            intentId={intentId}
+          />
+        );
+      }
+    } else {
+      if (redeemId) {
+        return (
           <RedeemRequest
             isLoading={isLoading}
             address={address}
@@ -158,21 +167,40 @@ export default function Signal({
             setAccountNumber={setAccountNumber}
             setAmount={setAmount}
           />
-        )}
+        );
+      } else {
+        return (
+          <Redeem
+            setError={setError}
+            redeemId={redeemId}
+            accountNumber={accountNumber}
+            amount={amount}
+            setRedeemId={setRedeemId}
+            handleRefreshRedeemDetails={handleRefreshRedeemDetails}
+            redeemResult={redeemResult}
+            setRedeemResult={setRedeemResult}
+            setAccountNumber={setAccountNumber}
+            setAmount={setAmount}
+          />
+        );
+      }
+    }
+  };
+
+  return (
+    <>
+      <section>
+        <div className="space-y-[30px] text-center">
+          <h2 className="header">Step 2: Register Your Intent</h2>
+          <WalletStatus isConnected={isConnected} chainId={chainId} />
+        </div>
+        <ToggleSignalMode isOnramp={isOnramp} setMode={setMode}>
+          {renderSignalContent()}
+        </ToggleSignalMode>
       </section>
 
-      {isOnramp && (
+      {isOnramp && !disableNextStep && (
         <div className="text-left mt-5">
-          {disableNextStep ? (
-            <p className="text-gray-600 text">
-              Please lookup intent details first.
-            </p>
-          ) : (
-            <p className="text-gray-600 text">
-              If you have an Intent, you can proceed to the next step.
-            </p>
-          )}
-
           <Button
             onClick={() => {
               setCurrentStep(WorkflowStep.TRANSFER);
@@ -214,12 +242,12 @@ const ToggleSignalMode = ({
             </span>
             {isOnramp ? (
               <>
-                <strong className="mr-1 font-bold">Onramp</strong>(Deposit)
+                <strong className="mr-1 font-bold">Onramp</strong>
                 <p className="text ml-5">KRW WON &rarr; KRW tokens</p>
               </>
             ) : (
               <>
-                <strong className="mr-1 font-bold">Offramp</strong>(Redeem)
+                <strong className="mr-1 font-bold">Offramp</strong>
                 <p className="text ml-5">KRW tokens &rarr; KRW WON</p>
               </>
             )}

@@ -24,6 +24,13 @@ export default function Transfer({
   setCurrentStep: (step: WorkflowStep) => void;
   freeError: () => void;
 }) {
+  const checkAndGoNext = () => {
+    const isOk = window.confirm("Did your KRW transfer completed?");
+    if (isOk) {
+      setCurrentStep(WorkflowStep.PROOF);
+      freeError();
+    }
+  };
   return (
     <section className="space-y-[20px]">
       <h2 className="header text-center">Step 3: Toss Transfer</h2>
@@ -45,21 +52,23 @@ export default function Transfer({
             Your browser does not support the video tag.
           </video>
         </div>
-        <p className="text-gray-600 mt-[20px] text">
-          1. Send fiat money to the recipient via <strong>Toss app.</strong>
-          <br />
-          2. Click Next for proceeding to the next step.
-          <br />
-          3. The transfer must be made to the Toss account.
-        </p>
       </section>
 
       {/* 토스 송금 안내 - Intent ID가 있을 때만 표시 */}
       {intentId && intentDetails?.amount && (
-        <section className="bg-white border border-gray-border rounded-[10px] py-[30px] px-[20px]">
-          <h3 className="body">
-            <span className="text-blue-primary">◆</span> Send money via Toss app
-          </h3>
+        <section className="bg-white border border-gray-border rounded-[10px] py-[30px] px-[20px] space-y-[5px] pl-4 ">
+          <p className="body font-bold">
+            <strong className="text-blue-primary w-4">◆</strong> Send money via
+            Toss app
+          </p>
+          <div className="space-y-[5px] text text-gray-600 pl-4 mt-[15px]">
+            <p>
+              1. Send KRW WON to the recipient via <strong>Toss app.</strong>
+            </p>
+            <p>
+              2. You <strong>must use Toss</strong> as the sending bank.
+            </p>
+          </div>
           <section className="border border-gray-border rounded-[10px] p-5 space-y-2.5 bg-gray-300 mt-5">
             <p className="text">
               · Recipient Name : <strong>이 현 민</strong> (Modori Tossbank
@@ -86,10 +95,6 @@ export default function Transfer({
             </p>
           </section>
         </section>
-      )}
-
-      {intentId && (
-        <p className="text-gray-600 text mb-2.5">After transfer, click Next</p>
       )}
 
       {!intentId && (
@@ -124,8 +129,7 @@ export default function Transfer({
 
         <Button
           onClick={() => {
-            setCurrentStep(WorkflowStep.PROOF);
-            freeError();
+            checkAndGoNext();
           }}
           disabled={!intentId}
           variant="default"

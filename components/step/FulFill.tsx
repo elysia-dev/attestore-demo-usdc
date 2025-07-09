@@ -229,42 +229,37 @@ export default function FulFill({
       {!fulfillmentResult?.success && (
         <section>
           <h2 className="header text-center">Step 5: Token Minting</h2>
+
           <section className="mt-[30px] bg-white border border-gray-border rounded-[10px] py-[30px] px-[20px]">
             <p className="body font-bold">
-              <strong className="text-blue-primary w-4">◆</strong> Click Mint
-              Tokens
+              <strong className="text-blue-primary w-4">◆</strong> Click
+              &apos;Mint Tokens&apos;.
             </p>
-            <p className="mt-[5px] text text-gray-600 pl-4">
-              ZK Proof has been generated.
-              <br />
-              Click Mint Tokens for minting tokens.
-            </p>
-
-            <section className="mt-5 p-5 bg-gray-200 border border-gray-border rounded-[10px]">
-              <div className="p-5 bg-white border border-gray-border rounded-[10px] space-y-2.5">
-                <div>
-                  <p className="text font-semibold">· Intent ID</p>
-                  <div className="mt-[5px] border border-gray-border rounded-[5px] py-2.5 px-[15px] bg-gray-200">
-                    <p className="text">{intentId}</p>
-                  </div>
-                </div>
-                <div>
-                  <p className="text font-semibold">· Issue Date</p>
-                  <div className="mt-[5px] border border-gray-border rounded-[5px] py-2.5 px-[15px] bg-gray-200">
-                    <p className="text">{issueDate}</p>
-                  </div>
-                </div>
-                <div>
-                  <p className="text font-semibold">
-                    · Certificate Issue Number
-                  </p>
-                  <div className="mt-[5px] border border-gray-border rounded-[5px] py-2.5 px-[15px] bg-gray-200">
-                    <p className="text">{certificateNumber}</p>
-                  </div>
-                </div>
-              </div>
-            </section>
+            <div className="space-y-[5px] text text-gray-600 pl-4 mt-[15px]">
+              <p>1. Mint tokens to the recipient wallet.</p>
+            </div>
           </section>
+
+          <div className=" mt-4 p-5 bg-white border border-gray-border rounded-[10px] space-y-2.5">
+            <div>
+              <p className="text font-semibold">· Intent ID</p>
+              <div className="mt-[5px] border border-gray-border rounded-[5px] py-2.5 px-[15px] bg-gray-200">
+                <p className="text">{intentId}</p>
+              </div>
+            </div>
+            <div>
+              <p className="text font-semibold">· Issue Date</p>
+              <div className="mt-[5px] border border-gray-border rounded-[5px] py-2.5 px-[15px] bg-gray-200">
+                <p className="text">{issueDate}</p>
+              </div>
+            </div>
+            <div>
+              <p className="text font-semibold">· Certificate Issue Number</p>
+              <div className="mt-[5px] border border-gray-border rounded-[5px] py-2.5 px-[15px] bg-gray-200">
+                <p className="text">{certificateNumber}</p>
+              </div>
+            </div>
+          </div>
 
           <div className="flex gap-2.5 mt-5">
             <Button
@@ -323,17 +318,6 @@ export default function FulFill({
               )}
             </Button>
           </div>
-
-          {/* {proofResult && (
-            <>
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 my-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                  ✅ Proof Generation Completed
-                </h3>
-                <ProofResultComponent proofResult={proofResult} />
-              </div>
-            </>
-          )} */}
         </section>
       )}
     </>
