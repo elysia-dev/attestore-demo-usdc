@@ -9,7 +9,7 @@ declare global {
   }
 }
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
 import { useAccount, useChainId, useDisconnect, usePublicClient } from "wagmi";
 import ADDRESSES from "@/lib/addresses";
@@ -96,6 +96,7 @@ export default function Home() {
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
   const publicClient = usePublicClient();
+  const errorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     handleRefreshMyIntentId();
@@ -121,6 +122,16 @@ export default function Home() {
     useState<FulfillmentResult | null>(null);
 
   const [proofResult, setProofResult] = useState<ProofResult | null>(null);
+
+  // 에러가 생성되면 에러 메세지창으로 포커싱
+  useEffect(() => {
+    if (error && errorRef.current) {
+      errorRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  }, [error]);
 
   const freeError = () => {
     setError(null);
@@ -283,30 +294,30 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-white pb-12 pt-[110px] px-4">
+    <main className="min-h-screen bg-white pb-20 pt-[110px] px-4">
       <div className="max-w-container mx-auto">
         <h1 className="title">ZK Escrow Transfer System</h1>
         <section className="mt-15 p-15 bg-gray-300 rounded-[10px] border border-gray-border">
           {renderStepContent()}
         </section>
 
-        <ErrorMessage error={error} freeError={freeError} />
+        <ErrorMessage error={error} freeError={freeError} ref={errorRef} />
       </div>
     </main>
   );
 }
 
-const ErrorMessage = ({
-  error,
-  freeError,
-}: {
-  error: string | null;
-  freeError: () => void;
-}) => {
+const ErrorMessage = React.forwardRef<
+  HTMLDivElement,
+  { error: string | null; freeError: () => void }
+>(function ErrorMessage({ error, freeError }, ref) {
   if (!error) return null;
 
   return (
-    <section className="p-5 border border-red-primary rounded-[10px] bg-red-100 mt-2.5">
+    <section
+      ref={ref}
+      className="p-5 border border-red-primary rounded-[10px] bg-red-100 mt-2.5"
+    >
       <div className="gap-[5px] flex items-center">
         <Image src="/error.svg" alt="error" width={20} height={20} />
         <p className="text-red-primary font-semibold body">Error Message</p>
@@ -324,4 +335,4 @@ const ErrorMessage = ({
       </div>
     </section>
   );
-};
+});
