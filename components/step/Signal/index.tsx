@@ -212,9 +212,18 @@ const ToggleSignalMode = ({
             >
               ◆
             </span>
-            <strong className="mr-1 font-bold">Onramp</strong>(Deposit)
+            {isOnramp ? (
+              <>
+                <strong className="mr-1 font-bold">Onramp</strong>(Deposit)
+                <p className="text ml-5">KRW WON &rarr; KRW tokens</p>
+              </>
+            ) : (
+              <>
+                <strong className="mr-1 font-bold">Offramp</strong>(Redeem)
+                <p className="text ml-5">KRW tokens &rarr; KRW WON</p>
+              </>
+            )}
           </h3>
-          <p className="text ml-5">Onramp mode: Deposit fiat and mint tokens</p>
         </section>
         {/* Mode Toggle Slider */}
         <div className="relative text-[14px] leading-[18px] inline-flex font-semibold p-[5px] items-center rounded-full border border-gray-border bg-white">
