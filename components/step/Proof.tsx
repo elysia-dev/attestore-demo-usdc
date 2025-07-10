@@ -4,8 +4,10 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import axios from "axios";
 import { BASE_URL } from "@/constant";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import ProofResultComponent from "../ProofResult";
+import { ErrorType } from "@/lib/errors";
+import { ErrorContext } from "@/context/ErrorContext";
 
 export default function Proof({
   intentId,
@@ -15,8 +17,6 @@ export default function Proof({
   setCertificateNumber,
   setCurrentStep,
   isLoading,
-  setError,
-  freeError,
   setIsLoading,
   setProofResult,
   proofResult,
@@ -28,12 +28,11 @@ export default function Proof({
   setCertificateNumber: (certificateNumber: string) => void;
   setCurrentStep: (step: WorkflowStep) => void;
   isLoading: boolean;
-  setError: (error: string) => void;
-  freeError: () => void;
   setIsLoading: (isLoading: boolean) => void;
   setProofResult: (proofResult: ProofResult) => void;
   proofResult: ProofResult | null;
 }) {
+  const { setError, freeError } = useContext(ErrorContext);
   const [showMore, setShowMore] = useState(false);
 
   // ZK Proof 생성
@@ -65,7 +64,7 @@ export default function Proof({
       freeError();
     } catch (error) {
       console.error("API Error:", error);
-      setError("Failed to generate ZK Proof. Please try again.");
+      setError(ErrorType.PROOF_GENERATION_FAILED);
     } finally {
       setIsLoading(false);
     }

@@ -4,9 +4,12 @@ import { TOKEN_SYMBOL } from "@/constant";
 import { useContractWrite } from "@/hooks/useContractWrite";
 import ADDRESSES from "@/lib/addresses";
 import { ZK_MINTER_ABI } from "@/lib/wagmi";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useContext } from "react";
 import { formatUnits } from "viem";
 import { usePublicClient } from "wagmi";
+import { ErrorType } from "@/lib/errors";
+import { ErrorContext } from "@/context/ErrorContext";
+import { extractErrorMessage } from "@/components/utils/extractErrorMessage";
 
 const RedeemRequest = ({
   isLoading,
@@ -15,7 +18,6 @@ const RedeemRequest = ({
   redeemDetails,
   setRedeemId,
   handleRefreshRedeemDetails,
-  setError,
   setRedeemDetails,
   setRedeemResult,
   setAccountNumber,
@@ -27,14 +29,13 @@ const RedeemRequest = ({
   redeemDetails: RedeemDetails | null;
   setRedeemId: Dispatch<SetStateAction<number | null>>;
   handleRefreshRedeemDetails: (targetRedeemId: number) => Promise<void>;
-  setError: (error: string) => void;
   setRedeemDetails: Dispatch<SetStateAction<RedeemDetails | null>>;
   setRedeemResult: Dispatch<SetStateAction<RedeemResult | null>>;
   setAccountNumber: Dispatch<SetStateAction<string>>;
   setAmount: Dispatch<SetStateAction<string>>;
 }) => {
   const publicClient = usePublicClient();
-
+  const { setError } = useContext(ErrorContext);
   const handleRefreshMyRedeemId = async () => {
     console.log("address", address);
     if (!address) return;
@@ -52,12 +53,12 @@ const RedeemRequest = ({
         setRedeemId(newRedeemId);
         handleRefreshRedeemDetails(newRedeemId);
       } else {
-        setError("No Redeem request found");
+        setError(ErrorType.NO_REDEEM_FOUND);
         setRedeemDetails(null);
       }
     } catch (error) {
       console.error("Failed to lookup Redeem ID:", error);
-      setError("Failed to lookup Redeem ID");
+      setError(ErrorType.REDEEM_LOOKUP_FAILED);
     }
   };
 
@@ -83,11 +84,10 @@ const RedeemRequest = ({
         args: [BigInt(redeemId)],
       });
     } catch (error) {
-      setError(
-        `Cancel redeem failed: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
+      const errorMessage = extractErrorMessage(error);
+      setError(ErrorType.CANCEL_REDEEM_FAILED, {
+        error: errorMessage,
+      });
     }
   };
 

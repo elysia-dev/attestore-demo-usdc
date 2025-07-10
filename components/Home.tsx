@@ -9,19 +9,21 @@ declare global {
   }
 }
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useContext } from "react";
 
 import { useAccount, useChainId, useDisconnect, usePublicClient } from "wagmi";
 import ADDRESSES from "@/lib/addresses";
 import { ZK_MINTER_ABI } from "@/lib/wagmi";
+import { ErrorType } from "@/lib/errors";
 import Connect from "./step/Connect";
 import Signal from "./step/Signal/index";
 import Redeem from "./step/Signal/Redeem";
 import Transfer from "./step/Transfer";
 import Proof from "./step/Proof";
 import FulFill from "./step/FulFill";
-import Image from "next/image";
 import { Button } from "./ui/button";
+import Image from "next/image";
+import { ErrorContext } from "@/context/ErrorContext";
 
 export enum WorkflowStep {
   CONNECT = "connect",
@@ -116,7 +118,7 @@ export default function Home() {
   const [certificateNumber, setCertificateNumber] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { error, setError, freeError } = useContext(ErrorContext);
 
   const [fulfillmentResult, setFulfillmentResult] =
     useState<FulfillmentResult | null>(null);
@@ -132,10 +134,6 @@ export default function Home() {
       });
     }
   }, [error]);
-
-  const freeError = () => {
-    setError(null);
-  };
 
   // 지갑 연결 상태가 변경될 때 단계 업데이트
   useEffect(() => {
@@ -172,12 +170,12 @@ export default function Home() {
         setIntentId(newIntentId);
         handleSearchIntentDetails(newIntentId);
       } else {
-        setError("No Intent found");
+        setError(ErrorType.NO_INTENT_FOUND);
         setIntentDetails(null);
       }
     } catch (error) {
       console.error("Failed to lookup Intent ID:", error);
-      setError("Failed to lookup Intent ID");
+      setError(ErrorType.INTENT_LOOKUP_FAILED);
     } finally {
       setIsLoading(false);
     }
@@ -216,12 +214,12 @@ export default function Home() {
         });
       } else {
         setIntentDetails(null);
-        setError(`Intent ID ${targetIntentId} not found`);
+        setError(ErrorType.INTENT_NOT_FOUND, { id: targetIntentId });
       }
     } catch (error) {
       console.error("Failed to lookup Intent ID:", error);
       setIntentDetails(null);
-      setError(`Intent ID ${targetIntentId} not found`);
+      setError(ErrorType.INTENT_NOT_FOUND, { id: targetIntentId });
     } finally {
       setIsLoading(false);
     }
@@ -240,9 +238,7 @@ export default function Home() {
             setIntentId={setIntentId}
             setSearchIntentId={setSearchIntentId}
             handleRefreshMyIntentId={handleRefreshMyIntentId}
-            setError={setError}
             setCurrentStep={setCurrentStep}
-            freeError={freeError}
             isLoading={isLoading}
             chainId={chainId}
             isConnected={isConnected}
@@ -255,7 +251,6 @@ export default function Home() {
             intentId={intentId}
             intentDetails={intentDetails}
             setCurrentStep={setCurrentStep}
-            freeError={freeError}
           />
         );
 
@@ -269,8 +264,6 @@ export default function Home() {
             intentId={intentId}
             setCurrentStep={setCurrentStep}
             isLoading={isLoading}
-            setError={setError}
-            freeError={freeError}
             setIsLoading={setIsLoading}
             setProofResult={setProofResult}
             proofResult={proofResult}
@@ -285,7 +278,6 @@ export default function Home() {
             setCurrentStep={setCurrentStep}
             fulfillmentResult={fulfillmentResult}
             proofResult={proofResult}
-            setError={setError}
             setFulfillmentResult={setFulfillmentResult}
           />
         );
@@ -307,7 +299,6 @@ export default function Home() {
     </main>
   );
 }
-
 const ErrorMessage = React.forwardRef<
   HTMLDivElement,
   { error: string | null; freeError: () => void }

@@ -5,16 +5,18 @@ import {
   RedeemResult,
   WorkflowStep,
 } from "@/components/Home";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useAccount, usePublicClient } from "wagmi";
 import ADDRESSES from "@/lib/addresses";
 import { cn } from "@/lib/utils";
 import { ZK_MINTER_ABI } from "@/lib/wagmi";
+import { ErrorType } from "@/lib/errors";
 import EnrollIntent from "./EnrollIntent";
 import IntentManagement from "./IntentManagement";
 import Redeem from "./Redeem";
 import RedeemRequest from "./RedeemRequest";
 import WalletStatus from "@/components/utils/WalletStatus";
+import { ErrorContext } from "@/context/ErrorContext";
 
 enum SignalMode {
   ONRAMP = "onramp",
@@ -28,9 +30,7 @@ export default function Signal({
   setIntentId,
   setSearchIntentId,
   handleRefreshMyIntentId,
-  setError,
   setCurrentStep,
-  freeError,
   isLoading,
   chainId,
   isConnected,
@@ -41,15 +41,13 @@ export default function Signal({
   setIntentId: (intentId: number) => void;
   setSearchIntentId: (searchIntentId: number) => void;
   handleRefreshMyIntentId: () => void;
-  setError: (error: string) => void;
   setCurrentStep: (step: WorkflowStep) => void;
-  freeError: () => void;
   isLoading: boolean;
   chainId: number;
   isConnected: boolean;
 }) {
   const [mode, setMode] = useState<SignalMode>(SignalMode.ONRAMP);
-
+  const { setError, freeError } = useContext(ErrorContext);
   const [redeemId, setRedeemId] = useState<number | null>(null);
   const [redeemDetails, setRedeemDetails] = useState<RedeemDetails | null>(
     null
@@ -109,12 +107,12 @@ export default function Signal({
         });
       } else {
         setRedeemDetails(null);
-        setError(`Redeem ID ${targetRedeemId} not found`);
+        setError(ErrorType.REDEEM_NOT_FOUND, { redeemId: targetRedeemId });
       }
     } catch (error) {
       console.error("Failed to lookup Redeem ID:", error);
       setRedeemDetails(null);
-      setError(`Redeem ID ${targetRedeemId} not found`);
+      setError(ErrorType.REDEEM_NOT_FOUND, { redeemId: targetRedeemId });
     }
   };
 
@@ -143,7 +141,6 @@ export default function Signal({
         return (
           <EnrollIntent
             address={address}
-            setError={setError}
             setIntentId={setIntentId}
             setSearchIntentId={setSearchIntentId}
             handleRefreshMyIntentId={handleRefreshMyIntentId}
@@ -161,7 +158,6 @@ export default function Signal({
             redeemDetails={redeemDetails}
             setRedeemId={setRedeemId}
             handleRefreshRedeemDetails={handleRefreshRedeemDetails}
-            setError={setError}
             setRedeemDetails={setRedeemDetails}
             setRedeemResult={setRedeemResult}
             setAccountNumber={setAccountNumber}
@@ -171,7 +167,6 @@ export default function Signal({
       } else {
         return (
           <Redeem
-            setError={setError}
             redeemId={redeemId}
             accountNumber={accountNumber}
             amount={amount}

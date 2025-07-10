@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useWriteContract, usePublicClient } from "wagmi";
 import { Abi, Address, TransactionReceipt } from "viem";
+import { extractErrorMessage } from "@/components/utils/extractErrorMessage";
 
 interface UseContractWriteOptions {
   onSuccess?: (receipt: TransactionReceipt) => void;
@@ -53,7 +54,7 @@ export function useContractWrite(options?: UseContractWriteOptions) {
         throw new Error("Transaction failed");
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      const errorMessage = extractErrorMessage(err);
       console.error(`❌ Transaction failed:`, err);
       setError(errorMessage);
       options?.onError?.(err instanceof Error ? err : new Error(errorMessage));

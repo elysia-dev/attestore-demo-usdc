@@ -13,10 +13,13 @@ import {
 import { RedeemResult } from "@/components/Home";
 import ADDRESSES from "@/lib/addresses";
 import { ZK_MINTER_ABI } from "@/lib/wagmi";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useAccount, usePublicClient } from "wagmi";
 import { useContractWrite } from "@/hooks/useContractWrite";
 import { TOKEN_SYMBOL } from "@/constant";
+import { ErrorType } from "@/lib/errors";
+import { ErrorContext } from "@/context/ErrorContext";
+import { extractErrorMessage } from "@/components/utils/extractErrorMessage";
 
 export default function Redeem({
   accountNumber,
@@ -26,7 +29,6 @@ export default function Redeem({
   redeemResult,
   setAccountNumber,
   setAmount,
-  setError,
   setRedeemId,
   setRedeemResult,
 }: {
@@ -37,10 +39,10 @@ export default function Redeem({
   redeemResult: RedeemResult | null;
   setAccountNumber: (accountNumber: string) => void;
   setAmount: (amount: string) => void;
-  setError: (error: string) => void;
   setRedeemId: (redeemId: number) => void;
   setRedeemResult: (redeemResult: RedeemResult) => void;
 }) {
+  const { setError } = useContext(ErrorContext);
   const [userTokenBalance, setUserTokenBalance] = useState<bigint | undefined>(
     undefined
   );
@@ -128,7 +130,7 @@ export default function Redeem({
     e.preventDefault();
 
     if (!accountNumber || !amount || !address) {
-      setError("Please fill in all required fields");
+      setError(ErrorType.REQUIRED_FIELDS_MISSING);
       return;
     }
 
@@ -146,9 +148,7 @@ export default function Redeem({
       });
 
       if (existingRedeemId && Number(existingRedeemId) > 0) {
-        setError(
-          "You already have an active redeem request. Please cancel it first."
-        );
+        setError(ErrorType.REDEEM_ALREADY_EXISTS);
         return;
       }
 
@@ -163,13 +163,13 @@ export default function Redeem({
       const redeemAmount = parseUnits(amount, 18);
 
       if (!balance || balance < redeemAmount) {
-        setError("Insufficient token balance for redeem request");
+        setError(ErrorType.INSUFFICIENT_BALANCE);
         return;
       }
 
       // 3. Validate account number
       if (!accountNumber.trim()) {
-        setError("Account number cannot be empty");
+        setError(ErrorType.ACCOUNT_NUMBER_EMPTY);
         return;
       }
 
@@ -205,12 +205,9 @@ export default function Redeem({
 
       setProcessStep("Success! Redeem request created.");
     } catch (error) {
+      const errorMessage = extractErrorMessage(error);
       console.error("SignalRedeem error:", error);
-      setError(
-        `Redeem process failed: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
+      setError(`Redeem process failed: ${errorMessage}`);
     } finally {
       setIsProcessing(false);
       setProcessStep("");

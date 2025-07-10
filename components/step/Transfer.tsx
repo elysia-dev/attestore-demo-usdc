@@ -2,6 +2,8 @@ import { Button } from "@/components/ui/button";
 import { formatUnits } from "viem";
 import { IntentDetails, WorkflowStep } from "../Home";
 import { TOSS_ACCOUNT_NUMBER } from "@/constant";
+import { useContext } from "react";
+import { ErrorContext } from "@/context/ErrorContext";
 
 // 계좌번호 복사 함수
 const handleCopyAccountNumber = async () => {
@@ -17,13 +19,12 @@ export default function Transfer({
   intentId,
   intentDetails,
   setCurrentStep,
-  freeError,
 }: {
   intentId: number | null;
   intentDetails: IntentDetails | null;
   setCurrentStep: (step: WorkflowStep) => void;
-  freeError: () => void;
 }) {
+  const { freeError } = useContext(ErrorContext);
   const checkAndGoNext = () => {
     const isOk = window.confirm("Did your KRW transfer completed?");
     if (isOk) {

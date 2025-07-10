@@ -7,24 +7,25 @@ import { TOKEN_SYMBOL } from "@/constant";
 import ADDRESSES from "@/lib/addresses";
 import { ZK_MINTER_ABI } from "@/lib/wagmi";
 import { decodeEventLog, keccak256, parseUnits, toBytes } from "viem";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { ErrorType } from "@/lib/errors";
+import { ErrorContext } from "@/context/ErrorContext";
+import { extractErrorMessage } from "@/components/utils/extractErrorMessage";
 
 const EnrollIntent = ({
   address,
-  setError,
   setIntentId,
   setSearchIntentId,
   handleRefreshMyIntentId,
   intentId,
 }: {
   address: `0x${string}` | undefined;
-  setError: (error: string) => void;
-
   handleRefreshMyIntentId: () => void;
   setIntentId: (intentId: number) => void;
   setSearchIntentId: (searchIntentId: number) => void;
   intentId: number | null;
 }) => {
+  const { setError } = useContext(ErrorContext);
   const [toAddress, setToAddress] = useState("");
   const [amount, setAmount] = useState("");
 
@@ -73,7 +74,7 @@ const EnrollIntent = ({
     e.preventDefault();
 
     if (!toAddress || !amount || !address) {
-      setError("Please fill in all required fields");
+      setError(ErrorType.REQUIRED_FIELDS_MISSING);
       return;
     }
     try {
@@ -89,11 +90,10 @@ const EnrollIntent = ({
       });
       // 성공 시 onSuccess 콜백에서 자동으로 intentId 설정됨
     } catch (error) {
-      setError(
-        `Intent signal failed: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
+      const errorMessage = extractErrorMessage(error);
+      setError(ErrorType.INTENT_SIGNAL_FAILED, {
+        error: errorMessage,
+      });
     }
   };
 
@@ -103,9 +103,7 @@ const EnrollIntent = ({
         <strong className="text-blue-primary w-4">◆</strong> Enroll Your Intent
       </p>
       <div className="space-y-[5px] text text-gray-600 pl-4 mt-[15px]">
-        <p>
-          1. Register who you want to send money to and how much.
-        </p>
+        <p>1. Register who you want to send money to and how much.</p>
       </div>
 
       <form onSubmit={handleSignalIntent}>

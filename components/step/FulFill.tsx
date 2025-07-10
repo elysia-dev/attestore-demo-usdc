@@ -7,6 +7,10 @@ import { decodeEventLog, encodeAbiParameters, keccak256, toBytes } from "viem";
 import { useContractWrite } from "@/hooks/useContractWrite";
 import ADDRESSES from "@/lib/addresses";
 import { ZK_MINTER_ABI } from "@/lib/wagmi";
+import { ErrorType } from "@/lib/errors";
+import { useContext } from "react";
+import { ErrorContext } from "@/context/ErrorContext";
+import { extractErrorMessage } from "../utils/extractErrorMessage";
 
 export default function FulFill({
   issueDate,
@@ -15,7 +19,6 @@ export default function FulFill({
   setCurrentStep,
   fulfillmentResult,
   proofResult,
-  setError,
   setFulfillmentResult,
 }: {
   issueDate: string;
@@ -24,9 +27,9 @@ export default function FulFill({
   setCurrentStep: (step: WorkflowStep) => void;
   fulfillmentResult: FulfillmentResult | null;
   proofResult: ProofResult | null;
-  setError: (error: string) => void;
   setFulfillmentResult: (result: FulfillmentResult | null) => void;
 }) {
+  const { setError } = useContext(ErrorContext);
   const {
     writeAndWait: fulfillIntentWrite,
     isLoading: isFulfillIntentLoading,
@@ -187,7 +190,7 @@ export default function FulFill({
   const handleFulfillIntent = async () => {
     if (!intentId || !proofResult) {
       console.error("Missing intentId or proofResult");
-      setError("Missing intentId or proofResult");
+      setError(ErrorType.MISSING_INTENT_OR_PROOF);
       return;
     }
     try {
@@ -212,12 +215,9 @@ export default function FulFill({
         ],
       });
     } catch (error) {
+      const errorMessage = extractErrorMessage(error);
       console.error("Failed to fulfillIntent:", error);
-      setError(
-        `Token minting failed: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
+      setError(`Token minting failed: ${errorMessage}`);
       setFulfillmentResult({ success: false });
     }
   };
