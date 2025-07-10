@@ -170,7 +170,6 @@ export default function Home() {
         setIntentId(newIntentId);
         handleSearchIntentDetails(newIntentId);
       } else {
-        setError(ErrorType.NO_INTENT_FOUND);
         setIntentDetails(null);
       }
     } catch (error) {
