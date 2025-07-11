@@ -25,6 +25,7 @@ import { Button } from "./ui/button";
 import Image from "next/image";
 import { ErrorContext } from "@/context/ErrorContext";
 import { cn } from "@/lib/utils";
+import { StepIndicator } from "./StepIndicator";
 
 export enum WorkflowStep {
   CONNECT = "connect",
@@ -288,12 +289,14 @@ export default function Home() {
   return (
     <main
       className={cn(
-        "min-h-screen bg-white pb-20 pt-[110px] px-4 min-w-[320px]",
-        "max-sm:pt-[64px] max-sm:pb-10 max-sm:px-0 max-sm:w-[90%] max-sm:mx-auto"
+        "min-h-screen bg-white pb-20 pt-[32px] px-4 min-w-[320px]",
+        "max-sm:pt-[12px] max-sm:pb-10 max-sm:px-0 max-sm:w-[90%] max-sm:mx-auto"
       )}
     >
       <div className="max-w-container mx-auto max-sm:w-full">
-        <h1 className="title">ZK Escrow Transfer System</h1>
+        <h2 className="title">ZK Escrow Transfer System</h2>
+
+        {isConnected && <StepIndicator currentStep={currentStep} />}
 
         <section
           className={cn(
