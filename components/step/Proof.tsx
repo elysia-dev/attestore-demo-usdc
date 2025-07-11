@@ -14,6 +14,67 @@ import * as Sentry from "@sentry/nextjs";
 import { cn } from "@/lib/utils";
 import { VideoPopup } from "../ui/VideoPopup";
 
+// Certificate number formatting function
+const formatCertificateNumber = (value: string): string => {
+  // Remove all non-alphanumeric characters and convert to uppercase
+  const cleanValue = value.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+
+  // Format: XXXX-XXXX-XXXXXXXX (4-4-8 format)
+  if (cleanValue.length > 8) {
+    return (
+      cleanValue.slice(0, 4) +
+      "-" +
+      cleanValue.slice(4, 8) +
+      "-" +
+      cleanValue.slice(8, 16)
+    );
+  } else if (cleanValue.length > 4) {
+    return cleanValue.slice(0, 4) + "-" + cleanValue.slice(4, 8);
+  }
+
+  return cleanValue;
+};
+
+// Validation functions
+const validateIssueDate = (date: string): string | undefined => {
+  if (!date) return "Issue date is required";
+
+  // Check if it's exactly 8 digits (YYYYMMDD format)
+  if (!/^\d{8}$/.test(date)) {
+    return "Issue date must be in YYYYMMDD format (e.g., 20250626)";
+  }
+
+  const year = parseInt(date.substring(0, 4));
+  const month = parseInt(date.substring(4, 6));
+  const day = parseInt(date.substring(6, 8));
+
+  // Basic date validation
+  if (year !== 2025) {
+    return "Year must be 2025";
+  }
+
+  if (month < 7 || month > 12) {
+    return "Month must be between 07 and 12";
+  }
+
+  if (day < 1 || day > 31) {
+    return "Day must be between 01 and 31";
+  }
+
+  return undefined;
+};
+
+const validateCertificateNumber = (certNumber: string): string | undefined => {
+  if (!certNumber) return "Certificate number is required";
+
+  // Check if it matches the format: XXXX-XXXX-XXXXXXXX
+  if (!/^\d{4}-[A-Z]{4}-[A-Z]{8}$/.test(certNumber)) {
+    return "Certificate number must be in format: XXXX-XXXX-XXXXXXXX (e.g., 1234-ABCD-ABCDABCD)";
+  }
+
+  return undefined;
+};
+
 export default function Proof({
   intentId,
   issueDate,
@@ -40,9 +101,36 @@ export default function Proof({
   const { setError, freeError } = useContext(ErrorContext);
   const [showTooltip, setShowTooltip] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
+
+  // Validation states
+  const [validationErrors, setValidationErrors] = useState<{
+    issueDate?: string;
+    certificateNumber?: string;
+  }>({});
+
+  const validateForm = (): boolean => {
+    const errors: { issueDate?: string; certificateNumber?: string } = {};
+
+    const issueDateError = validateIssueDate(issueDate);
+    if (issueDateError) errors.issueDate = issueDateError;
+
+    const certificateNumberError = validateCertificateNumber(certificateNumber);
+    if (certificateNumberError)
+      errors.certificateNumber = certificateNumberError;
+
+    setValidationErrors(errors);
+
+    return Object.keys(errors).length === 0;
+  };
   // ZK Proof 생성
   const handleGenerateProof = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Form validation
+    if (!validateForm()) {
+      return; // Stop if validation fails
+    }
+
     setIsLoading(true);
     freeError();
 
@@ -224,10 +312,30 @@ export default function Proof({
             id="issueDate"
             type="text"
             value={issueDate}
-            onChange={(e) => setIssueDate(e.target.value)}
+            onChange={(e) => {
+              setIssueDate(e.target.value);
+              // Clear validation error when user starts typing
+              if (validationErrors.issueDate) {
+                setValidationErrors((prev) => ({
+                  ...prev,
+                  issueDate: undefined,
+                }));
+              }
+            }}
             placeholder="Enter certificate issue date (e.g., 20250618)"
-            className="text max-sm:label border-gray-border rounded-[5px] py-2.5 px-[15px] max-sm:py-[5px] max-sm:px-2 bg-white"
+            className={cn(
+              "text max-sm:label border rounded-[5px] py-2.5 px-[15px] max-sm:py-[5px] max-sm:px-2 bg-white",
+              validationErrors.issueDate
+                ? "border-red-500"
+                : "border-gray-border"
+            )}
+            maxLength={8}
           />
+          {validationErrors.issueDate && (
+            <p className="text-red-500 text-sm mt-1">
+              {validationErrors.issueDate}
+            </p>
+          )}
           <Label htmlFor="certificateNumber" className="text font-semibold">
             · Certificate Issue Number
           </Label>
@@ -235,10 +343,31 @@ export default function Proof({
             id="certificateNumber"
             type="text"
             value={certificateNumber}
-            onChange={(e) => setCertificateNumber(e.target.value)}
-            placeholder="Please enter the certificate issue number."
-            className="text max-sm:label border-gray-border rounded-[5px] py-2.5 px-[15px] max-sm:py-[5px] max-sm:px-2 bg-white"
+            onChange={(e) => {
+              const formatted = formatCertificateNumber(e.target.value);
+              setCertificateNumber(formatted);
+              // Clear validation error when user starts typing
+              if (validationErrors.certificateNumber) {
+                setValidationErrors((prev) => ({
+                  ...prev,
+                  certificateNumber: undefined,
+                }));
+              }
+            }}
+            placeholder="Enter certificate number (e.g., 1234-ABCD-ABCDABCD)"
+            className={cn(
+              "text max-sm:label border rounded-[5px] py-2.5 px-[15px] max-sm:py-[5px] max-sm:px-2 bg-white",
+              validationErrors.certificateNumber
+                ? "border-red-500"
+                : "border-gray-border"
+            )}
+            maxLength={18} // 4-4-8 format: 4+1+4+1+8 = 18
           />
+          {validationErrors.certificateNumber && (
+            <p className="text-red-500 text-sm mt-1">
+              {validationErrors.certificateNumber}
+            </p>
+          )}
         </section>
 
         {proofResult && (
