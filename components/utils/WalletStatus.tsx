@@ -68,8 +68,18 @@ const WalletStatus = ({
             <strong>Network:&nbsp;</strong>
             {getNetworkName(chainId)}
           </div>
-          <div className="label flex items-center bg-gray-100 rounded-[5px] px-2 py-1 ml-2 border border-gray-border">
-            <button onClick={openFaucetLink}>Faucet</button>
+          <div className="label flex items-center">
+            <Button
+              onClick={openFaucetLink}
+              className={cn(
+                "px-1 py-1 rounded-md border-2 border-gray-400 bg-white text-black",
+                "hover:border-gray-500 hover:bg-gray-100 hover:text-black",
+                "cursor-pointer transition-all duration-200"
+              )}
+              style={{ minWidth: 80 }}
+            >
+              Faucet
+            </Button>
           </div>
         </div>
       </section>
