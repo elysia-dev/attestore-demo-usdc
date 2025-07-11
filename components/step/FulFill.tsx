@@ -14,6 +14,8 @@ import { extractErrorMessage } from "../utils/extractErrorMessage";
 import { trackUserAction } from "@/lib/sentry-utils";
 import * as Sentry from "@sentry/nextjs";
 import { cn } from "@/lib/utils";
+import { Input } from "../ui/input";
+import { Label } from "@radix-ui/react-label";
 
 export default function FulFill({
   issueDate,
@@ -279,26 +281,41 @@ export default function FulFill({
             </div>
           </section>
 
-          <div className="mt-4 p-5 bg-white border border-gray-border rounded-[10px] space-y-2.5 max-sm:rounded-[5px] max-sm:p-3 max-sm:mt-2.5 max-sm:space-y-[10px]">
-            <div>
-              <p className="text font-semibold">· Intent ID</p>
-              <div className="mt-[5px] border border-gray-border rounded-[5px] py-2.5 px-[15px] flex items-center max-sm:h-[36px] bg-gray-200 max-sm:py-[5px] max-sm:px-2">
-                <p className="text max-sm:label">{intentId}</p>
-              </div>
-            </div>
-            <div>
-              <p className="text font-semibold">· Issue Date</p>
-              <div className="mt-[5px] border border-gray-border rounded-[5px] py-2.5 px-[15px] flex items-center max-sm:h-[36px] bg-gray-200 max-sm:py-[5px] max-sm:px-2">
-                <p className="text max-sm:label">{issueDate}</p>
-              </div>
-            </div>
-            <div>
-              <p className="text font-semibold">· Certificate Issue Number</p>
-              <div className="mt-[5px] border border-gray-border rounded-[5px] py-2.5 px-[15px] flex items-center max-sm:h-[36px] bg-gray-200 max-sm:py-[5px] max-sm:px-2">
-                <p className="text max-sm:label">{certificateNumber}</p>
-              </div>
-            </div>
-          </div>
+          <section className="mt-5 p-5 bg-white border border-gray-border rounded-[10px] space-y-2.5">
+            {/* intentId */}
+            <p className="text font-semibold">· Intent ID</p>
+            <Input
+              id="intentId"
+              type="text"
+              value={intentId?.toString() || ""}
+              disabled={true}
+              className="text max-sm:label border rounded-[5px] py-2.5 px-[15px] max-sm:py-[5px] max-sm:px-2 bg-white"
+            />
+            <Label htmlFor="issueDate" className="text font-semibold">
+              · Issue Date
+            </Label>
+            <Input
+              id="issueDate"
+              type="text"
+              value={issueDate}
+              disabled={!!proofResult}
+              className={cn(
+                "text max-sm:label border rounded-[5px] py-2.5 px-[15px] max-sm:py-[5px] max-sm:px-2 bg-white"
+              )}
+            />
+            <Label htmlFor="certificateNumber" className="text font-semibold">
+              · Certificate Issue Number
+            </Label>
+            <Input
+              id="certificateNumber"
+              type="text"
+              value={certificateNumber}
+              disabled={!!proofResult}
+              className={cn(
+                "text max-sm:label border rounded-[5px] py-2.5 px-[15px] max-sm:py-[5px] max-sm:px-2 bg-white"
+              )}
+            />
+          </section>
 
           <div className="flex gap-2.5 mt-5">
             <Button

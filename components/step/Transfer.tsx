@@ -66,7 +66,9 @@ export default function Transfer({
           <strong className="text-inherit text">Copied!</strong>
         ) : (
           <>
-            <strong className="text-inherit text">토스뱅크 100202642943</strong>
+            <strong className="text-inherit text">
+              토스뱅크 {TOSS_ACCOUNT_NUMBER}
+            </strong>
             <CopyButtonIcon />
           </>
         )}

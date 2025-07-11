@@ -53,8 +53,8 @@ const validateIssueDate = (date: string): string | undefined => {
     return "Year must be 2025";
   }
 
-  if (month < 7 || month > 12) {
-    return "Month must be between 07 and 12";
+  if (month < 1 || month > 12) {
+    return "Month must be between 01 and 12";
   }
 
   if (day < 1 || day > 31) {
@@ -302,9 +302,13 @@ export default function Proof({
         <section className="mt-5 p-5 bg-white border border-gray-border rounded-[10px] space-y-2.5">
           {/* intentId */}
           <p className="text font-semibold">· Intent ID</p>
-          <div className="mt-[5px] border border-gray-border rounded-[5px] py-2.5 px-[15px] flex items-center max-sm:h-[36px] bg-gray-200 max-sm:py-[5px] max-sm:px-2">
-            <p className="text max-sm:label">{intentId}</p>
-          </div>
+          <Input
+            id="intentId"
+            type="text"
+            value={intentId?.toString() || ""}
+            disabled={true}
+            className="text max-sm:label border rounded-[5px] py-2.5 px-[15px] max-sm:py-[5px] max-sm:px-2 bg-white"
+          />
           <Label htmlFor="issueDate" className="text font-semibold">
             · Issue Date
           </Label>
@@ -312,6 +316,7 @@ export default function Proof({
             id="issueDate"
             type="text"
             value={issueDate}
+            disabled={!!proofResult}
             onChange={(e) => {
               setIssueDate(e.target.value);
               // Clear validation error when user starts typing
@@ -343,6 +348,7 @@ export default function Proof({
             id="certificateNumber"
             type="text"
             value={certificateNumber}
+            disabled={!!proofResult}
             onChange={(e) => {
               const formatted = formatCertificateNumber(e.target.value);
               setCertificateNumber(formatted);
