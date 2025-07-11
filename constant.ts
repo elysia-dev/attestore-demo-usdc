@@ -11,3 +11,7 @@ export const TOSS_ACCOUNT_NUMBER =
     : TOSS_ACCOUNT_NUMBER_TEST;
 
 export const TOKEN_SYMBOL = "KRW";
+
+export const TOSS_PLAY =
+  "https://play.google.com/store/apps/details?id=viva.republica.toss";
+export const TOSS_APPLE = "https://apps.apple.com/kr/app/id839333328";

@@ -8,6 +8,7 @@ import QRCode from "react-qr-code";
 
 import { VideoPopup } from "@/components/ui/VideoPopup";
 import { cn } from "@/lib/utils";
+import { useTossLauncher } from "../../hooks/useTossLauncher";
 
 export default function Transfer({
   intentId,
@@ -32,6 +33,9 @@ export default function Transfer({
 
   const amount = formatUnits(intentDetails?.amount ?? BigInt(0), 18);
   const qrCodeUrl = `supertoss://send?amount=${amount}&bank=%ED%86%A0%EC%8A%A4%EB%B1%85%ED%81%AC&accountNo=${TOSS_ACCOUNT_NUMBER}&origin=qr`;
+
+  const { launch, fallback, storeURL, reset } = useTossLauncher(qrCodeUrl);
+
   // 계좌번호 복사 함수
   const handleCopyAccountNumber = async () => {
     try {
@@ -147,11 +151,34 @@ export default function Transfer({
             </p>
           </div>
           {/* QR Code for Toss payment */}
-          <div className="flex justify-center mt-5 mb-5">
+          <div className="flex justify-center mt-5 mb-5 max-sm:hidden">
             <div className="bg-white p-4 rounded-lg border-2 border-gray-300">
               <QRCode value={qrCodeUrl} size={200} level="H" />
             </div>
           </div>
+          <Button
+            onClick={launch}
+            size="max"
+            className="flex items-center gap-2 justify-center sm:hidden mt-5"
+          >
+            Send via Toss App
+            <ExternalLinkIcon />
+          </Button>
+          {fallback && (
+            <Button
+              onClick={() => {
+                window.open(storeURL, "_blank");
+                reset();
+              }}
+              size="max"
+              variant="outline"
+              className="flex items-center gap-2 justify-center sm:hidden mt-2"
+            >
+              Install Toss App
+              <ExternalLinkIcon />
+            </Button>
+          )}
+
           <section
             className={cn(
               "border border-gray-border rounded-[10px] p-5 space-y-2.5 bg-gray-300 mt-5",
@@ -267,6 +294,43 @@ const CopyButtonIcon = () => {
     >
       <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
       <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+    </svg>
+  );
+};
+
+const ExternalLinkIcon = () => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="18"
+      height="18"
+      viewBox="0 0 18 18"
+      fill="none"
+      aria-hidden="true"
+      focusable="false"
+      className="inline-block align-text-bottom"
+    >
+      <path
+        d="M7 3H5.5C4.11929 3 3 4.11929 3 5.5V12.5C3 13.8807 4.11929 15 5.5 15H12.5C13.8807 15 15 13.8807 15 12.5V11"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M11 3H15V7"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M8 10L15 3"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 };
