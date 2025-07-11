@@ -5,8 +5,8 @@ import Image from "next/image";
 import { Button } from "./ui/button";
 
 export default function Header() {
-  const handleTelegramClick = () => {
-    window.open("https://t.me/+dD3Y7BztoG04MzBl", "_blank");
+  const handleContactClick = () => {
+    window.location.href = "mailto:cs@elysia.land";
   };
 
   const handleUserGuideClick = () => {
@@ -32,9 +32,7 @@ export default function Header() {
             <HeaderButton onClick={handleUserGuideClick}>
               User Guide
             </HeaderButton>
-            <HeaderButton onClick={handleTelegramClick}>
-              Contact Us
-            </HeaderButton>
+            <HeaderButton onClick={handleContactClick}>Contact Us</HeaderButton>
           </section>
         </div>
       </div>
