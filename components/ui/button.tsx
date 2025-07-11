@@ -23,10 +23,10 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
-        default: "button-text px-5 py-2.5",
-        max: "button-text w-full py-2.5",
+        default: "button-text px-5 py-2.5 max-sm:px-4 max-sm:py-2",
+        max: "button-text w-full py-2.5 max-sm:py-2",
         sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
-        lg: "body px-5 py-2.5",
+        lg: "body px-5 py-2.5 max-sm:px-4 max-sm:py-2",
         icon: "size-9",
       },
     },

@@ -39,27 +39,50 @@
   font-weight: 700;
   line-height: 88px;
   font-family: var(--font-jakarta-sans);
+  @media (max-width: 640px) {
+    font-size: 6.8cqw;
+    white-space: nowrap;
+    text-align: center;
+    line-height: 1.2;
+    width: 100%;
+  }
 }
 
 @utility header {
   font-size: 28px;
   font-weight: 600;
   line-height: 35px;
+  @media (max-width: 640px) {
+    font-size: 20px;
+    line-height: 26px;
+  }
 }
 
 @utility body {
   font-size: 18px;
   line-height: 23px;
+  @media (max-width: 640px) {
+    font-size: 14px;
+    line-height: 18px;
+  }
 }
 
 @utility button-text {
   font-size: 15px;
   line-height: 19px;
+  @media (max-width: 640px) {
+    font-size: 13px;
+    line-height: 16px;
+  }
 }
 
 @utility text {
   font-size: 15px;
   line-height: 19px;
+  @media (max-width: 640px) {
+    font-size: 13px;
+    line-height: 16px;
+  }
 }
 
 @utility label {
