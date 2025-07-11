@@ -83,7 +83,7 @@ export default function FulfillmentResultComponent({
         className="mt-5"
         size="max"
       >
-        Go to History
+        Go to Main
       </Button>
     </section>
   );
