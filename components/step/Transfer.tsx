@@ -9,6 +9,7 @@ import QRCode from "react-qr-code";
 import { VideoPopup } from "@/components/ui/VideoPopup";
 import { cn } from "@/lib/utils";
 import { useTossLauncher } from "../../hooks/useTossLauncher";
+import ConfirmationModal from "../ui/ConfirmationModal";
 
 export default function Transfer({
   intentId,
@@ -22,13 +23,16 @@ export default function Transfer({
   const { freeError } = useContext(ErrorContext);
   const [isVideoPopupOpen, setIsVideoPopupOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
 
   const checkAndGoNext = () => {
-    const isOk = window.confirm("Did your KRW transfer completed?");
-    if (isOk) {
-      setCurrentStep(WorkflowStep.PROOF);
-      freeError();
-    }
+    setCurrentStep(WorkflowStep.PROOF);
+    freeError();
+    setIsConfirmationModalOpen(false);
+  };
+
+  const handleConfirmTransfer = () => {
+    setIsConfirmationModalOpen(true);
   };
 
   const amount = formatUnits(intentDetails?.amount ?? BigInt(0), 18);
@@ -249,7 +253,7 @@ export default function Transfer({
 
         <Button
           onClick={() => {
-            checkAndGoNext();
+            handleConfirmTransfer();
           }}
           disabled={!intentId}
           variant="default"
@@ -276,6 +280,17 @@ export default function Transfer({
           </div>
         </Button>
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isConfirmationModalOpen}
+        onClose={() => setIsConfirmationModalOpen(false)}
+        onConfirm={checkAndGoNext}
+        name={`이현민(모임통장)`}
+        amount={amount}
+        memo={intentId ?? ""}
+        address={`토스뱅크 ${TOSS_ACCOUNT_NUMBER}`}
+      />
     </section>
   );
 }
