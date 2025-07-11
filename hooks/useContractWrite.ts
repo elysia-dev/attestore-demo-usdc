@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useWriteContract, usePublicClient } from "wagmi";
 import { Abi, Address, TransactionReceipt } from "viem";
 import { extractErrorMessage } from "@/components/utils/extractErrorMessage";
+import { captureWeb3Error, trackTransaction } from "@/lib/sentry-utils";
+import * as Sentry from "@sentry/nextjs";
 
 interface UseContractWriteOptions {
   onSuccess?: (receipt: TransactionReceipt) => void;
@@ -26,7 +28,18 @@ export function useContractWrite(options?: UseContractWriteOptions) {
     functionName: string;
     args?: readonly unknown[];
   }) => {
-    try {
+    // Sentry 스팬 시작
+    const result = await Sentry.startSpan(
+      {
+        name: `contract.${functionName}`,
+        op: "blockchain.transaction",
+        attributes: {
+          address,
+          functionName,
+        },
+      },
+      async () => {
+        try {
       setIsLoading(true);
       setError(null);
 
@@ -41,6 +54,7 @@ export function useContractWrite(options?: UseContractWriteOptions) {
       });
 
       console.log(`📝 Transaction submitted: ${hash}`);
+      trackTransaction(hash, "pending", { functionName, address });
 
       // 2. 트랜잭션 완료 대기
       const receipt = await publicClient?.waitForTransactionReceipt({ hash });
@@ -48,20 +62,37 @@ export function useContractWrite(options?: UseContractWriteOptions) {
       console.log(`✅ Transaction confirmed in block: ${receipt?.blockNumber}`);
 
       if (receipt?.status === "success") {
+        trackTransaction(hash, "success", {
+          blockNumber: receipt.blockNumber,
+          gasUsed: receipt.gasUsed.toString(),
+        });
         options?.onSuccess?.(receipt);
         return { hash, receipt };
       } else {
+        trackTransaction(hash, "failed");
         throw new Error("Transaction failed");
       }
     } catch (err) {
       const errorMessage = extractErrorMessage(err);
       console.error(`❌ Transaction failed:`, err);
       setError(errorMessage);
+
+      // Sentry에 Web3 에러 전송
+      captureWeb3Error(err, {
+        functionName,
+        address,
+        args,
+      });
+
       options?.onError?.(err instanceof Error ? err : new Error(errorMessage));
       throw err;
     } finally {
       setIsLoading(false);
     }
+      }
+    );
+    
+    return result;
   };
 
   return {

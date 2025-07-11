@@ -11,6 +11,8 @@ import { ErrorType } from "@/lib/errors";
 import { useContext } from "react";
 import { ErrorContext } from "@/context/ErrorContext";
 import { extractErrorMessage } from "../utils/extractErrorMessage";
+import { trackUserAction } from "@/lib/sentry-utils";
+import * as Sentry from "@sentry/nextjs";
 
 export default function FulFill({
   issueDate,
@@ -62,6 +64,14 @@ export default function FulFill({
               to: string;
               amount: bigint;
             };
+
+          // 성공 추적
+          trackUserAction("Token minting successful", {
+            intentHash,
+            amount: amount.toString(),
+            receiver: to,
+            txHash: receipt.transactionHash,
+          });
 
           setFulfillmentResult({
             success: true,
@@ -193,6 +203,7 @@ export default function FulFill({
       setError(ErrorType.MISSING_INTENT_OR_PROOF);
       return;
     }
+
     try {
       setFulfillmentResult(null); // 이전 결과 초기화
 
@@ -201,9 +212,11 @@ export default function FulFill({
 
       // proof 객체를 바이트로 인코딩
       const encodedProof = encodeProofToBytes(formattedProof);
-
-      console.log("Encoded proof:", encodedProof);
-      console.log("intentId", intentId);
+      // 사용자 액션 추적
+      trackUserAction("Mint Tokens clicked", {
+        intentId,
+        encodedProof,
+      });
 
       await fulfillIntentWrite({
         address: ADDRESSES.ZK_MINTER,
@@ -217,6 +230,24 @@ export default function FulFill({
     } catch (error) {
       const errorMessage = extractErrorMessage(error);
       console.error("Failed to fulfillIntent:", error);
+
+      // 포맷팅/인코딩 에러 추적
+      Sentry.captureException(error, {
+        tags: {
+          type: "proof_formatting_error",
+          step: "5_token_minting",
+        },
+        contexts: {
+          proof_formatting: {
+            intentId,
+            proofIdentifier: proofResult?.data,
+            errorMessage,
+            errorPhase: "pre_transaction",
+            proofResultKeys: Object.keys(proofResult || {}),
+          },
+        },
+      });
+
       setError(`Token minting failed: ${errorMessage}`);
       setFulfillmentResult({ success: false });
     }

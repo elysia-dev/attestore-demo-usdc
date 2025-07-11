@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Label } from "@radix-ui/react-label";
 import { ProofResult, WorkflowStep } from "../Home";
 import { Input } from "../ui/input";
@@ -8,6 +9,8 @@ import { useContext, useState } from "react";
 import ProofResultComponent from "../ProofResult";
 import { ErrorType } from "@/lib/errors";
 import { ErrorContext } from "@/context/ErrorContext";
+import { trackUserAction } from "@/lib/sentry-utils";
+import * as Sentry from "@sentry/nextjs";
 
 export default function Proof({
   intentId,
@@ -41,29 +44,73 @@ export default function Proof({
     setIsLoading(true);
     freeError();
 
+    // 사용자 액션 추적
+    trackUserAction("Generate Transfer Proof clicked", {
+      intentId,
+      issueDate,
+      certificateNumber,
+    });
+
     try {
       const formattedDate = issueDate.replace(
         /(\d{4})(\d{2})(\d{2})/,
         "$1-$2-$3"
       );
 
-      const response = await axios.post(
-        `${BASE_URL}/api/generate-receipt`,
+      // Sentry 스팬으로 API 호출 추적
+      const response = await Sentry.startSpan(
         {
-          issuedDate: formattedDate,
-          issueNumber: certificateNumber,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
+          name: "Generate Transfer Proof",
+          op: "http.client",
+          attributes: {
+            "http.method": "POST",
+            "http.url": `${BASE_URL}/api/generate-receipt`,
+            issueDate: formattedDate,
+            issueNumber: certificateNumber,
           },
+        },
+        async () => {
+          return await axios.post(
+            `${BASE_URL}/api/generate-receipt`,
+            {
+              issuedDate: formattedDate,
+              issueNumber: certificateNumber,
+            },
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
         }
       );
 
       setProofResult(response.data);
+      trackUserAction("Transfer Proof generated successfully", {
+        proof: response.data || "unknown",
+      });
       freeError();
     } catch (error) {
       console.error("API Error:", error);
+
+      // 상세한 에러 정보 Sentry로 전송
+      Sentry.captureException(error, {
+        tags: {
+          type: "proof_generation_error",
+          step: "4_proof_generation",
+        },
+        contexts: {
+          proof_generation: {
+            intentId,
+            issueDate,
+            certificateNumber,
+            apiUrl: `${BASE_URL}/api/generate-receipt`,
+            errorResponse: (error as any)?.response?.data,
+            errorStatus: (error as any)?.response?.status,
+          },
+        },
+      });
+
       setError(ErrorType.PROOF_GENERATION_FAILED);
     } finally {
       setIsLoading(false);
