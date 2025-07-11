@@ -29,6 +29,8 @@ const IntentManagement = ({
 }) => {
   const publicClient = usePublicClient();
   const { setError } = useContext(ErrorContext);
+  const [isRefreshingReceiverBalance, setIsRefreshingReceiverBalance] =
+    useState(false);
 
   const [receiverTokenBalance, setReceiverTokenBalance] = useState<
     bigint | undefined
@@ -151,8 +153,16 @@ const IntentManagement = ({
                   </p>
 
                   <button
-                    onClick={() => readReceiverTokenBalance(intentDetails.to)}
-                    className="text-blue-primary hover:text-blue-primary/50 transition-all duration-200"
+                    onClick={async () => {
+                      if (isRefreshingReceiverBalance) return;
+                      setIsRefreshingReceiverBalance(true);
+                      await readReceiverTokenBalance(intentDetails.to);
+                      setIsRefreshingReceiverBalance(false);
+                    }}
+                    className={cn(
+                      "text-blue-primary hover:text-blue-primary/50 transition-all duration-200",
+                      isRefreshingReceiverBalance && "animate-spin"
+                    )}
                     title="Refresh balance"
                   >
                     <svg
@@ -164,7 +174,6 @@ const IntentManagement = ({
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="inline-block"
                     >
                       <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
                       <path d="M21 3v5h-5" />

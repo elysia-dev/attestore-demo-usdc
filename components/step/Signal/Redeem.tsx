@@ -43,6 +43,7 @@ export default function Redeem({
   setRedeemId: (redeemId: number) => void;
   setRedeemResult: (redeemResult: RedeemResult) => void;
 }) {
+  const [isRefreshingUserBalance, setIsRefreshingUserBalance] = useState(false);
   const { setError } = useContext(ErrorContext);
   const [userTokenBalance, setUserTokenBalance] = useState<bigint | undefined>(
     undefined
@@ -247,8 +248,16 @@ export default function Redeem({
             {TOKEN_SYMBOL}
           </p>
           <button
-            onClick={readUserTokenBalance}
-            className="text-blue-primary hover:text-blue-primary/50 transition-colors duration-200"
+            onClick={async () => {
+              if (isRefreshingUserBalance) return;
+              setIsRefreshingUserBalance(true);
+              await readUserTokenBalance();
+              setIsRefreshingUserBalance(false);
+            }}
+            className={cn(
+              "text-blue-primary hover:text-blue-primary/50 transition-colors duration-200",
+              isRefreshingUserBalance && "animate-spin"
+            )}
             title="Refresh balance"
           >
             <svg
