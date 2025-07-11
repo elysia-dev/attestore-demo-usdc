@@ -114,9 +114,13 @@ export default function Signal({
     }
   }, [address, publicClient, handleRefreshRedeemDetails]);
 
-
   const disableNextStep = !intentId || !intentDetails?.amount;
   const isOnramp = mode === SignalMode.ONRAMP;
+  const toggleMode = () => {
+    setMode(
+      mode === SignalMode.ONRAMP ? SignalMode.OFFRAMP : SignalMode.ONRAMP
+    );
+  };
 
   useEffect(() => {
     if (!isOnramp) {
@@ -186,7 +190,7 @@ export default function Signal({
           <h2 className="header">Step 2: Register Your Intent</h2>
           <WalletStatus isConnected={isConnected} chainId={chainId} />
         </div>
-        <ToggleSignalMode isOnramp={isOnramp} setMode={setMode}>
+        <ToggleSignalMode isOnramp={isOnramp} toggleMode={toggleMode}>
           {renderSignalContent()}
         </ToggleSignalMode>
       </section>
@@ -213,11 +217,11 @@ export default function Signal({
 
 const ToggleSignalMode = ({
   isOnramp,
-  setMode,
+  toggleMode,
   children,
 }: {
   isOnramp: boolean;
-  setMode: (mode: SignalMode) => void;
+  toggleMode: () => void;
   children: React.ReactNode;
 }) => {
   return (
@@ -256,7 +260,7 @@ const ToggleSignalMode = ({
             )}
           />
           <button
-            onClick={() => setMode(SignalMode.ONRAMP)}
+            onClick={toggleMode}
             className={cn(
               "relative z-10 flex-1 text-center px-[7px] py-[3px] transition-all duration-200",
               isOnramp ? "text-white" : "text-[rgba(73,73,73,0.70)]"
@@ -265,7 +269,7 @@ const ToggleSignalMode = ({
             Onramp
           </button>
           <button
-            onClick={() => setMode(SignalMode.OFFRAMP)}
+            onClick={toggleMode}
             className={cn(
               "relative z-10 flex-1 text-center px-[7px] py-[3px] transition-all duration-200",
               !isOnramp ? "text-white" : "text-[rgba(73,73,73,0.70)]"
