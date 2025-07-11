@@ -58,41 +58,44 @@ export default function Signal({
 
   const publicClient = usePublicClient();
 
-  const handleRefreshRedeemDetails = useCallback(async (targetRedeemId: number) => {
-    if (!targetRedeemId) return;
+  const handleRefreshRedeemDetails = useCallback(
+    async (targetRedeemId: number) => {
+      if (!targetRedeemId) return;
 
-    try {
-      const redeemData = await publicClient?.readContract({
-        address: ADDRESSES.ZK_MINTER,
-        abi: ZK_MINTER_ABI,
-        functionName: "redeemRequests",
-        args: [BigInt(targetRedeemId)],
-      });
-
-      if (
-        redeemData &&
-        redeemData[0] !== "0x0000000000000000000000000000000000000000"
-      ) {
-        const [owner, amount, timestamp] = redeemData as [
-          string,
-          bigint,
-          bigint
-        ];
-        setRedeemDetails({
-          owner,
-          amount,
-          timestamp: Number(timestamp),
+      try {
+        const redeemData = await publicClient?.readContract({
+          address: ADDRESSES.ZK_MINTER,
+          abi: ZK_MINTER_ABI,
+          functionName: "redeemRequests",
+          args: [BigInt(targetRedeemId)],
         });
-      } else {
+
+        if (
+          redeemData &&
+          redeemData[0] !== "0x0000000000000000000000000000000000000000"
+        ) {
+          const [owner, amount, timestamp] = redeemData as [
+            string,
+            bigint,
+            bigint
+          ];
+          setRedeemDetails({
+            owner,
+            amount,
+            timestamp: Number(timestamp),
+          });
+        } else {
+          setRedeemDetails(null);
+          setError(ErrorType.REDEEM_NOT_FOUND, { redeemId: targetRedeemId });
+        }
+      } catch (error) {
+        console.error("Failed to lookup Redeem ID:", error);
         setRedeemDetails(null);
         setError(ErrorType.REDEEM_NOT_FOUND, { redeemId: targetRedeemId });
       }
-    } catch (error) {
-      console.error("Failed to lookup Redeem ID:", error);
-      setRedeemDetails(null);
-      setError(ErrorType.REDEEM_NOT_FOUND, { redeemId: targetRedeemId });
-    }
-  }, [publicClient, setError]);
+    },
+    [publicClient, setError]
+  );
 
   const readRedeemRequest = useCallback(async () => {
     if (!address) return;
@@ -186,7 +189,7 @@ export default function Signal({
   return (
     <>
       <section>
-        <div className="space-y-[30px] text-center">
+        <div className="space-y-[30px] text-center max-sm:space-y-4">
           <h2 className="header">Step 2: Register Your Intent</h2>
           <WalletStatus isConnected={isConnected} chainId={chainId} />
         </div>
@@ -207,7 +210,9 @@ export default function Signal({
             className="mt-2.5 flex items-center gap-[5px]"
           >
             Next
-            <ArrowIcon />
+            <div className="max-sm:scale-75">
+              <ArrowIcon />
+            </div>
           </Button>
         </div>
       )}
@@ -225,32 +230,40 @@ const ToggleSignalMode = ({
   children: React.ReactNode;
 }) => {
   return (
-    <section className="border border-gray-border rounded-[10px] px-5 py-[30px] bg-white space-y-[15px]">
-      <div className="flex justify-between items-start">
+    <section
+      className={cn(
+        "border border-gray-border rounded-[10px] px-5 py-[30px] bg-white space-y-[15px]",
+        "max-sm:p-3 max-sm:rounded-[5px] max-sm:space-y-2.5"
+      )}
+    >
+      <div className="flex justify-between items-start max-sm:flex-col max-sm:items-start max-sm:space-y-2.5">
         <section className="space-y-[5px]">
           <h3 className="body text-black">
             <span
-              className={`mr-1 w-4 inline-block ${
+              className={cn(
+                "mr-1 w-4 inline-block",
+                "max-sm:mr-0.5 max-sm:w-3",
                 isOnramp ? "text-blue-600" : "text-black"
-              }`}
+              )}
             >
               ◆
             </span>
-            {isOnramp ? (
-              <>
-                <strong className="mr-1 font-bold">Onramp</strong>
-                <p className="text ml-5">KRW WON &rarr; KRW tokens</p>
-              </>
-            ) : (
-              <>
-                <strong className="mr-1 font-bold">Offramp</strong>
-                <p className="text ml-5">KRW tokens &rarr; KRW WON</p>
-              </>
-            )}
+            <strong className="mr-1 font-bold max-sm:mr-0.5">
+              {isOnramp ? "Onramp" : "Offramp"}
+            </strong>
+            <p className="text ml-5 max-sm:ml-3.5">
+              {isOnramp ? "KRW WON → KRW tokens" : "KRW tokens → KRW WON"}
+            </p>
           </h3>
         </section>
         {/* Mode Toggle Slider */}
-        <div className="relative text-[14px] leading-[18px] inline-flex font-semibold p-[5px] items-center rounded-full border border-gray-border bg-white">
+        <button
+          onClick={toggleMode}
+          className={cn(
+            "relative text-[14px] leading-[18px] inline-flex font-semibold p-[5px] items-center rounded-full border border-gray-border bg-white",
+            "max-sm:w-full"
+          )}
+        >
           <span
             className={cn(
               "absolute inset-y-[5px] left-0 w-[calc(50%-5px)] rounded-full px-[7px] py-[3px]  transition-all duration-200 ease-out",
@@ -259,25 +272,23 @@ const ToggleSignalMode = ({
                 : "translate-x-[calc(100%+5px)] bg-black"
             )}
           />
-          <button
-            onClick={toggleMode}
+          <div
             className={cn(
               "relative z-10 flex-1 text-center px-[7px] py-[3px] transition-all duration-200",
               isOnramp ? "text-white" : "text-[rgba(73,73,73,0.70)]"
             )}
           >
             Onramp
-          </button>
-          <button
-            onClick={toggleMode}
+          </div>
+          <div
             className={cn(
               "relative z-10 flex-1 text-center px-[7px] py-[3px] transition-all duration-200",
               !isOnramp ? "text-white" : "text-[rgba(73,73,73,0.70)]"
             )}
           >
             Offramp
-          </button>
-        </div>
+          </div>
+        </button>
       </div>
 
       {children}

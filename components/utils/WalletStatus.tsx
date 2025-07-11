@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import CustomConnectButton from "./CustomConnectButton";
 import { faucetLink } from "@/constant";
@@ -53,10 +54,16 @@ const WalletStatus = ({
   chainId: number;
 }) => {
   return (
-    <section className="mb-5 px-5 py-[15px] bg-white border border-gray-border rounded-[10px] space-y-[15px]">
-      <section className="flex justify-between items-center">
+    <section
+      className={cn(
+        "mb-5 px-5 py-[15px] bg-white border border-gray-border rounded-[10px] space-y-[15px]",
+        "max-sm:p-3 max-sm:rounded-[5px] max-sm:space-y-2.5"
+      )}
+    >
+      <section className="flex justify-between items-center max-sm:flex-col max-sm:items-start">
         <CustomConnectButton />
-        <div className="flex items-center gap-2">
+
+        <div className="flex items-center gap-2 max-sm:mt-2.5 max-sm:w-full max-sm:justify-between">
           <div className="label flex items-center">
             <strong>Network:&nbsp;</strong>
             {getNetworkName(chainId)}

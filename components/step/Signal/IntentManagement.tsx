@@ -7,6 +7,7 @@ import { ZK_MINTER_ABI } from "@/lib/wagmi";
 import { ErrorType } from "@/lib/errors";
 import { extractErrorMessage } from "@/components/utils/extractErrorMessage";
 import { useContext, useState } from "react";
+import { cn } from "@/lib/utils";
 import { erc20Abi, formatUnits } from "viem";
 import { usePublicClient } from "wagmi";
 import { ErrorContext } from "@/context/ErrorContext";
@@ -75,12 +76,22 @@ const IntentManagement = ({
   return (
     <>
       {searchIntentId && (
-        <div className="mt-4 space-y-3">
+        <div className="mt-4 space-y-3 max-sm:space-y-0 max-sm:mt-0">
           {intentDetails && (
-            <div className="p-5 bg-white border border-gray-border rounded-[10px]">
+            <div
+              className={cn(
+                "p-5 bg-white border border-gray-border rounded-[10px]",
+                "max-sm:p-3 max-sm:rounded-none max-sm:px-0 max-sm:border-x-0 max-sm:border-b-0 max-sm:pb-0 max-sm:mt-2"
+              )}
+            >
               <h4 className="font-semibold text">· Intent Details</h4>
-              <section className="mt-[15px] px-5 py-[15px] mb-[15px] border border-gray-border rounded-[10px] bg-gray-200">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-[15px] gap-y-[10px] text-sm">
+              <section
+                className={cn(
+                  "mt-[15px] px-5 py-[15px] mb-[15px] border border-gray-border rounded-[10px] bg-gray-200",
+                  "max-sm:mt-2.5 max-sm:px-3 max-sm:py-2.5 max-sm:rounded-[5px]"
+                )}
+              >
+                <div className="grid grid-cols-2 max-sm:grid-cols-1 gap-x-[15px] gap-y-[10px]">
                   <div className="text">
                     <span className="text-gray-600 font-chivo-mono">Id:</span>
                     <p className="font-chivo-mono">{intentId}</p>
@@ -125,7 +136,12 @@ const IntentManagement = ({
               </section>
               {/* Receiver token balance*/}
               <h5 className="font-semibold text">· Receiver Info</h5>
-              <div className="border border-gray-border rounded-[5px] mt-[5px] py-[10px] px-[15px] bg-blue-200">
+              <div
+                className={cn(
+                  "border border-gray-border rounded-[5px] mt-[5px] py-[10px] px-[15px] bg-blue-200",
+                  "max-sm:rounded-[5px] max-sm:mt-2.5 max-sm:py-2.5 max-sm:px-3"
+                )}
+              >
                 <div className="flex items-center justify-between">
                   <p className="text text-blue-primary font-bold">
                     {receiverTokenBalance
@@ -157,9 +173,18 @@ const IntentManagement = ({
                     </svg>
                   </button>
                 </div>
-                <p className="text text-gray-600 mt-[5px] font-chivo-mono">
-                  Address: {intentDetails.to}
-                </p>
+                <div className="flex items-center mt-[5px]">
+                  <p className="text text-gray-600 font-chivo-mono">Address:</p>
+                  <span className="text text-gray-600 font-chivo-mono max-sm:hidden">
+                    {intentDetails.to}
+                  </span>
+                  <span className="text text-gray-600 font-chivo-mono hidden max-sm:inline">
+                    {`${intentDetails.to.slice(
+                      0,
+                      8
+                    )}...${intentDetails.to.slice(-6)}`}
+                  </span>
+                </div>
               </div>
 
               {/* Cancel Intent Button */}

@@ -11,6 +11,7 @@ import { useContext, useState } from "react";
 import { ErrorType } from "@/lib/errors";
 import { ErrorContext } from "@/context/ErrorContext";
 import { extractErrorMessage } from "@/components/utils/extractErrorMessage";
+import { cn } from "@/lib/utils";
 
 const EnrollIntent = ({
   address,
@@ -98,16 +99,39 @@ const EnrollIntent = ({
   };
 
   return (
-    <section className="mt-5 p-5 bg-gray-300 rounded-[10px] border border-gray-border">
+    <section
+      className={cn(
+        "mt-5 p-5 bg-gray-300 rounded-[10px] border border-gray-border",
+        "max-sm:p-3 max-sm:rounded-none max-sm:px-0 max-sm:border-x-0 max-sm:border-b-0 max-sm:pb-0 max-sm:mt-2 max-sm:bg-white"
+      )}
+    >
       <p className="body font-bold">
-        <strong className="text-blue-primary w-4">◆</strong> Enroll Your Intent
+        <strong
+          className={cn(
+            "text-blue-primary w-4 mr-1",
+            "max-sm:mr-0.5 max-sm:w-3"
+          )}
+        >
+          ◆
+        </strong>{" "}
+        Enroll Your Intent
       </p>
-      <div className="space-y-[5px] text text-gray-600 pl-4 mt-[15px]">
-        <p>1. Register who you want to send money to and how much.</p>
+      <div
+        className={cn(
+          "space-y-[5px] text text-gray-600 pl-4 mt-[15px]",
+          "max-sm:pl-3.5 max-sm:mt-[5px]"
+        )}
+      >
+        <p>Register who you want to send money to and how much.</p>
       </div>
 
       <form onSubmit={handleSignalIntent}>
-        <section className="space-y-2.5 mt-5 p-5 border border-gray-border rounded-[10px] bg-white">
+        <section
+          className={cn(
+            "space-y-2.5 mt-5 p-5 border border-gray-border rounded-[10px] bg-white",
+            "max-sm:rounded-[5px] max-sm:p-3 max-sm:mt-2.5 max-sm:bg-gray-300"
+          )}
+        >
           <div className="space-y-[5px]">
             <Label htmlFor="toAddress" className="text font-semibold">
               · Recipient Address
@@ -119,7 +143,7 @@ const EnrollIntent = ({
               disabled={!!intentId}
               onChange={(e) => setToAddress(e.target.value)}
               placeholder="0x..."
-              className="text border-gray-border rounded-[5px] py-2.5 px-[15px]"
+              className="text max-sm:label border-gray-border rounded-[5px] py-2.5 px-[15px] max-sm:py-[5px] max-sm:px-2 bg-white"
             />
           </div>
 
@@ -134,14 +158,14 @@ const EnrollIntent = ({
               disabled={!!intentId}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="1.0"
-              className="text border-gray-border rounded-[5px] py-2.5 px-[15px]"
+              className="text max-sm:label border-gray-border rounded-[5px] py-2.5 px-[15px] max-sm:py-[5px] max-sm:px-2 bg-white"
             />
           </div>
         </section>
 
         <Button
           type="submit"
-          className="mt-2.5 flex items-center gap-[5px]"
+          className="mt-2.5 max-sm:w-full"
           disabled={
             !toAddress || !amount || isSignalIntentLoading || !!intentId
           }

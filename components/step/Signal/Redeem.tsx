@@ -20,6 +20,7 @@ import { TOKEN_SYMBOL } from "@/constant";
 import { ErrorType } from "@/lib/errors";
 import { ErrorContext } from "@/context/ErrorContext";
 import { extractErrorMessage } from "@/components/utils/extractErrorMessage";
+import { cn } from "@/lib/utils";
 
 export default function Redeem({
   accountNumber,
@@ -216,12 +217,30 @@ export default function Redeem({
   };
 
   return (
-    <section className="mt-5 p-5 bg-gray-300 rounded-[10px] border border-gray-border">
+    <section
+      className={cn(
+        "mt-5 p-5 bg-gray-300 rounded-[10px] border border-gray-border",
+        "max-sm:p-3 max-sm:rounded-none max-sm:px-0 max-sm:border-x-0 max-sm:border-b-0 max-sm:pb-0 max-sm:bg-white max-sm:mt-2"
+      )}
+    >
       {/* Current Balance */}
       <p className="body font-bold">
-        <strong className="text-blue-primary w-4">◆</strong> Your Token Balance
+        <strong
+          className={cn(
+            "text-blue-primary w-4 mr-1",
+            "max-sm:mr-0.5 max-sm:w-3"
+          )}
+        >
+          ◆
+        </strong>{" "}
+        Your Token Balance
       </p>
-      <section className="mt-[5px] rounded-[10px] bg-blue-200 px-[15px] py-2.5 border border-gray-border">
+      <section
+        className={cn(
+          "mt-[5px] rounded-[10px] bg-blue-200 px-[15px] py-2.5 border border-gray-border",
+          "max-sm:rounded-[5px] max-sm:px-3 max-sm:py-2.5"
+        )}
+      >
         <div className="flex items-center justify-between">
           <p className="text-blue-primary text font-bold">
             {userTokenBalance ? formatUnits(userTokenBalance, 18) : "0"}{" "}
@@ -249,27 +268,53 @@ export default function Redeem({
             </svg>
           </button>
         </div>
-        <p className="text font-chivo-mono text-gray-600 mt-[5px]">
-          Address: {address}
-        </p>
+
+        <div className="flex items-center mt-[5px]">
+          <p className="text text-gray-600 font-chivo-mono">Address:</p>
+          <span className="text text-gray-600 font-chivo-mono max-sm:hidden">
+            {address}
+          </span>
+          <span className="text text-gray-600 font-chivo-mono hidden max-sm:inline">
+            {`${address?.slice(0, 8)}...${address?.slice(-6)}`}
+          </span>
+        </div>
       </section>
 
       {/* Create New Redeem Request */}
       {!redeemId && (
-        <div className="mt-5">
+        <div className="mt-5 max-sm:mt-3">
           <p className="body font-bold">
-            <strong className="text-blue-primary w-4">◆</strong> Create a Redeem
-            Request
+            <strong
+              className={cn(
+                "text-blue-primary w-4 mr-1",
+                "max-sm:mr-0.5 max-sm:w-3"
+              )}
+            >
+              ◆
+            </strong>{" "}
+            Create a Redeem Request
           </p>
-          <div className="space-y-[5px] text text-gray-600 pl-4 mt-[15px]">
+          <div
+            className={cn(
+              "space-y-[5px] text text-gray-600 pl-4 mt-[15px]",
+              "max-sm:pl-3.5 max-sm:mt-[5px]"
+            )}
+          >
             <p>
-              1. Enter your bank account details and the amount you want to
-              redeem.
+              Enter your bank account details and the amount you want to redeem.
             </p>
           </div>
 
-          <form onSubmit={handleSignalRedeem} className="space-y-5 mt-5">
-            <section className="p-5 border border-gray-border rounded-[10px] bg-white space-y-2.5">
+          <form
+            onSubmit={handleSignalRedeem}
+            className="space-y-5 mt-5 max-sm:mt-3 max-sm:space-y-2.5"
+          >
+            <section
+              className={cn(
+                "p-5 border border-gray-border rounded-[10px] bg-white space-y-2.5",
+                "max-sm:rounded-[5px] max-sm:p-3 max-sm:mt-2.5 max-sm:bg-gray-300"
+              )}
+            >
               <div className="space-y-[5px]">
                 <Label htmlFor="accountNumber" className="text font-semibold">
                   · Bank Account Number
@@ -280,7 +325,7 @@ export default function Redeem({
                   value={accountNumber}
                   onChange={(e) => setAccountNumber(e.target.value)}
                   placeholder="12345678"
-                  className="text border-gray-border rounded-[5px] py-2.5 px-[15px]"
+                  className="text max-sm:label border-gray-border bg-white rounded-[5px] py-2.5 px-[15px] max-sm:py-[5px] max-sm:px-2"
                 />
               </div>
 
@@ -294,13 +339,13 @@ export default function Redeem({
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="1.0"
-                  className="text border-gray-border rounded-[5px] py-2.5 px-[15px]"
+                  className="text max-sm:label border-gray-border bg-white rounded-[5px] py-2.5 px-[15px] max-sm:py-[5px] max-sm:px-2"
                 />
               </div>
 
               {/* Progress indicator */}
               {isProcessing && (
-                <div className="p-5 border border-gray-border rounded-[10px] bg-gray-300 mt-5">
+                <div className="p-5 border border-gray-border rounded-[10px] max-sm:bg-white bg-gray-300 mt-5 max-sm:rounded-[5px] max-sm:p-3 max-sm:mt-2.5">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-gray-600 text">{processStep}</span>
                     <span className="text-black text font-semibold">
@@ -324,7 +369,7 @@ export default function Redeem({
 
             <Button
               type="submit"
-              className="disabled:bg-black/50 bg-black/75 text-white font-semibold hover:bg-black transition-colors duration-200"
+              className="disabled:bg-black/50 bg-black/75 text-white font-semibold hover:bg-black transition-colors duration-200 max-sm:w-full"
               disabled={!accountNumber || !amount || isProcessing}
             >
               {isProcessing ? "Processing..." : "Create Redeem Request"}
@@ -335,23 +380,23 @@ export default function Redeem({
 
       {/* Success Message */}
       {redeemResult?.success && (
-        <section className="mt-5 p-5 bg-white rounded-[10px] border border-gray-border">
+        <section className="mt-5 p-5 bg-white rounded-[10px] border border-gray-border max-sm:rounded-[5px] max-sm:p-3 max-sm:mt-2.5">
           <h3 className="text font-semibold">
             Redeem Request Created Successfully
           </h3>
-          <section className="border border-gray-border rounded-[10px] p-5 mt-5 bg-gray-300 space-y-[10px]">
+          <section className="border border-gray-border rounded-[10px] p-5 mt-5 bg-gray-300 space-y-[10px] max-sm:rounded-[5px] max-sm:p-3 max-sm:mt-2.5">
             <div className="text">
               <span className="font-chivo-mono text-gray-600">Redeem ID:</span>{" "}
-              <p className="font-chivo-mono">{redeemResult?.redeemId}123</p>
+              <p className="font-chivo-mono">{redeemResult?.redeemId}</p>
             </div>
             <div className="text">
               <span className="font-chivo-mono text-gray-600">
                 Transaction Hash:
               </span>{" "}
-              <p className="font-chivo-mono">{redeemResult?.txHash}123</p>
+              <p className="font-chivo-mono">{redeemResult?.txHash}</p>
             </div>
           </section>
-          <p className="text-blue-primary mt-4 text">
+          <p className="text-blue-primary mt-4 text max-sm:mt-2.5">
             Your tokens have been escrowed. The admin will process your request
             and send fiat to your bank account.
           </p>

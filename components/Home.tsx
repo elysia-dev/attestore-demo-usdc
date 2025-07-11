@@ -24,6 +24,7 @@ import FulFill from "./step/FulFill";
 import { Button } from "./ui/button";
 import Image from "next/image";
 import { ErrorContext } from "@/context/ErrorContext";
+import { cn } from "@/lib/utils";
 
 export enum WorkflowStep {
   CONNECT = "connect",
@@ -285,10 +286,20 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-white pb-20 pt-[110px] px-4">
-      <div className="max-w-container mx-auto">
+    <main
+      className={cn(
+        "min-h-screen bg-white pb-20 pt-[110px] px-4 min-w-[320px]",
+        "max-sm:pt-[64px] max-sm:pb-10 max-sm:px-0 max-sm:w-[90%] max-sm:mx-auto"
+      )}
+    >
+      <div className="max-w-container mx-auto max-sm:w-full">
         <h1 className="title">ZK Escrow Transfer System</h1>
-        <section className="mt-15 p-15 bg-gray-300 rounded-[10px] border border-gray-border">
+        <section
+          className={cn(
+            "mt-15 p-15 bg-gray-300 rounded-[10px] border min-w-[320px] border-gray-border",
+            "max-sm:py-5 max-sm:px-2.5 max-sm:mt-8 max-sm:rounded-[5px]"
+          )}
+        >
           {renderStepContent()}
         </section>
 
@@ -306,7 +317,7 @@ const ErrorMessage = React.forwardRef<
   return (
     <section
       ref={ref}
-      className="p-5 border border-red-primary rounded-[10px] bg-red-100 mt-2.5"
+      className="p-5 border border-red-primary rounded-[10px] bg-red-100 mt-2.5 max-sm:rounded-[5px] max-sm:p-3 max-sm:mt-2.5"
     >
       <div className="gap-[5px] flex items-center">
         <Image src="/error.svg" alt="error" width={20} height={20} />
