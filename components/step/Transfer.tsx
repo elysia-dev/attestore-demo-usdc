@@ -4,8 +4,8 @@ import { IntentDetails, WorkflowStep } from "../Home";
 import { TOSS_ACCOUNT_NUMBER } from "@/constant";
 import { useContext } from "react";
 import { ErrorContext } from "@/context/ErrorContext";
+import QRCode from "react-qr-code";
 
-// 계좌번호 복사 함수
 const handleCopyAccountNumber = async () => {
   try {
     await navigator.clipboard.writeText(TOSS_ACCOUNT_NUMBER);
@@ -32,6 +32,10 @@ export default function Transfer({
       freeError();
     }
   };
+
+  const amount = formatUnits(intentDetails?.amount ?? BigInt(0), 18);
+  console.log("TOSS_ACCOUNT_NUMBER", TOSS_ACCOUNT_NUMBER);
+  const qrCodeUrl = `supertoss://send?amount=${amount}&bank=%ED%86%A0%EC%8A%A4%EB%B1%85%ED%81%AC&accountNo=${TOSS_ACCOUNT_NUMBER}&origin=qr`;
   return (
     <section className="space-y-[20px]">
       <h2 className="header text-center">Step 3: Toss Transfer</h2>
@@ -55,7 +59,6 @@ export default function Transfer({
         </div>
       </section>
 
-      {/* 토스 송금 안내 - Intent ID가 있을 때만 표시 */}
       {intentId && intentDetails?.amount && (
         <section className="bg-white border border-gray-border rounded-[10px] py-[30px] px-[20px] space-y-[5px] pl-4 ">
           <p className="body font-bold">
@@ -69,6 +72,13 @@ export default function Transfer({
             <p>
               2. You <strong>must use Toss</strong> as the sending bank.
             </p>
+          </div>
+
+          {/* QR Code for Toss payment */}
+          <div className="flex justify-center mt-5 mb-5">
+            <div className="bg-white p-4 rounded-lg border-2 border-gray-300">
+              <QRCode value={qrCodeUrl} size={200} level="H" />
+            </div>
           </div>
           <section className="border border-gray-border rounded-[10px] p-5 space-y-2.5 bg-gray-300 mt-5">
             <p className="text">
