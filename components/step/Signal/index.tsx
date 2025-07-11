@@ -5,7 +5,7 @@ import {
   RedeemResult,
   WorkflowStep,
 } from "@/components/Home";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useCallback } from "react";
 import { useAccount, usePublicClient } from "wagmi";
 import ADDRESSES from "@/lib/addresses";
 import { cn } from "@/lib/utils";
@@ -31,7 +31,6 @@ export default function Signal({
   setSearchIntentId,
   handleRefreshMyIntentId,
   setCurrentStep,
-  isLoading,
   chainId,
   isConnected,
 }: {
@@ -42,7 +41,6 @@ export default function Signal({
   setSearchIntentId: (searchIntentId: number) => void;
   handleRefreshMyIntentId: () => void;
   setCurrentStep: (step: WorkflowStep) => void;
-  isLoading: boolean;
   chainId: number;
   isConnected: boolean;
 }) {
@@ -60,27 +58,7 @@ export default function Signal({
 
   const publicClient = usePublicClient();
 
-  const readRedeemRequest = async () => {
-    if (!address) return;
-
-    try {
-      const redeemRequestId = await publicClient?.readContract({
-        address: ADDRESSES.ZK_MINTER,
-        abi: ZK_MINTER_ABI,
-        functionName: "accountRedeemRequest",
-        args: [address],
-      });
-
-      if (redeemRequestId && Number(redeemRequestId) > 0) {
-        setRedeemId(Number(redeemRequestId));
-        await handleRefreshRedeemDetails(Number(redeemRequestId));
-      }
-    } catch (error) {
-      console.error("Failed to read redeem request:", error);
-    }
-  };
-
-  const handleRefreshRedeemDetails = async (targetRedeemId: number) => {
+  const handleRefreshRedeemDetails = useCallback(async (targetRedeemId: number) => {
     if (!targetRedeemId) return;
 
     try {
@@ -114,7 +92,28 @@ export default function Signal({
       setRedeemDetails(null);
       setError(ErrorType.REDEEM_NOT_FOUND, { redeemId: targetRedeemId });
     }
-  };
+  }, [publicClient, setError]);
+
+  const readRedeemRequest = useCallback(async () => {
+    if (!address) return;
+
+    try {
+      const redeemRequestId = await publicClient?.readContract({
+        address: ADDRESSES.ZK_MINTER,
+        abi: ZK_MINTER_ABI,
+        functionName: "accountRedeemRequest",
+        args: [address],
+      });
+
+      if (redeemRequestId && Number(redeemRequestId) > 0) {
+        setRedeemId(Number(redeemRequestId));
+        await handleRefreshRedeemDetails(Number(redeemRequestId));
+      }
+    } catch (error) {
+      console.error("Failed to read redeem request:", error);
+    }
+  }, [address, publicClient, handleRefreshRedeemDetails]);
+
 
   const disableNextStep = !intentId || !intentDetails?.amount;
   const isOnramp = mode === SignalMode.ONRAMP;
@@ -134,7 +133,6 @@ export default function Signal({
             searchIntentId={searchIntentId}
             intentDetails={intentDetails}
             handleRefreshMyIntentId={handleRefreshMyIntentId}
-            isLoading={isLoading}
             setIntentId={setIntentId}
             setSearchIntentId={setSearchIntentId}
           />
@@ -154,12 +152,9 @@ export default function Signal({
       if (redeemId) {
         return (
           <RedeemRequest
-            isLoading={isLoading}
-            address={address}
             redeemId={redeemId}
             redeemDetails={redeemDetails}
             setRedeemId={setRedeemId}
-            handleRefreshRedeemDetails={handleRefreshRedeemDetails}
             setRedeemDetails={setRedeemDetails}
             setRedeemResult={setRedeemResult}
             setAccountNumber={setAccountNumber}

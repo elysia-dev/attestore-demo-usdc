@@ -16,7 +16,6 @@ const IntentManagement = ({
   searchIntentId,
   intentDetails,
   handleRefreshMyIntentId,
-  isLoading,
   setIntentId,
   setSearchIntentId,
 }: {
@@ -24,9 +23,8 @@ const IntentManagement = ({
   searchIntentId: number | null;
   intentDetails: IntentDetails | null;
   handleRefreshMyIntentId: () => void;
-  isLoading: boolean;
-  setIntentId?: (intentId: number) => void;
-  setSearchIntentId?: (searchIntentId: number) => void;
+  setIntentId: (intentId: number) => void;
+  setSearchIntentId: (searchIntentId: number) => void;
 }) => {
   const publicClient = usePublicClient();
   const { setError } = useContext(ErrorContext);
@@ -163,7 +161,7 @@ const IntentManagement = ({
                   Address: {intentDetails.to}
                 </p>
               </div>
-              
+
               {/* Cancel Intent Button */}
               <div className="mt-4">
                 <Button

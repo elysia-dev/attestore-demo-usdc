@@ -102,7 +102,7 @@ export default function Home() {
 
   useEffect(() => {
     handleRefreshMyIntentId();
-  }, [isConnected, address]);
+  }, [isConnected, address]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [currentStep, setCurrentStep] = useState<WorkflowStep>(
     WorkflowStep.CONNECT
@@ -238,7 +238,6 @@ export default function Home() {
             setSearchIntentId={setSearchIntentId}
             handleRefreshMyIntentId={handleRefreshMyIntentId}
             setCurrentStep={setCurrentStep}
-            isLoading={isLoading}
             chainId={chainId}
             isConnected={isConnected}
           />

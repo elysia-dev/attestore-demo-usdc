@@ -41,12 +41,18 @@ importers:
       next:
         specifier: 15.2.4
         version: 15.2.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      qrcode:
+        specifier: ^1.5.4
+        version: 1.5.4
       react:
         specifier: ^19.0.0
         version: 19.1.0
       react-dom:
         specifier: ^19.0.0
         version: 19.1.0(react@19.1.0)
+      react-qr-code:
+        specifier: ^2.0.18
+        version: 2.0.18(react@19.1.0)
       tailwind-merge:
         specifier: ^3.3.1
         version: 3.3.1
@@ -2492,12 +2498,20 @@ packages:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
 
+  qr.js@0.0.0:
+    resolution: {integrity: sha512-c4iYnWb+k2E+vYpRimHqSu575b1/wKl4XFeJGpFmrJQz5I88v9aY2czh7s0w36srfCM1sXgC/xpoJz5dJfq+OQ==}
+
   qr@0.5.0:
     resolution: {integrity: sha512-LtnyJsepKCMzfmHBZKVNo1g29kS+8ZbuxE9294EsRhHgVVpy4x8eFw9o4J9SIolDHoDYuaEIY+z8UjiCv/eudA==}
     engines: {node: '>= 20.19.0'}
 
   qrcode@1.5.3:
     resolution: {integrity: sha512-puyri6ApkEHYiVl4CFzo1tDkAZ+ATcnbJrJ6RiBM1Fhctdn/ix9MTE3hRph33omisEbC/2fcfemsseiKgBPKZg==}
+    engines: {node: '>=10.13.0'}
+    hasBin: true
+
+  qrcode@1.5.4:
+    resolution: {integrity: sha512-1ca71Zgiu6ORjHqFBDpnSMTR2ReToX4l1Au1VFLyVeBTFavzQnv5JxMFr3ukHVKpSrSA2MCk0lNJSykjUfz7Zg==}
     engines: {node: '>=10.13.0'}
     hasBin: true
 
@@ -2521,6 +2535,11 @@ packages:
 
   react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
+
+  react-qr-code@2.0.18:
+    resolution: {integrity: sha512-v1Jqz7urLMhkO6jkgJuBYhnqvXagzceg3qJUWayuCK/c6LTIonpWbwxR1f1APGd4xrW/QcQEovNrAojbUz65Tg==}
+    peerDependencies:
+      react: '*'
 
   react-remove-scroll-bar@2.3.8:
     resolution: {integrity: sha512-9r+yi9+mgU33AKcj6IbT9oRCO78WriSj6t/cF8DWBZJ9aOGPOTEDvdUDz1FwKim7QXWwmHqtdHnRJfhAxEG46Q==}
@@ -6486,12 +6505,20 @@ snapshots:
 
   punycode@2.3.1: {}
 
+  qr.js@0.0.0: {}
+
   qr@0.5.0: {}
 
   qrcode@1.5.3:
     dependencies:
       dijkstrajs: 1.0.3
       encode-utf8: 1.0.3
+      pngjs: 5.0.0
+      yargs: 15.4.1
+
+  qrcode@1.5.4:
+    dependencies:
+      dijkstrajs: 1.0.3
       pngjs: 5.0.0
       yargs: 15.4.1
 
@@ -6514,6 +6541,12 @@ snapshots:
       scheduler: 0.26.0
 
   react-is@16.13.1: {}
+
+  react-qr-code@2.0.18(react@19.1.0):
+    dependencies:
+      prop-types: 15.8.1
+      qr.js: 0.0.0
+      react: 19.1.0
 
   react-remove-scroll-bar@2.3.8(@types/react@19.1.8)(react@19.1.0):
     dependencies:

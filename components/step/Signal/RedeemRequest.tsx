@@ -6,61 +6,28 @@ import ADDRESSES from "@/lib/addresses";
 import { ZK_MINTER_ABI } from "@/lib/wagmi";
 import { Dispatch, SetStateAction, useContext } from "react";
 import { formatUnits } from "viem";
-import { usePublicClient } from "wagmi";
 import { ErrorType } from "@/lib/errors";
 import { ErrorContext } from "@/context/ErrorContext";
 import { extractErrorMessage } from "@/components/utils/extractErrorMessage";
 
 const RedeemRequest = ({
-  isLoading,
-  address,
   redeemId,
   redeemDetails,
   setRedeemId,
-  handleRefreshRedeemDetails,
   setRedeemDetails,
   setRedeemResult,
   setAccountNumber,
   setAmount,
 }: {
-  isLoading: boolean;
-  address: `0x${string}` | undefined;
   redeemId: number | null;
   redeemDetails: RedeemDetails | null;
   setRedeemId: Dispatch<SetStateAction<number | null>>;
-  handleRefreshRedeemDetails: (targetRedeemId: number) => Promise<void>;
   setRedeemDetails: Dispatch<SetStateAction<RedeemDetails | null>>;
   setRedeemResult: Dispatch<SetStateAction<RedeemResult | null>>;
   setAccountNumber: Dispatch<SetStateAction<string>>;
   setAmount: Dispatch<SetStateAction<string>>;
 }) => {
-  const publicClient = usePublicClient();
   const { setError } = useContext(ErrorContext);
-  const handleRefreshMyRedeemId = async () => {
-    console.log("address", address);
-    if (!address) return;
-    try {
-      const userRedeemId = await publicClient?.readContract({
-        address: ADDRESSES.ZK_MINTER,
-        abi: ZK_MINTER_ABI,
-        functionName: "accountRedeemRequest",
-        args: [address],
-      });
-      console.log("userRedeemId", userRedeemId);
-
-      if (userRedeemId && Number(userRedeemId) > 0) {
-        const newRedeemId = Number(userRedeemId);
-        setRedeemId(newRedeemId);
-        handleRefreshRedeemDetails(newRedeemId);
-      } else {
-        setError(ErrorType.NO_REDEEM_FOUND);
-        setRedeemDetails(null);
-      }
-    } catch (error) {
-      console.error("Failed to lookup Redeem ID:", error);
-      setError(ErrorType.REDEEM_LOOKUP_FAILED);
-    }
-  };
 
   const { writeAndWait: cancelRedeemWrite, isLoading: isCancelRedeemLoading } =
     useContractWrite({
