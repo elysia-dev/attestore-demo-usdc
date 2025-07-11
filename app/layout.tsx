@@ -31,7 +31,7 @@ const chivoMono = Chivo_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Genie(ZK Escrow)",
+  title: "Zenie(ZK Escrow)",
   description: "Zero-Knowledge Escrow System Demo",
 };
 

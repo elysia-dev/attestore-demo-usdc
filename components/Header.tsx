@@ -11,7 +11,7 @@ export default function Header() {
 
   const handleUserGuideClick = () => {
     window.open(
-      "https://modoripage.notion.site/Genie-Guide-223f2ffdc30a803eb50eef01f2a43a33?source=copy_link",
+      "https://modoripage.notion.site/Zenie-Guide-223f2ffdc30a803eb50eef01f2a43a33?pvs=74",
       "_blank"
     );
   };

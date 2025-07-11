@@ -31,7 +31,7 @@ export const anvil = {
 const isLocal = process.env.NEXT_PUBLIC_CHAIN_NETWORK === "local";
 
 export const config = getDefaultConfig({
-  appName: "Genie",
+  appName: "Zenie",
   projectId: "YOUR_PROJECT_ID",
   chains: isLocal ? [anvil] : [holesky],
   wallets: [
