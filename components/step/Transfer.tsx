@@ -34,7 +34,6 @@ export default function Transfer({
   };
 
   const amount = formatUnits(intentDetails?.amount ?? BigInt(0), 18);
-  console.log("TOSS_ACCOUNT_NUMBER", TOSS_ACCOUNT_NUMBER);
   const qrCodeUrl = `supertoss://send?amount=${amount}&bank=%ED%86%A0%EC%8A%A4%EB%B1%85%ED%81%AC&accountNo=${TOSS_ACCOUNT_NUMBER}&origin=qr`;
   return (
     <section className="space-y-[20px]">

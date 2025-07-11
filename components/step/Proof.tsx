@@ -33,8 +33,8 @@ export default function Proof({
   proofResult: ProofResult | null;
 }) {
   const { setError, freeError } = useContext(ErrorContext);
-  const [showMore, setShowMore] = useState(false);
-
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
   // ZK Proof 생성
   const handleGenerateProof = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,44 +79,82 @@ export default function Proof({
     <section>
       <h2 className="header text-center">Step 4: ZK Proof Generation</h2>
       <section className="mt-[30px] bg-white border border-gray-border rounded-[10px] py-[30px] px-[20px]">
-        <p className="body font-bold">
-          <strong className="text-blue-primary w-4">◆</strong> Click
-          &apos;Generate Transfer Proof&apos;.
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="body font-bold">
+            <strong className="text-blue-primary w-4">◆</strong> Click
+            &apos;Generate Transfer Proof&apos;.
+          </p>
+          <div className="relative inline-block">
+            <button
+              type="button"
+              onMouseEnter={() => setShowTooltip(true)}
+              onMouseLeave={() => setShowTooltip(false)}
+              onClick={() => setShowTooltip(!showTooltip)}
+              className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-primary text-white text-xs font-bold hover:bg-blue-600 transition-colors"
+            >
+              ?
+            </button>
+            <span className="text-blue-primary text-xs ml-1">(for devs)</span>
+
+            {showTooltip && (
+              <div className="absolute bottom-full right-0 mb-2 px-3 py-2 bg-white text-gray-800 text-xs rounded-lg shadow-lg z-10 w-64 border border-gray-200">
+                <div className="font-semibold text-blue-primary mb-2">
+                  for devs
+                </div>
+                <div className="space-y-1">
+                  <p>
+                    · remote server generates tls proof using attestor-server
+                    for the Toss transfer
+                  </p>
+                  <p>· remote server sends the proof to the attestor-server</p>
+                  <p>
+                    · attestor-server validates the proof and signs data with
+                    its private key
+                  </p>
+                  <p>· signed data is sent to the client</p>
+                </div>
+                <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white"></div>
+              </div>
+            )}
+          </div>
+        </div>
         <div className="space-y-[5px] text text-gray-600 pl-4 mt-[15px]">
           <p>1. Generate ZK Proof of your transfer.</p>
           <p>
             2. Using this proof, anyone can verify that your transfer is valid.
           </p>
-
-          <button
-            type="button"
-            onClick={() => setShowMore(!showMore)}
-            className="text-blue-primary underline text-sm mt-2"
-          >
-            {showMore ? "less" : "more (for devs)"}
-          </button>
-
-          {showMore && (
-            <div className="pt-3 border-t border-gray-200 space-y-2">
-              <p className="text-sm">
-                · remote server generates tls proof using attestor-server for
-                the Toss transfer
-              </p>
-              <p className="text-sm">
-                · remote server and attestor-server connected via websocket
-              </p>
-              <p className="text-sm">
-                · attestor-server validates the proof and signs with its private
-                key
-              </p>
-              <p className="text-sm">
-                · remote server sends the proof to the attestor-server
-              </p>
-            </div>
-          )}
         </div>
       </section>
+
+      <div className="flex justify-center">
+        <button
+          type="button"
+          onClick={() => setShowGuide((s) => !s)}
+          className="text-blue-primary underline text-sm mt-2"
+        >
+          Show Guide
+        </button>
+      </div>
+      {/* 토스 송금 데모 비디오 */}
+      {showGuide && (
+        <section className="py-[30px] mt-[30px] px-5 rounded-[10px] bg-white border border-gray-border">
+          <div
+            className="flex justify-center items-center rounded-[10px] border border-gray-border overflow-hidden"
+            style={{
+              backgroundImage: "url('/video_background.png')",
+            }}
+          >
+            <video
+              controls
+              className="w-full rounded-lg h-[640px]"
+              poster="/tossbank_transfer_korean_thumbnail.jpg"
+            >
+              <source src="/tossbank_transfer_korean_.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </section>
+      )}
       <form onSubmit={handleGenerateProof} className="space-y-6">
         <section className="mt-5 p-5 bg-white border border-gray-border rounded-[10px] space-y-2.5">
           {/* intentId */}
