@@ -106,6 +106,13 @@ export const ZK_MINTER_ABI = [
     stateMutability: "nonpayable",
     type: "function",
   },
+  {
+    inputs: [{ name: "_intentId", type: "uint256" }],
+    name: "cancelIntent",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
   // Redeem Functions
   {
     inputs: [
@@ -178,6 +185,12 @@ export const ZK_MINTER_ABI = [
       { indexed: false, name: "amount", type: "uint256" },
     ],
     name: "IntentFulfilled",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [{ indexed: false, name: "intentId", type: "uint256" }],
+    name: "IntentCancelled",
     type: "event",
   },
   // Redeem Events

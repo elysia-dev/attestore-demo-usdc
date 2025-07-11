@@ -4,6 +4,7 @@ export const ErrorType = {
   INTENT_LOOKUP_FAILED: "Failed to lookup Intent ID",
 
   INTENT_NOT_FOUND: "Intent ID {id} not found",
+  INTENT_CANCEL_FAILED: "Cancel intent failed: {error}",
 
   // Signal
   REDEEM_NOT_FOUND: "Redeem ID {id} not found",

@@ -135,6 +135,8 @@ export default function Signal({
             intentDetails={intentDetails}
             handleRefreshMyIntentId={handleRefreshMyIntentId}
             isLoading={isLoading}
+            setIntentId={setIntentId}
+            setSearchIntentId={setSearchIntentId}
           />
         );
       } else {

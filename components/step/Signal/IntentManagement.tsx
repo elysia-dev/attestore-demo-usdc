@@ -1,22 +1,35 @@
 import { IntentDetails } from "@/components/Home";
+import { Button } from "@/components/ui/button";
 import { TOKEN_SYMBOL } from "@/constant";
+import { useContractWrite } from "@/hooks/useContractWrite";
 import ADDRESSES from "@/lib/addresses";
-import { useState } from "react";
+import { ZK_MINTER_ABI } from "@/lib/wagmi";
+import { ErrorType } from "@/lib/errors";
+import { extractErrorMessage } from "@/components/utils/extractErrorMessage";
+import { useContext, useState } from "react";
 import { erc20Abi, formatUnits } from "viem";
 import { usePublicClient } from "wagmi";
+import { ErrorContext } from "@/context/ErrorContext";
 
 const IntentManagement = ({
   intentId,
   searchIntentId,
   intentDetails,
+  handleRefreshMyIntentId,
+  isLoading,
+  setIntentId,
+  setSearchIntentId,
 }: {
   intentId: number | null;
   searchIntentId: number | null;
   intentDetails: IntentDetails | null;
   handleRefreshMyIntentId: () => void;
   isLoading: boolean;
+  setIntentId?: (intentId: number) => void;
+  setSearchIntentId?: (searchIntentId: number) => void;
 }) => {
   const publicClient = usePublicClient();
+  const { setError } = useContext(ErrorContext);
 
   const [receiverTokenBalance, setReceiverTokenBalance] = useState<
     bigint | undefined
@@ -32,6 +45,33 @@ const IntentManagement = ({
       args: [to as `0x${string}`],
     });
     setReceiverTokenBalance(balance);
+  };
+
+  const { writeAndWait: cancelIntentWrite, isLoading: isCancelIntentLoading } =
+    useContractWrite({
+      onSuccess: () => {
+        if (setIntentId) setIntentId(0);
+        if (setSearchIntentId) setSearchIntentId(0);
+        handleRefreshMyIntentId();
+      },
+    });
+
+  const handleCancelIntent = async () => {
+    if (!intentId) return;
+
+    try {
+      await cancelIntentWrite({
+        address: ADDRESSES.ZK_MINTER,
+        abi: ZK_MINTER_ABI,
+        functionName: "cancelIntent",
+        args: [BigInt(intentId)],
+      });
+    } catch (error) {
+      const errorMessage = extractErrorMessage(error);
+      setError(ErrorType.INTENT_CANCEL_FAILED, {
+        error: errorMessage,
+      });
+    }
   };
 
   return (
@@ -122,6 +162,18 @@ const IntentManagement = ({
                 <p className="text text-gray-600 mt-[5px] font-chivo-mono">
                   Address: {intentDetails.to}
                 </p>
+              </div>
+              
+              {/* Cancel Intent Button */}
+              <div className="mt-4">
+                <Button
+                  onClick={handleCancelIntent}
+                  disabled={isCancelIntentLoading}
+                  variant="outline"
+                  className="text-red-600 border-red-300 hover:bg-red-600 hover:text-white"
+                >
+                  {isCancelIntentLoading ? "Cancelling..." : "Cancel Intent"}
+                </Button>
               </div>
             </div>
           )}
