@@ -17,10 +17,10 @@ import { ZK_MINTER_ABI } from "@/lib/wagmi";
 import { ErrorType } from "@/lib/errors";
 import Connect from "./step/Connect";
 import Signal from "./step/Signal/index";
-import Redeem from "./step/Signal/Redeem";
 import Transfer from "./step/Transfer";
 import Proof from "./step/Proof";
 import FulFill from "./step/FulFill";
+import MintingHistory from "./MintingHistory";
 import { Button } from "./ui/button";
 import Image from "next/image";
 import { ErrorContext } from "@/context/ErrorContext";
@@ -294,6 +294,7 @@ export default function Home() {
     >
       <div className="max-w-container mx-auto max-sm:w-full">
         <h1 className="title">ZK Escrow Transfer System</h1>
+
         <section
           className={cn(
             "mt-15 p-15 bg-gray-300 rounded-[10px] border min-w-[320px] border-gray-border",

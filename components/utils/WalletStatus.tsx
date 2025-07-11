@@ -56,7 +56,7 @@ const WalletStatus = ({
   return (
     <section
       className={cn(
-        "mb-5 px-5 py-[15px] bg-white border border-gray-border rounded-[10px] space-y-[15px]",
+        "px-5 py-[15px] bg-white border border-gray-border rounded-[10px] space-y-[15px]",
         "max-sm:p-3 max-sm:rounded-[5px] max-sm:space-y-2.5"
       )}
     >

@@ -17,6 +17,7 @@ import Redeem from "./Redeem";
 import RedeemRequest from "./RedeemRequest";
 import WalletStatus from "@/components/utils/WalletStatus";
 import { ErrorContext } from "@/context/ErrorContext";
+import MintingHistory from "@/components/MintingHistory";
 
 enum SignalMode {
   ONRAMP = "onramp",
@@ -230,69 +231,74 @@ const ToggleSignalMode = ({
   children: React.ReactNode;
 }) => {
   return (
-    <section
-      className={cn(
-        "border border-gray-border rounded-[10px] px-5 py-[30px] bg-white space-y-[15px]",
-        "max-sm:p-3 max-sm:rounded-[5px] max-sm:space-y-2.5"
-      )}
-    >
-      <div className="flex justify-between items-start max-sm:flex-col max-sm:items-start max-sm:space-y-2.5">
-        <section className="space-y-[5px]">
-          <h3 className="body text-black">
+    <>
+      <div className="my-2">
+        <MintingHistory />
+      </div>
+      <section
+        className={cn(
+          "border border-gray-border rounded-[10px] px-5 py-[30px] bg-white space-y-[15px]",
+          "max-sm:p-3 max-sm:rounded-[5px] max-sm:space-y-2.5"
+        )}
+      >
+        <div className="flex justify-between items-start max-sm:flex-col max-sm:items-start max-sm:space-y-2.5">
+          <section className="space-y-[5px]">
+            <h3 className="body text-black">
+              <span
+                className={cn(
+                  "mr-1 w-4 inline-block",
+                  "max-sm:mr-0.5 max-sm:w-3",
+                  isOnramp ? "text-blue-600" : "text-black"
+                )}
+              >
+                ◆
+              </span>
+              <strong className="mr-1 font-bold max-sm:mr-0.5">
+                {isOnramp ? "Onramp" : "Offramp"}
+              </strong>
+              <p className="text ml-5 max-sm:ml-3.5">
+                {isOnramp ? "KRW WON → KRW tokens" : "KRW tokens → KRW WON"}
+              </p>
+            </h3>
+          </section>
+          {/* Mode Toggle Slider */}
+          <button
+            onClick={toggleMode}
+            className={cn(
+              "relative text-[14px] leading-[18px] inline-flex font-semibold p-[5px] items-center rounded-full border border-gray-border bg-white",
+              "max-sm:w-full"
+            )}
+          >
             <span
               className={cn(
-                "mr-1 w-4 inline-block",
-                "max-sm:mr-0.5 max-sm:w-3",
-                isOnramp ? "text-blue-600" : "text-black"
+                "absolute inset-y-[5px] left-0 w-[calc(50%-5px)] rounded-full px-[7px] py-[3px]  transition-all duration-200 ease-out",
+                isOnramp
+                  ? "translate-x-[5px] bg-blue-600"
+                  : "translate-x-[calc(100%+5px)] bg-black"
+              )}
+            />
+            <div
+              className={cn(
+                "relative z-10 flex-1 text-center px-[7px] py-[3px] transition-all duration-200",
+                isOnramp ? "text-white" : "text-[rgba(73,73,73,0.70)]"
               )}
             >
-              ◆
-            </span>
-            <strong className="mr-1 font-bold max-sm:mr-0.5">
-              {isOnramp ? "Onramp" : "Offramp"}
-            </strong>
-            <p className="text ml-5 max-sm:ml-3.5">
-              {isOnramp ? "KRW WON → KRW tokens" : "KRW tokens → KRW WON"}
-            </p>
-          </h3>
-        </section>
-        {/* Mode Toggle Slider */}
-        <button
-          onClick={toggleMode}
-          className={cn(
-            "relative text-[14px] leading-[18px] inline-flex font-semibold p-[5px] items-center rounded-full border border-gray-border bg-white",
-            "max-sm:w-full"
-          )}
-        >
-          <span
-            className={cn(
-              "absolute inset-y-[5px] left-0 w-[calc(50%-5px)] rounded-full px-[7px] py-[3px]  transition-all duration-200 ease-out",
-              isOnramp
-                ? "translate-x-[5px] bg-blue-600"
-                : "translate-x-[calc(100%+5px)] bg-black"
-            )}
-          />
-          <div
-            className={cn(
-              "relative z-10 flex-1 text-center px-[7px] py-[3px] transition-all duration-200",
-              isOnramp ? "text-white" : "text-[rgba(73,73,73,0.70)]"
-            )}
-          >
-            Onramp
-          </div>
-          <div
-            className={cn(
-              "relative z-10 flex-1 text-center px-[7px] py-[3px] transition-all duration-200",
-              !isOnramp ? "text-white" : "text-[rgba(73,73,73,0.70)]"
-            )}
-          >
-            Offramp
-          </div>
-        </button>
-      </div>
+              Onramp
+            </div>
+            <div
+              className={cn(
+                "relative z-10 flex-1 text-center px-[7px] py-[3px] transition-all duration-200",
+                !isOnramp ? "text-white" : "text-[rgba(73,73,73,0.70)]"
+              )}
+            >
+              Offramp
+            </div>
+          </button>
+        </div>
 
-      {children}
-    </section>
+        {children}
+      </section>
+    </>
   );
 };
 
