@@ -15,6 +15,7 @@ export default function ProofResultComponent({
     <div>
       {proofResult.data?.extractedParameters && (
         <div className="bg-white p-4 rounded border mb-4">
+          <h3 className="text font-semibold mb-4">✅ Proof Generated</h3>
           <div className="mt-3">
             <pre className="bg-gray-100 p-3 rounded text-xs overflow-auto max-h-96 border">
               {JSON.stringify(proofResult.data.extractedParameters, null, 2)}

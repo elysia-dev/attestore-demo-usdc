@@ -13,6 +13,7 @@ import { ErrorContext } from "@/context/ErrorContext";
 import { extractErrorMessage } from "../utils/extractErrorMessage";
 import { trackUserAction } from "@/lib/sentry-utils";
 import * as Sentry from "@sentry/nextjs";
+import { cn } from "@/lib/utils";
 
 export default function FulFill({
   issueDate,
@@ -258,36 +259,43 @@ export default function FulFill({
         <FulfillmentResultComponent fulfillmentResult={fulfillmentResult} />
       )}
       {!fulfillmentResult?.success && (
-        <section>
+        <section className="space-y-[20px]">
           <h2 className="header text-center">Step 5: Token Minting</h2>
 
-          <section className="mt-[30px] bg-white border border-gray-border rounded-[10px] py-[30px] px-[20px]">
+          <section
+            className={cn(
+              "bg-white border border-gray-border rounded-[10px] py-[30px] px-[20px]",
+              "max-sm:rounded-[5px] max-sm:p-3 max-sm:mt-2.5"
+            )}
+          >
             <p className="body font-bold">
-              <strong className="text-blue-primary w-4">◆</strong> Click
-              &apos;Mint Tokens&apos;.
+              <strong className="text-blue-primary w-4 mr-1 max-sm:mr-0.5 max-sm:w-3">
+                ◆
+              </strong>{" "}
+              Click &apos;Mint Tokens&apos;.
             </p>
-            <div className="space-y-[5px] text text-gray-600 pl-4 mt-[15px]">
-              <p>1. Mint tokens to the recipient wallet.</p>
+            <div className="space-y-[5px] text text-gray-600 pl-4 mt-[15px] max-sm:pl-3.5 max-sm:mt-[5px]">
+              <p>Mint tokens to the recipient wallet.</p>
             </div>
           </section>
 
-          <div className=" mt-4 p-5 bg-white border border-gray-border rounded-[10px] space-y-2.5">
+          <div className="mt-4 p-5 bg-white border border-gray-border rounded-[10px] space-y-2.5 max-sm:rounded-[5px] max-sm:p-3 max-sm:mt-2.5 max-sm:space-y-[10px]">
             <div>
               <p className="text font-semibold">· Intent ID</p>
-              <div className="mt-[5px] border border-gray-border rounded-[5px] py-2.5 px-[15px] bg-gray-200">
-                <p className="text">{intentId}</p>
+              <div className="mt-[5px] border border-gray-border rounded-[5px] py-2.5 px-[15px] flex items-center max-sm:h-[36px] bg-gray-200 max-sm:py-[5px] max-sm:px-2">
+                <p className="text max-sm:label">{intentId}</p>
               </div>
             </div>
             <div>
               <p className="text font-semibold">· Issue Date</p>
-              <div className="mt-[5px] border border-gray-border rounded-[5px] py-2.5 px-[15px] bg-gray-200">
-                <p className="text">{issueDate}</p>
+              <div className="mt-[5px] border border-gray-border rounded-[5px] py-2.5 px-[15px] flex items-center max-sm:h-[36px] bg-gray-200 max-sm:py-[5px] max-sm:px-2">
+                <p className="text max-sm:label">{issueDate}</p>
               </div>
             </div>
             <div>
               <p className="text font-semibold">· Certificate Issue Number</p>
-              <div className="mt-[5px] border border-gray-border rounded-[5px] py-2.5 px-[15px] bg-gray-200">
-                <p className="text">{certificateNumber}</p>
+              <div className="mt-[5px] border border-gray-border rounded-[5px] py-2.5 px-[15px] flex items-center max-sm:h-[36px] bg-gray-200 max-sm:py-[5px] max-sm:px-2">
+                <p className="text max-sm:label">{certificateNumber}</p>
               </div>
             </div>
           </div>
@@ -298,21 +306,23 @@ export default function FulFill({
               variant="outline"
               className="flex-1 bg-white"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="21"
-                height="21"
-                viewBox="0 0 21 21"
-                fill="none"
-              >
-                <path
-                  d="M9.25 16.75L3 10.5M3 10.5L9.25 4.25M3 10.5H18"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <div className="max-sm:scale-75">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="21"
+                  height="21"
+                  viewBox="0 0 21 21"
+                  fill="none"
+                >
+                  <path
+                    d="M9.25 16.75L3 10.5M3 10.5L9.25 4.25M3 10.5H18"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
               Previous
             </Button>
 
@@ -331,21 +341,23 @@ export default function FulFill({
                 ? "Minting Complete"
                 : "Mint Tokens"}
               {!isFulfillIntentLoading && !fulfillmentResult?.success && (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="21"
-                  height="21"
-                  viewBox="0 0 21 21"
-                  fill="none"
-                >
-                  <path
-                    d="M11.75 16.75L18 10.5M18 10.5L11.75 4.25M18 10.5H3"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+                <div className="max-sm:scale-75">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="21"
+                    height="21"
+                    viewBox="0 0 21 21"
+                    fill="none"
+                  >
+                    <path
+                      d="M11.75 16.75L18 10.5M18 10.5L11.75 4.25M18 10.5H3"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
               )}
             </Button>
           </div>
