@@ -56,20 +56,13 @@ const WalletStatus = ({
     <section className="mb-5 px-5 py-[15px] bg-white border border-gray-border rounded-[10px] space-y-[15px]">
       <section className="flex justify-between items-center">
         <CustomConnectButton />
-        <div className="flex">
-          <p className="label">
-            <strong>· Connection Status:&nbsp;</strong>
-            {isConnected ? "Connected" : "Disconnected"}
-          </p>
-          <span className="label mx-1">/</span>
+        <div className="flex items-center gap-2">
           <div className="label flex items-center">
-            <strong>· Network:&nbsp;</strong>
-            <div
-              onClick={openFaucetLink}
-              className="cursor-pointer hover:underline transition-all duration-200"
-            >
-              {getNetworkName(chainId)}
-            </div>
+            <strong>Network:&nbsp;</strong>
+            {getNetworkName(chainId)}
+          </div>
+          <div className="label flex items-center bg-gray-100 rounded-[5px] px-2 py-1 ml-2 border border-gray-border">
+            <button onClick={openFaucetLink}>Faucet</button>
           </div>
         </div>
       </section>
