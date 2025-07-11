@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@config "../tailwind.config.ts";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -39,7 +40,7 @@
   font-weight: 700;
   line-height: 88px;
   font-family: var(--font-jakarta-sans);
-  @media (max-width: 640px) {
+  @media (max-width: 948px) {
     font-size: 6.8cqw;
     white-space: nowrap;
     text-align: center;
