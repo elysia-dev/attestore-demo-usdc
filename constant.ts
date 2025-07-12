@@ -1,6 +1,8 @@
 export const BASE_URL = "https://attestor-core-production-5795.up.railway.app";
 
-export const faucetLink = "https://www.alchemy.com/faucets/ethereum-holesky";
+// export const faucetLink = "https://www.alchemy.com/faucets/ethereum-holesky";
+export const faucetLink =
+  "https://cloud.google.com/application/web3/faucet/ethereum/holesky";
 
 const TOSS_ACCOUNT_NUMBER_PROD = "100202642943"; // production
 const TOSS_ACCOUNT_NUMBER_TEST = "100000021389"; // test
