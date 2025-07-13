@@ -295,7 +295,6 @@ export default function Proof({
         isOpen={showGuide}
         onClose={() => setShowGuide(false)}
         videoSrc="/tossbank_transfer_korean_.mp4"
-        posterSrc="/tossbank_transfer_korean_thumbnail.jpg"
         title="Toss Transfer Demo"
       />
       <form onSubmit={handleGenerateProof} className="space-y-6">
@@ -458,8 +457,8 @@ export default function Proof({
                     stroke="currentColor"
                     strokeWidth="1.5"
                     strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </div>
             </Button>

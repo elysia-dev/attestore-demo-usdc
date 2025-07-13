@@ -114,11 +114,7 @@ export default function Transfer({
             backgroundImage: "url('/video_background.png')",
           }}
         >
-          <video
-            controls
-            className="w-full rounded-lg h-[640px]"
-            poster="/tossbank_transfer_korean_thumbnail.jpg"
-          >
+          <video controls className="w-full rounded-lg h-[640px]">
             <source src="/tossbank_transfer_korean_.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
@@ -130,7 +126,6 @@ export default function Transfer({
         isOpen={isVideoPopupOpen}
         onClose={() => setIsVideoPopupOpen(false)}
         videoSrc="/tossbank_transfer_korean_.mp4"
-        posterSrc="/tossbank_transfer_korean_thumbnail.jpg"
         title="Toss Transfer Demo"
       />
 

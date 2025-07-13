@@ -3,7 +3,7 @@ import { Button } from "../../ui/button";
 import CustomConnectButton from "../../utils/CustomConnectButton";
 import { faucetLink } from "@/constant";
 import ADDRESSES from "@/lib/addresses";
-import { useAccount, useWalletClient } from "wagmi";
+import { useWalletClient } from "wagmi";
 
 const openFaucetLink = () => {
   window.open(faucetLink, "_blank");
@@ -23,7 +23,6 @@ const getNetworkName = (chainId: number) => {
   }
 };
 
-
 const WalletStatus = ({
   isConnected,
   chainId,
@@ -31,7 +30,6 @@ const WalletStatus = ({
   isConnected: boolean;
   chainId: number;
 }) => {
-  const { connector } = useAccount();
   const { data: walletClient } = useWalletClient();
 
   // KRW 토큰을 지갑에 추가하는 함수
@@ -51,7 +49,7 @@ const WalletStatus = ({
               image: "", // 토큰 이미지 URL이 있다면 추가
             },
           },
-        } as any);
+        });
       } else if (typeof window.ethereum !== "undefined") {
         // Fallback for desktop MetaMask
         await window.ethereum.request({
@@ -69,11 +67,15 @@ const WalletStatus = ({
       } else {
         // Check if user is on mobile browser
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        
+
         if (isMobile) {
-          alert("Please use your wallet app's built-in browser to add the token.");
+          alert(
+            "Please use your wallet app's built-in browser to add the token."
+          );
         } else {
-          alert("No compatible wallet found. Please install MetaMask or connect a wallet.");
+          alert(
+            "No compatible wallet found. Please install MetaMask or connect a wallet."
+          );
         }
       }
     } catch (error) {
@@ -132,7 +134,8 @@ const WalletStatus = ({
               Add KRW Token
             </Button>
             <div className="text-xs text-gray-500 text-center">
-              Token Address: {ADDRESSES.TOKEN.slice(0, 6)}...{ADDRESSES.TOKEN.slice(-4)}
+              Token Address: {ADDRESSES.TOKEN.slice(0, 6)}...
+              {ADDRESSES.TOKEN.slice(-4)}
             </div>
           </div>
         )}
