@@ -17,6 +17,18 @@ export type MintingHistoryItem = {
   timestamp: number;
 };
 
+type IntentFulfilledLog = {
+  args: {
+    intentHash?: `0x${string}`;
+    verifier?: `0x${string}`;
+    owner?: `0x${string}`;
+    to?: `0x${string}`;
+    amount?: bigint;
+  };
+  blockNumber: bigint;
+  transactionHash: `0x${string}`;
+};
+
 export default function MintingHistory({ showHistory }: { showHistory: boolean }  ) {
   const { address, isConnected } = useAccount();
   const publicClient = usePublicClient();
@@ -34,7 +46,7 @@ export default function MintingHistory({ showHistory }: { showHistory: boolean }
       const fromBlock = BigInt(FROM_BLOCK);
       const maxBlockRange = BigInt(50000); // RPC limit
       
-      let allLogs: any[] = [];
+      let allLogs: IntentFulfilledLog[] = [];
       let startBlock = fromBlock;
       
       // Fetch logs in chunks to respect RPC block range limit
@@ -64,7 +76,7 @@ export default function MintingHistory({ showHistory }: { showHistory: boolean }
             toBlock: endBlock,
           });
           
-          allLogs = allLogs.concat(logs);
+          allLogs = allLogs.concat(logs as IntentFulfilledLog[]);
         } catch (error) {
           console.warn(`Failed to fetch logs from ${startBlock} to ${endBlock}:`, error);
           // Continue with next chunk even if one fails
@@ -74,7 +86,7 @@ export default function MintingHistory({ showHistory }: { showHistory: boolean }
       }
 
       const historyWithTimestamps = await Promise.all(
-        allLogs.map(async (log: any) => {
+        allLogs.map(async (log) => {
           const block = await publicClient.getBlock({
             blockNumber: log.blockNumber,
           });
@@ -105,8 +117,8 @@ export default function MintingHistory({ showHistory }: { showHistory: boolean }
 
       // Filter out null values and sort by timestamp (newest first)
       const sortedHistory = historyWithTimestamps
-        .filter((item: any): item is MintingHistoryItem => item !== null)
-        .sort((a: MintingHistoryItem, b: MintingHistoryItem) => b.timestamp - a.timestamp);
+        .filter((item): item is MintingHistoryItem => item !== null)
+        .sort((a, b) => b.timestamp - a.timestamp);
 
       setMintingHistory(sortedHistory);
     } catch (error) {
