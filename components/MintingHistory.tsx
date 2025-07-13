@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useCallback, useEffect, useState } from "react";
 import { useAccount, usePublicClient } from "wagmi";
 import { formatUnits } from "viem";
