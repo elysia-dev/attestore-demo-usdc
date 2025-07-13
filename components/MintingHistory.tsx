@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useAccount, usePublicClient } from "wagmi";
 import { formatUnits } from "viem";
 import { FROM_BLOCK, TOKEN_SYMBOL } from "@/constant";
-import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import ADDRESSES from "@/lib/addresses";
 
@@ -17,14 +16,13 @@ export type MintingHistoryItem = {
   timestamp: number;
 };
 
-export default function MintingHistory() {
+export default function MintingHistory({ showHistory }: { showHistory: boolean }  ) {
   const { address, isConnected } = useAccount();
   const publicClient = usePublicClient();
   const [mintingHistory, setMintingHistory] = useState<MintingHistoryItem[]>(
     []
   );
   const [isLoading, setIsLoading] = useState(false);
-  const [showHistory, setShowHistory] = useState(true);
 
   const fetchMintingHistory = useCallback(async () => {
     if (!address || !publicClient) return;
@@ -132,56 +130,6 @@ export default function MintingHistory() {
 
   return (
     <section className="space-y-[10px]">
-      <div className="flex justify-center">
-        <Button
-          onClick={() => setShowHistory(!showHistory)}
-          variant="outline"
-          className={cn(
-            "bg-white px-8 py-2 h-auto rounded-full border-2 border-gray-400  flex flex-col items-center justify-center transition-all duration-200",
-            "hover:border-gray-500 hover:bg-gray-100 hover:text-black"
-          )}
-          style={{ minWidth: 64 }}
-        >
-          <div
-            className="flex flex-col items-center justify-center relative"
-            style={{ height: 14 }}
-          >
-            <svg
-              width="22"
-              height="10"
-              viewBox="0 0 24 10"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className={`transition-transform duration-200 ${
-                showHistory ? "rotate-180" : ""
-              }`}
-              style={{ marginBottom: -2 }}
-            >
-              <polyline points="6,8 12,2 18,8" />
-            </svg>
-            <svg
-              width="22"
-              height="10"
-              viewBox="0 0 24 10"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className={`transition-transform duration-200 ${
-                showHistory ? "rotate-180" : ""
-              }`}
-              style={{ marginTop: -2 }}
-            >
-              <polyline points="6,8 12,2 18,8" />
-            </svg>
-          </div>
-        </Button>
-      </div>
-
       {showHistory && (
         <section
           className={cn(
@@ -203,18 +151,18 @@ export default function MintingHistory() {
                     "max-sm:rounded-[5px] max-sm:p-3"
                   )}
                 >
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center justify-between mb-4">
                     <h3 className="text font-semibold text-green-600">
                       ✅ Minting Successful
                     </h3>
-                    <span className="text-sm text-gray-500">
+                    <span className="label text-gray-500">
                       {new Date(item.timestamp * 1000).toLocaleDateString()}
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 max-sm:grid-cols-1 gap-x-[15px] gap-y-[10px]">
                     <div className="text">
-                      <span className="text-gray-600 font-chivo-mono text-sm">
+                      <span className="text-gray-600 font-chivo-mono">
                         Amount:
                       </span>
                       <p className="font-chivo-mono font-semibold">
@@ -223,7 +171,7 @@ export default function MintingHistory() {
                     </div>
 
                     <div className="text">
-                      <span className="text-gray-600 font-chivo-mono text-sm">
+                      <span className="text-gray-600 font-chivo-mono">
                         Receiver:
                       </span>
                       <p className="font-chivo-mono">
@@ -232,19 +180,19 @@ export default function MintingHistory() {
                     </div>
 
                     <div className="text">
-                      <span className="text-gray-600 font-chivo-mono text-sm">
+                      <span className="text-gray-600 font-chivo-mono">
                         Intent Hash:
                       </span>
-                      <p className="font-chivo-mono text-xs break-all">
+                      <p className="font-chivo-mono label break-all">
                         {item.intentHash}
                       </p>
                     </div>
 
                     <div className="text">
-                      <span className="text-gray-600 font-chivo-mono text-sm">
+                      <span className="text-gray-600 font-chivo-mono">
                         Transaction:
                       </span>
-                      <p className="font-chivo-mono text-xs break-all">
+                      <p className="font-chivo-mono label break-all">
                         {item.txHash}
                       </p>
                     </div>

@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
-import { Button } from "../ui/button";
-import CustomConnectButton from "./CustomConnectButton";
+import { Button } from "../../ui/button";
+import CustomConnectButton from "../../utils/CustomConnectButton";
 import { faucetLink } from "@/constant";
 import ADDRESSES from "@/lib/addresses";
 
@@ -54,12 +54,7 @@ const WalletStatus = ({
   chainId: number;
 }) => {
   return (
-    <section
-      className={cn(
-        "px-5 py-[15px] bg-white border border-gray-border rounded-[10px] space-y-[15px]",
-        "max-sm:p-3 max-sm:rounded-[5px] max-sm:space-y-2.5"
-      )}
-    >
+    <>
       <section className="flex justify-between items-center max-sm:flex-col max-sm:items-start">
         <CustomConnectButton />
 
@@ -109,7 +104,7 @@ const WalletStatus = ({
           </Button>
         )}
       </section>
-    </section>
+    </>
   );
 };
 

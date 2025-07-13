@@ -15,7 +15,7 @@ import EnrollIntent from "./EnrollIntent";
 import IntentManagement from "./IntentManagement";
 import Redeem from "./Redeem";
 import RedeemRequest from "./RedeemRequest";
-import WalletStatus from "@/components/utils/WalletStatus";
+import WalletStatus from "@/components/step/Signal/WalletStatus";
 import { ErrorContext } from "@/context/ErrorContext";
 import MintingHistory from "@/components/MintingHistory";
 
@@ -54,6 +54,7 @@ export default function Signal({
   const [redeemResult, setRedeemResult] = useState<RedeemResult | null>(null);
   const [accountNumber, setAccountNumber] = useState("");
   const [amount, setAmount] = useState("");
+  const [showHistory, setShowHistory] = useState(true);
 
   const { address } = useAccount();
 
@@ -189,11 +190,68 @@ export default function Signal({
 
   return (
     <>
-      <section>
+      <section className="space-y-[15px]">
         <div className="space-y-[30px] text-center max-sm:space-y-4">
           <h2 className="header">Step 2: Register Your Intent</h2>
-          <WalletStatus isConnected={isConnected} chainId={chainId} />
+          <section
+            className={cn(
+              "px-5 py-[15px] bg-white border border-gray-border rounded-[10px] space-y-[15px]",
+              "max-sm:p-3 max-sm:rounded-[5px] max-sm:space-y-2.5"
+            )}
+            >
+            <WalletStatus isConnected={isConnected} chainId={chainId} />
+            {
+              isConnected && (
+                <Button
+                  onClick={() => setShowHistory(!showHistory)}
+                  variant="outline"
+                  size="max"
+                  className="flex items-center justify-center"
+                >
+                  <div
+                    className="flex flex-col items-center justify-center relative"
+                    style={{ height: 14 }}
+                  >
+                    <svg
+                      width="22"
+                      height="10"
+                      viewBox="0 0 24 10"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className={`transition-transform duration-200 ${
+                        showHistory ? "rotate-180" : ""
+                      }`}
+                      style={{ marginBottom: -2 }}
+                    >
+                      <polyline points="6,8 12,2 18,8" />
+                    </svg>
+                    <svg
+                      width="22"
+                      height="10"
+                      viewBox="0 0 24 10"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className={`transition-transform duration-200 ${
+                        showHistory ? "rotate-180" : ""
+                      }`}
+                      style={{ marginTop: -2 }}
+                    >
+                      <polyline points="6,8 12,2 18,8" />
+                    </svg>
+                  </div>
+                  {showHistory ? "Hide" : "Show" } Minting History
+                </Button>
+              )
+            }
+          </section>
         </div>
+        <MintingHistory showHistory={showHistory} />
         <ToggleSignalMode isOnramp={isOnramp} toggleMode={toggleMode}>
           {renderSignalContent()}
         </ToggleSignalMode>
@@ -232,9 +290,6 @@ const ToggleSignalMode = ({
 }) => {
   return (
     <>
-      <div className="my-2">
-        <MintingHistory />
-      </div>
       <section
         className={cn(
           "border border-gray-border rounded-[10px] px-5 py-[30px] bg-white space-y-[15px]",
