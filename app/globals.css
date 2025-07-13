@@ -91,19 +91,6 @@
   line-height: 16px;
 }
 
-@keyframes border-pulse {
-  0%, 100% {
-    border-color: var(--color-blue-primary);
-  }
-  50% {
-    border-color: color-mix(in srgb, var(--color-blue-primary) 50%, transparent);
-  }
-}
-
-@utility border-pulse {
-  animation: border-pulse 2s ease-in-out infinite;
-}
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
