@@ -6,26 +6,9 @@ import { WagmiProvider } from "wagmi";
 import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { ErrorProvider } from "@/context/ErrorContext";
 import { useSentryTracking } from "@/hooks/useSentryTracking";
-import { createConfig, http } from "wagmi";
-import { injected } from "wagmi/connectors";
-import { anvil, holesky } from "@/lib/network";
+import { config } from "@/lib/wagmi";
 
 const queryClient = new QueryClient();
-
-// Create config directly without dynamic imports
-const isLocal = process.env.NEXT_PUBLIC_CHAIN_NETWORK === "local";
-
-const config = createConfig({
-  chains: isLocal ? [anvil] : [holesky],
-  connectors: [
-    injected(), // MetaMask, Rabby 등 브라우저 확장 지갑
-  ],
-  transports: {
-    [anvil.id]: http(anvil.rpcUrls.default.http[0]),
-    [holesky.id]: http(holesky.rpcUrls.default.http[0]),
-  },
-  ssr: false, // SSR 비활성화
-});
 
 function ProvidersWithTracking({ children }: { children: React.ReactNode }) {
   useSentryTracking();
