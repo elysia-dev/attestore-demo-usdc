@@ -445,21 +445,23 @@ export default function Proof({
               disabled={!issueDate || !certificateNumber || isLoading}
             >
               Generate Transfer Proof
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="21"
-                height="21"
-                viewBox="0 0 21 21"
-                fill="none"
-              >
-                <path
-                  d="M11.75 16.75L18 10.5M18 10.5L11.75 4.25M18 10.5H3"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <div className="max-sm:hidden">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="21"
+                  height="21"
+                  viewBox="0 0 21 21"
+                  fill="none"
+                >
+                  <path
+                    d="M11.75 16.75L18 10.5M18 10.5L11.75 4.25M18 10.5H3"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                </svg>
+              </div>
             </Button>
           )}
         </div>
