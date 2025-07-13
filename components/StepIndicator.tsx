@@ -59,7 +59,7 @@ export function StepIndicator({ currentStep, className }: StepIndicatorProps) {
                   className={cn(
                     "relative flex h-10 w-10 items-center justify-center rounded-full border-2 bg-white transition-all duration-300 max-sm:h-8 max-sm:w-8",
                     isCompleted && "border-blue-primary bg-blue-primary",
-                    isCurrent && "border-blue-primary bg-white animate-pulse",
+                    isCurrent && "border-blue-primary bg-white border-pulse",
                     isUpcoming && "border-gray-border bg-white"
                   )}
                 >
