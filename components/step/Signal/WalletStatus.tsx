@@ -5,7 +5,7 @@ import { faucetLink, TOKEN_SYMBOL } from "@/constant";
 import ADDRESSES from "@/lib/addresses";
 import { useWalletClient, useAccount, usePublicClient } from "wagmi";
 import { formatUnits } from "viem";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { erc20Abi } from "viem";
 
 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -42,7 +42,7 @@ const WalletStatus = ({
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
 
   // KRW 토큰 잔고 가져오기
-  const fetchKrwBalance = async () => {
+  const fetchKrwBalance = useCallback(async () => {
     if (!address || !publicClient) return;
 
     setIsLoadingBalance(true);
@@ -61,13 +61,13 @@ const WalletStatus = ({
     } finally {
       setIsLoadingBalance(false);
     }
-  };
+  }, [address, publicClient]);
 
   useEffect(() => {
     if (isConnected && address) {
       fetchKrwBalance();
     }
-  }, [isConnected, address, publicClient]);
+  }, [isConnected, address, publicClient, fetchKrwBalance]);
 
   const balanceInt = parseInt(krwBalance);
 

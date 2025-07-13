@@ -2,14 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  decodeEventLog,
-  erc20Abi,
-  formatUnits,
-  keccak256,
-  parseUnits,
-  toBytes,
-} from "viem";
+import { decodeEventLog, erc20Abi, keccak256, parseUnits, toBytes } from "viem";
 import { RedeemResult } from "@/components/Home";
 import ADDRESSES from "@/lib/addresses";
 import { ZK_MINTER_ABI } from "@/lib/abi";
@@ -43,11 +36,7 @@ export default function Redeem({
   setRedeemId: (redeemId: number) => void;
   setRedeemResult: (redeemResult: RedeemResult) => void;
 }) {
-  const [isRefreshingUserBalance, setIsRefreshingUserBalance] = useState(false);
   const { setError } = useContext(ErrorContext);
-  const [userTokenBalance, setUserTokenBalance] = useState<bigint | undefined>(
-    undefined
-  );
   const [isProcessing, setIsProcessing] = useState(false);
   const [processStep, setProcessStep] = useState<string>("");
   const [processProgress, setProcessProgress] = useState<{
@@ -57,18 +46,6 @@ export default function Redeem({
 
   const { address } = useAccount();
   const publicClient = usePublicClient();
-
-  const readUserTokenBalance = async () => {
-    if (!address) return;
-
-    const balance = await publicClient?.readContract({
-      address: ADDRESSES.TOKEN,
-      abi: erc20Abi,
-      functionName: "balanceOf",
-      args: [address as `0x${string}`],
-    });
-    setUserTokenBalance(balance);
-  };
 
   const { writeAndWait: approveWrite } = useContractWrite({
     onSuccess: () => {
@@ -224,71 +201,6 @@ export default function Redeem({
         "max-sm:p-3 max-sm:rounded-none max-sm:px-0 max-sm:border-x-0 max-sm:border-b-0 max-sm:pb-0 max-sm:bg-white max-sm:mt-2"
       )}
     >
-      {/* Current Balance */}
-      <p className="body font-bold">
-        <strong
-          className={cn(
-            "text-blue-primary w-4 mr-1",
-            "max-sm:mr-0.5 max-sm:w-3"
-          )}
-        >
-          ◆
-        </strong>{" "}
-        Your Token Balance
-      </p>
-      <section
-        className={cn(
-          "mt-[5px] rounded-[10px] bg-blue-200 px-[15px] py-2.5 border border-gray-border",
-          "max-sm:rounded-[5px] max-sm:px-3 max-sm:py-2.5"
-        )}
-      >
-        <div className="flex items-center justify-between">
-          <p className="text-blue-primary text font-bold">
-            {userTokenBalance ? formatUnits(userTokenBalance, 18) : "0"}{" "}
-            {TOKEN_SYMBOL}
-          </p>
-          <button
-            onClick={async () => {
-              if (isRefreshingUserBalance) return;
-              setIsRefreshingUserBalance(true);
-              await readUserTokenBalance();
-              setIsRefreshingUserBalance(false);
-            }}
-            className={cn(
-              "text-blue-primary hover:text-blue-primary/50 transition-colors duration-200",
-              isRefreshingUserBalance && "animate-spin"
-            )}
-            title="Refresh balance"
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-              <path d="M21 3v5h-5" />
-              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-              <path d="M3 21v-5h5" />
-            </svg>
-          </button>
-        </div>
-
-        <div className="flex items-center mt-[5px]">
-          <p className="text text-gray-600 font-chivo-mono">Address:</p>
-          <span className="text text-gray-600 font-chivo-mono max-sm:hidden">
-            {address}
-          </span>
-          <span className="text text-gray-600 font-chivo-mono hidden max-sm:inline">
-            {`${address?.slice(0, 8)}...${address?.slice(-6)}`}
-          </span>
-        </div>
-      </section>
-
       {/* Create New Redeem Request */}
       {!redeemId && (
         <div className="mt-5 max-sm:mt-3">
