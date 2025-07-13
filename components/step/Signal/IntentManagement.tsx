@@ -6,7 +6,7 @@ import ADDRESSES from "@/lib/addresses";
 import { ZK_MINTER_ABI } from "@/lib/abi";
 import { ErrorType } from "@/lib/errors";
 import { extractErrorMessage } from "@/components/utils/extractErrorMessage";
-import { useContext, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { erc20Abi, formatUnits } from "viem";
 import { usePublicClient } from "wagmi";
@@ -29,24 +29,31 @@ const IntentManagement = ({
 }) => {
   const publicClient = usePublicClient();
   const { setError } = useContext(ErrorContext);
-  const [isRefreshingReceiverBalance, setIsRefreshingReceiverBalance] =
-    useState(false);
 
   const [receiverTokenBalance, setReceiverTokenBalance] = useState<
     bigint | undefined
   >(undefined);
 
-  const readReceiverTokenBalance = async (to: string) => {
-    if (!to) return;
+  const readReceiverTokenBalance = useCallback(
+    async (to: string) => {
+      if (!to) return;
 
-    const balance = await publicClient?.readContract({
-      address: ADDRESSES.TOKEN,
-      abi: erc20Abi,
-      functionName: "balanceOf",
-      args: [to as `0x${string}`],
-    });
-    setReceiverTokenBalance(balance);
-  };
+      const balance = await publicClient?.readContract({
+        address: ADDRESSES.TOKEN,
+        abi: erc20Abi,
+        functionName: "balanceOf",
+        args: [to as `0x${string}`],
+      });
+      setReceiverTokenBalance(balance);
+    },
+    [publicClient]
+  );
+
+  useEffect(() => {
+    if (intentDetails) {
+      readReceiverTokenBalance(intentDetails.to);
+    }
+  }, [intentDetails, readReceiverTokenBalance]);
 
   const { writeAndWait: cancelIntentWrite, isLoading: isCancelIntentLoading } =
     useContractWrite({
@@ -151,36 +158,6 @@ const IntentManagement = ({
                       : "0"}{" "}
                     {TOKEN_SYMBOL}
                   </p>
-
-                  <button
-                    onClick={async () => {
-                      if (isRefreshingReceiverBalance) return;
-                      setIsRefreshingReceiverBalance(true);
-                      await readReceiverTokenBalance(intentDetails.to);
-                      setIsRefreshingReceiverBalance(false);
-                    }}
-                    className={cn(
-                      "text-blue-primary hover:text-blue-primary/50 transition-all duration-200",
-                      isRefreshingReceiverBalance && "animate-spin"
-                    )}
-                    title="Refresh balance"
-                  >
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-                      <path d="M21 3v5h-5" />
-                      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-                      <path d="M3 21v-5h5" />
-                    </svg>
-                  </button>
                 </div>
                 <div className="flex items-center mt-[5px]">
                   <p className="text text-gray-600 font-chivo-mono">Address:</p>
