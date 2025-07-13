@@ -32,28 +32,50 @@ export default function MintingHistory() {
     try {
       setIsLoading(true);
       const currentBlock = await publicClient.getBlockNumber();
-      const logs = await publicClient.getLogs({
-        address: ADDRESSES.ZK_MINTER,
-        event: {
-          type: "event",
-          name: "IntentFulfilled",
-          inputs: [
-            { type: "bytes32", name: "intentHash", indexed: false },
-            { type: "address", name: "verifier", indexed: false },
-            { type: "address", name: "owner", indexed: false },
-            { type: "address", name: "to", indexed: false },
-            { type: "uint256", name: "amount", indexed: false },
-          ],
-        },
-        args: {
-          owner: address, // Filter by current user as owner
-        },
-        fromBlock: BigInt(FROM_BLOCK),
-        toBlock: currentBlock,
-      });
+      const fromBlock = BigInt(FROM_BLOCK);
+      const maxBlockRange = BigInt(50000); // RPC limit
+      
+      let allLogs: any[] = [];
+      let startBlock = fromBlock;
+      
+      // Fetch logs in chunks to respect RPC block range limit
+      while (startBlock <= currentBlock) {
+        const endBlock = startBlock + maxBlockRange > currentBlock 
+          ? currentBlock 
+          : startBlock + maxBlockRange;
+        
+        try {
+          const logs = await publicClient.getLogs({
+            address: ADDRESSES.ZK_MINTER,
+            event: {
+              type: "event",
+              name: "IntentFulfilled",
+              inputs: [
+                { type: "bytes32", name: "intentHash", indexed: false },
+                { type: "address", name: "verifier", indexed: false },
+                { type: "address", name: "owner", indexed: false },
+                { type: "address", name: "to", indexed: false },
+                { type: "uint256", name: "amount", indexed: false },
+              ],
+            },
+            args: {
+              owner: address, // Filter by current user as owner
+            },
+            fromBlock: startBlock,
+            toBlock: endBlock,
+          });
+          
+          allLogs = allLogs.concat(logs);
+        } catch (error) {
+          console.warn(`Failed to fetch logs from ${startBlock} to ${endBlock}:`, error);
+          // Continue with next chunk even if one fails
+        }
+        
+        startBlock = endBlock + BigInt(1);
+      }
 
       const historyWithTimestamps = await Promise.all(
-        logs.map(async (log) => {
+        allLogs.map(async (log: any) => {
           const block = await publicClient.getBlock({
             blockNumber: log.blockNumber,
           });
@@ -81,10 +103,11 @@ export default function MintingHistory() {
         })
       );
 
+
       // Filter out null values and sort by timestamp (newest first)
       const sortedHistory = historyWithTimestamps
-        .filter((item): item is MintingHistoryItem => item !== null)
-        .sort((a, b) => b.timestamp - a.timestamp);
+        .filter((item: any): item is MintingHistoryItem => item !== null)
+        .sort((a: MintingHistoryItem, b: MintingHistoryItem) => b.timestamp - a.timestamp);
 
       setMintingHistory(sortedHistory);
     } catch (error) {
