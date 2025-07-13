@@ -198,57 +198,55 @@ export default function Signal({
               "px-5 py-[15px] bg-white border border-gray-border rounded-[10px] space-y-[15px]",
               "max-sm:p-3 max-sm:rounded-[5px] max-sm:space-y-2.5"
             )}
-            >
+          >
             <WalletStatus isConnected={isConnected} chainId={chainId} />
-            {
-              isConnected && (
-                <Button
-                  onClick={() => setShowHistory(!showHistory)}
-                  variant="outline"
-                  size="max"
-                  className="flex items-center justify-center"
+            {isConnected && (
+              <Button
+                onClick={() => setShowHistory(!showHistory)}
+                variant="outline"
+                size="max"
+                className="flex items-center justify-center"
+              >
+                <div
+                  className="flex flex-col items-center justify-center relative"
+                  style={{ height: 14 }}
                 >
-                  <div
-                    className="flex flex-col items-center justify-center relative"
-                    style={{ height: 14 }}
+                  <svg
+                    width="22"
+                    height="10"
+                    viewBox="0 0 24 10"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className={`transition-transform duration-200 ${
+                      showHistory ? "rotate-180" : ""
+                    }`}
+                    style={{ marginBottom: -2 }}
                   >
-                    <svg
-                      width="22"
-                      height="10"
-                      viewBox="0 0 24 10"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className={`transition-transform duration-200 ${
-                        showHistory ? "rotate-180" : ""
-                      }`}
-                      style={{ marginBottom: -2 }}
-                    >
-                      <polyline points="6,8 12,2 18,8" />
-                    </svg>
-                    <svg
-                      width="22"
-                      height="10"
-                      viewBox="0 0 24 10"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className={`transition-transform duration-200 ${
-                        showHistory ? "rotate-180" : ""
-                      }`}
-                      style={{ marginTop: -2 }}
-                    >
-                      <polyline points="6,8 12,2 18,8" />
-                    </svg>
-                  </div>
-                  {showHistory ? "Hide" : "Show" } Minting History
-                </Button>
-              )
-            }
+                    <polyline points="6,8 12,2 18,8" />
+                  </svg>
+                  <svg
+                    width="22"
+                    height="10"
+                    viewBox="0 0 24 10"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className={`transition-transform duration-200 ${
+                      showHistory ? "rotate-180" : ""
+                    }`}
+                    style={{ marginTop: -2 }}
+                  >
+                    <polyline points="6,8 12,2 18,8" />
+                  </svg>
+                </div>
+                {showHistory ? "Hide" : "Show"} Minting History
+              </Button>
+            )}
           </section>
         </div>
         <MintingHistory showHistory={showHistory} />

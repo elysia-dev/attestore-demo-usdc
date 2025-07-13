@@ -24,3 +24,5 @@ export const FROM_BLOCK =
   process.env.NEXT_PUBLIC_CHAIN_NETWORK === "local"
     ? FROM_BLOCK_LOCAL
     : FROM_BLOCK_PROD;
+
+export const isLocal = process.env.NEXT_PUBLIC_CHAIN_NETWORK === "local";

@@ -1,10 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useCallback, useEffect, useState } from "react";
-import { useAccount, usePublicClient } from "wagmi";
+import { useAccount } from "wagmi";
 import { formatUnits } from "viem";
-import { FROM_BLOCK, TOKEN_SYMBOL } from "@/constant";
+import { TOKEN_SYMBOL } from "@/constant";
 import { cn } from "@/lib/utils";
-import ADDRESSES from "@/lib/addresses";
 
 export type MintingHistoryItem = {
   intentHash: `0x${string}`;
@@ -17,122 +15,44 @@ export type MintingHistoryItem = {
   timestamp: number;
 };
 
-type IntentFulfilledLog = {
-  args: {
-    intentHash?: `0x${string}`;
-    verifier?: `0x${string}`;
-    owner?: `0x${string}`;
-    to?: `0x${string}`;
-    amount?: bigint;
-  };
-  blockNumber: bigint;
-  transactionHash: `0x${string}`;
-};
-
-export default function MintingHistory({ showHistory }: { showHistory: boolean }  ) {
+export default function MintingHistory({
+  showHistory,
+}: {
+  showHistory: boolean;
+}) {
   const { address, isConnected } = useAccount();
-  const publicClient = usePublicClient();
   const [mintingHistory, setMintingHistory] = useState<MintingHistoryItem[]>(
     []
   );
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchMintingHistory = useCallback(async () => {
-    if (!address || !publicClient) return;
+    if (!address) return;
 
     try {
       setIsLoading(true);
-      const currentBlock = await publicClient.getBlockNumber();
-      const fromBlock = BigInt(FROM_BLOCK);
-      const maxBlockRange = BigInt(50000); // RPC limit
-      
-      let allLogs: IntentFulfilledLog[] = [];
-      let startBlock = fromBlock;
-      
-      // Fetch logs in chunks to respect RPC block range limit
-      while (startBlock <= currentBlock) {
-        const endBlock = startBlock + maxBlockRange > currentBlock 
-          ? currentBlock 
-          : startBlock + maxBlockRange;
-        
-        try {
-          const logs = await publicClient.getLogs({
-            address: ADDRESSES.ZK_MINTER,
-            event: {
-              type: "event",
-              name: "IntentFulfilled",
-              inputs: [
-                { type: "bytes32", name: "intentHash", indexed: false },
-                { type: "address", name: "verifier", indexed: false },
-                { type: "address", name: "owner", indexed: false },
-                { type: "address", name: "to", indexed: false },
-                { type: "uint256", name: "amount", indexed: false },
-              ],
-            },
-            args: {
-              owner: address, // Filter by current user as owner
-            },
-            fromBlock: startBlock,
-            toBlock: endBlock,
-          });
-          
-          allLogs = allLogs.concat(logs as IntentFulfilledLog[]);
-        } catch (error) {
-          console.warn(`Failed to fetch logs from ${startBlock} to ${endBlock}:`, error);
-          // Continue with next chunk even if one fails
-        }
-        
-        startBlock = endBlock + BigInt(1);
+
+      // Call our API route instead of querying blockchain directly
+      const response = await fetch(`/api/minting-history?address=${address}`);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch minting history");
       }
 
-      const historyWithTimestamps = await Promise.all(
-        allLogs.map(async (log) => {
-          const block = await publicClient.getBlock({
-            blockNumber: log.blockNumber,
-          });
-
-          if (
-            !log.args.intentHash ||
-            !log.args.verifier ||
-            !log.args.owner ||
-            !log.args.to ||
-            !log.args.amount
-          ) {
-            return null;
-          }
-
-          return {
-            intentHash: log.args.intentHash,
-            verifier: log.args.verifier,
-            owner: log.args.owner,
-            to: log.args.to,
-            amount: log.args.amount,
-            txHash: log.transactionHash,
-            blockNumber: log.blockNumber,
-            timestamp: Number(block.timestamp),
-          };
-        })
-      );
-
-
-      // Filter out null values and sort by timestamp (newest first)
-      const sortedHistory = historyWithTimestamps
-        .filter((item): item is MintingHistoryItem => item !== null)
-        .sort((a, b) => b.timestamp - a.timestamp);
-
-      setMintingHistory(sortedHistory);
+      const data = await response.json();
+      setMintingHistory(data.mintingHistory);
     } catch (error) {
       console.error("Failed to fetch minting history:", error);
     } finally {
       setIsLoading(false);
     }
-  }, [address, publicClient]);
+  }, [address]);
 
   useEffect(() => {
-    if (isConnected && showHistory) {
+    if (isConnected) {
       fetchMintingHistory();
     }
-  }, [isConnected, showHistory, fetchMintingHistory]);
+  }, [isConnected, fetchMintingHistory]);
 
   if (!isConnected) {
     return null;
@@ -179,7 +99,7 @@ export default function MintingHistory({ showHistory }: { showHistory: boolean }
                         Amount:
                       </span>
                       <p className="font-chivo-mono font-semibold">
-                        {formatUnits(item.amount, 18)} {TOKEN_SYMBOL}
+                        {formatUnits(BigInt(item.amount), 18)} {TOKEN_SYMBOL}
                       </p>
                     </div>
 
