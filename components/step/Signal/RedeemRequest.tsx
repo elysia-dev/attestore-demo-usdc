@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { TOKEN_SYMBOL } from "@/constant";
 import { useContractWrite } from "@/hooks/useContractWrite";
 import ADDRESSES from "@/lib/addresses";
-import { ZK_MINTER_ABI } from "@/lib/wagmi";
+import { ZK_MINTER_ABI } from "@/lib/abi";
 import { Dispatch, SetStateAction, useContext } from "react";
 import { formatUnits } from "viem";
 import { ErrorType } from "@/lib/errors";

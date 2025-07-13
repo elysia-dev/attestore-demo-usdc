@@ -12,7 +12,7 @@ import {
 } from "viem";
 import { RedeemResult } from "@/components/Home";
 import ADDRESSES from "@/lib/addresses";
-import { ZK_MINTER_ABI } from "@/lib/wagmi";
+import { ZK_MINTER_ABI } from "@/lib/abi";
 import { useContext, useState } from "react";
 import { useAccount, usePublicClient } from "wagmi";
 import { useContractWrite } from "@/hooks/useContractWrite";

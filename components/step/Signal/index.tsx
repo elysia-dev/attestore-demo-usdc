@@ -9,7 +9,7 @@ import { useContext, useEffect, useState, useCallback } from "react";
 import { useAccount, usePublicClient } from "wagmi";
 import ADDRESSES from "@/lib/addresses";
 import { cn } from "@/lib/utils";
-import { ZK_MINTER_ABI } from "@/lib/wagmi";
+import { ZK_MINTER_ABI } from "@/lib/abi";
 import { ErrorType } from "@/lib/errors";
 import EnrollIntent from "./EnrollIntent";
 import IntentManagement from "./IntentManagement";

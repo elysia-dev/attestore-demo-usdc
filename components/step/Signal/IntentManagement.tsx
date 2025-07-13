@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { TOKEN_SYMBOL } from "@/constant";
 import { useContractWrite } from "@/hooks/useContractWrite";
 import ADDRESSES from "@/lib/addresses";
-import { ZK_MINTER_ABI } from "@/lib/wagmi";
+import { ZK_MINTER_ABI } from "@/lib/abi";
 import { ErrorType } from "@/lib/errors";
 import { extractErrorMessage } from "@/components/utils/extractErrorMessage";
 import { useContext, useState } from "react";

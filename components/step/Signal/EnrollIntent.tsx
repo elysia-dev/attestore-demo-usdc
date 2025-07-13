@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { useContractWrite } from "@/hooks/useContractWrite";
 import { TOKEN_SYMBOL } from "@/constant";
 import ADDRESSES from "@/lib/addresses";
-import { ZK_MINTER_ABI } from "@/lib/wagmi";
+import { ZK_MINTER_ABI } from "@/lib/abi";
 import { decodeEventLog, keccak256, parseUnits, toBytes } from "viem";
 import { useContext, useState } from "react";
 import { ErrorType } from "@/lib/errors";

@@ -6,7 +6,7 @@ import FulfillmentResultComponent from "../FulfillmentResult";
 import { decodeEventLog, encodeAbiParameters, keccak256, toBytes } from "viem";
 import { useContractWrite } from "@/hooks/useContractWrite";
 import ADDRESSES from "@/lib/addresses";
-import { ZK_MINTER_ABI } from "@/lib/wagmi";
+import { ZK_MINTER_ABI } from "@/lib/abi";
 import { ErrorType } from "@/lib/errors";
 import { useContext } from "react";
 import { ErrorContext } from "@/context/ErrorContext";

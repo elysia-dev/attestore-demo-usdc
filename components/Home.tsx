@@ -13,7 +13,7 @@ import React, { useEffect, useState, useRef, useContext } from "react";
 
 import { useAccount, useChainId, useDisconnect, usePublicClient } from "wagmi";
 import ADDRESSES from "@/lib/addresses";
-import { ZK_MINTER_ABI } from "@/lib/wagmi";
+import { ZK_MINTER_ABI } from "@/lib/abi";
 import { ErrorType } from "@/lib/errors";
 import Connect from "./step/Connect";
 import Signal from "./step/Signal/index";
