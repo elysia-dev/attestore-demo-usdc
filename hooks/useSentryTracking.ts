@@ -1,3 +1,4 @@
+"use client";
 import { useEffect } from "react";
 import { useAccount, useChainId } from "wagmi";
 import { setWalletContext, trackUserAction } from "@/lib/sentry-utils";
