@@ -34,6 +34,17 @@ export const metadata: Metadata = {
   title: "Zenie - KRW Stablecoin Infra",
   description:
     "Zenie by ELYSIA enables KRW stablecoin issuance through simple KRW transfers using a zkTLS-based WebProof infrastructure tailored to Korea’s regulatory landscape.",
+
+  manifest: "/site.webmanifest",
+  themeColor: "#0074e5",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
+      { url: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+  },
 };
 
 export default function RootLayout({

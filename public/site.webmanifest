@@ -1,0 +1,20 @@
+{
+  "name": "Zenie - KRW Stablecoin Infra",
+  "short_name": "Zenie",
+  "icons": [
+    {
+      "src": "/favicon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "type": "image/png",
+      "sizes": "180x180"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#0074e5",
+  "background_color": "#FFFFFF"
+}
