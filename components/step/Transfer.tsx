@@ -78,7 +78,7 @@ export default function Transfer({
 
   return (
     <section className="space-y-[20px]">
-      <h2 className="header text-center">Step 3: Toss Transfer</h2>
+      <h2 className="header text-center">Step 3: Bank Transfer</h2>
 
       {/* 토스 송금 데모 비디오 */}
       <section
@@ -126,7 +126,7 @@ export default function Transfer({
         isOpen={isVideoPopupOpen}
         onClose={() => setIsVideoPopupOpen(false)}
         videoSrc="/tossbank_transfer_korean_.mp4"
-        title="Toss Transfer Demo"
+        title="Bank Transfer Demo"
       />
 
       {/* 토스 송금 안내 - Intent ID가 있을 때만 표시 */}
@@ -141,14 +141,15 @@ export default function Transfer({
             <strong className="text-blue-primary w-4 mr-1 max-sm:mr-0.5 max-sm:w-3">
               ◆
             </strong>{" "}
-            Send money via Toss app
+            Send money via Bank app
           </p>
           <div className="space-y-[5px] text text-gray-600 pl-4 mt-[15px] max-sm:pl-3.5 max-sm:mt-2.5">
             <p>
-              1. Send KRW WON to the recipient via <strong>Toss app.</strong>
+              1. Send KRW WON to the recipient via <strong>Bank app.</strong>
             </p>
             <p>
-              2. You <strong>must use Toss</strong> as the sending bank.
+              2. You <strong>must use Toss (In this version)</strong> as the
+              sending bank.
             </p>
           </div>
           {/* QR Code for Toss payment */}
@@ -162,7 +163,7 @@ export default function Transfer({
             size="max"
             className="flex items-center gap-2 justify-center sm:hidden mt-5"
           >
-            Send via Toss App
+            Send via Bank App
             <ExternalLinkIcon />
           </Button>
           {fallback && (
@@ -175,7 +176,7 @@ export default function Transfer({
               variant="outline"
               className="flex items-center gap-2 justify-center sm:hidden mt-2"
             >
-              Install Toss App
+              Install Bank App
               <ExternalLinkIcon />
             </Button>
           )}
@@ -189,8 +190,7 @@ export default function Transfer({
             <div className="flex items-center gap-1 max-sm:flex-col max-sm:items-start max-sm:space-y-1">
               <p className="text mr-1">· Recipient Name :</p>
               <p className="text flex-1 flex justify-center sm:justify-start max-sm:w-full max-sm:border max-sm:border-gray-border max-sm:rounded-[5px] max-sm:p-[5px]">
-                <strong className="mr-1">이 현 민</strong>(Modori Tossbank
-                account)
+                <strong className="mr-1">이 현 민</strong>(Bank account)
               </p>
             </div>
             <div className="flex items-center gap-1 max-sm:flex-col max-sm:items-start max-sm:space-y-1">

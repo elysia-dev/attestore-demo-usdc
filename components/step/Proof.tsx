@@ -250,7 +250,7 @@ export default function Proof({
                 <div className="space-y-1">
                   <p>
                     · remote server generates tls proof using attestor-server
-                    for the Toss transfer
+                    for the Bank transfer
                   </p>
                   <p>· remote server sends the proof to the attestor-server</p>
                   <p>
@@ -295,7 +295,7 @@ export default function Proof({
         isOpen={showGuide}
         onClose={() => setShowGuide(false)}
         videoSrc="/tossbank_transfer_korean_.mp4"
-        title="Toss Transfer Demo"
+        title="Bank Transfer Demo"
       />
       <form onSubmit={handleGenerateProof} className="space-y-6">
         <section className="mt-5 p-5 bg-white border border-gray-border rounded-[10px] space-y-2.5">

@@ -37,7 +37,7 @@ export default function Connect() {
               Privacy_First
             </h4>
             <p className="text text-gray-600">
-              Generate cryptographic proofs of your Toss bank transfers without
+              Generate cryptographic proofs of your Bank transfers without
               revealing sensitive transaction details.
             </p>
           </Description>
@@ -79,7 +79,7 @@ export default function Connect() {
           <p className="text">
             <strong className="text-blue-primary">◆ How it works:</strong>
             <br className="sm:hidden" />
-            Create an intent → Transfer via Toss → Generate ZK proof → Mint
+            Create an intent → Transfer via Bank → Generate ZK proof → Mint
             tokens
           </p>
         </section>
