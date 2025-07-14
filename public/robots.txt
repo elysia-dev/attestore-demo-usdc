@@ -1,0 +1,4 @@
+User-agent: *
+Allow:/
+
+Sitemap: https://zenie.elysia.land/sitemap.xml

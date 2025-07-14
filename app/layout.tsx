@@ -31,8 +31,9 @@ const chivoMono = Chivo_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Zenie(ZK Escrow)",
-  description: "Zero-Knowledge Escrow System Demo",
+  title: "Zenie - KRW Stablecoin Infra",
+  description:
+    "Zenie by ELYSIA enables KRW stablecoin issuance through simple KRW transfers using a zkTLS-based WebProof infrastructure tailored to Korea’s regulatory landscape.",
 };
 
 export default function RootLayout({
