@@ -47,7 +47,9 @@ export default function RootLayout({
       >
         <Header />
         <Providers>
-          <div className="pt-[84px] max-sm:pt-[64px]">{children}</div>
+          <div className="pt-[calc(64px+36px+70px)] max-sm:pt-[calc(64px+36px+30px)]">
+            {children}
+          </div>
         </Providers>
       </body>
     </html>

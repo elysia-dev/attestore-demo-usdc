@@ -36,14 +36,13 @@
 }
 
 @utility title {
-  font-size: 70px;
+  font-size: 60px;
   font-weight: 700;
-  line-height: 88px;
+  line-height: 72px;
   font-family: var(--font-jakarta-sans);
   @media (max-width: 948px) {
     font-size: 6.8cqw;
     white-space: nowrap;
-    text-align: center;
     line-height: 1.2;
     width: 100%;
   }
@@ -92,11 +91,16 @@
 }
 
 @keyframes border-pulse {
-  0%, 100% {
+  0%,
+  100% {
     border-color: var(--color-blue-primary);
   }
   50% {
-    border-color: color-mix(in srgb, var(--color-blue-primary) 50%, transparent);
+    border-color: color-mix(
+      in srgb,
+      var(--color-blue-primary) 50%,
+      transparent
+    );
   }
 }
 

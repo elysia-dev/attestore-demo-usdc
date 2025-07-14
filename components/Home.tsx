@@ -294,7 +294,7 @@ export default function Home() {
       )}
     >
       <div className="max-w-container mx-auto max-sm:w-full">
-        <h2 className="title">ZK Escrow Transfer System</h2>
+        <h2 className="title text-center">ZK Escrow Transfer System</h2>
 
         {isConnected && <StepIndicator currentStep={currentStep} />}
 
