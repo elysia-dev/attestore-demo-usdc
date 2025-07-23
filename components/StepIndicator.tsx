@@ -25,25 +25,18 @@ export function StepIndicator({ currentStep, className }: StepIndicatorProps) {
   const currentStepIndex = steps.findIndex((s) => s.step === currentStep);
 
   return (
-    <div
-      className={cn(
-        "w-full max-w-[600px] mx-auto my-10 max-sm:mb-6",
-        className
-      )}
-    >
+    <div className={cn("w-full", className)}>
       <div className="relative">
         {/* Background line */}
-        <div className="absolute left-[20px] right-[20px] top-[20px] h-[2px] bg-gray-border max-sm:left-[16px] max-sm:right-[16px] max-sm:top-[16px]" />
+        <div className="absolute left-0 right-0 top-4 h-[2px] bg-border/20 rounded-full" />
+        
         {/* Progress line */}
         <div
-          className="absolute left-[20px] top-[20px] h-[2px] bg-blue-primary transition-all duration-500 ease-out max-sm:left-[16px] max-sm:top-[16px]"
+          className="absolute left-0 top-4 h-[2px] bg-primary transition-all duration-700 ease-out rounded-full shadow-[0_0_10px_rgba(255,0,122,0.5)]"
           style={{
-            width:
-              currentStepIndex > 0
-                ? `calc(${(currentStepIndex / (steps.length - 1)) * 100}% - ${
-                    40 / (steps.length - 1)
-                  }px)`
-                : "0",
+            width: currentStepIndex > 0
+              ? `${(currentStepIndex / (steps.length - 1)) * 100}%`
+              : "0",
           }}
         />
 
@@ -54,47 +47,31 @@ export function StepIndicator({ currentStep, className }: StepIndicatorProps) {
             const isUpcoming = index > currentStepIndex;
 
             return (
-              <div key={step.step} className="flex flex-col items-center gap-2">
+              <div key={step.step} className="flex flex-col items-center gap-1">
                 <div
                   className={cn(
-                    "relative flex h-10 w-10 items-center justify-center rounded-full border-2 bg-white transition-all duration-300 max-sm:h-8 max-sm:w-8",
-                    isCompleted && "border-blue-primary bg-blue-primary",
-                    isCurrent && "border-blue-primary bg-white border-pulse",
-                    isUpcoming && "border-gray-border bg-white"
+                    "relative flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all duration-500",
+                    isCompleted && "border-primary bg-primary shadow-[0_0_15px_rgba(255,0,122,0.5)]",
+                    isCurrent && "border-primary bg-primary shadow-[0_0_20px_rgba(255,0,122,0.6)] animate-pulse",
+                    isUpcoming && "border-border bg-secondary/50"
                   )}
                 >
-                  {isCompleted ? (
-                    <svg
-                      className="h-5 w-5 text-white max-sm:h-4 max-sm:w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={3}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
+                  {(isCompleted || isCurrent) ? (
+                    <span className="text-xs font-bold text-primary-foreground">
+                      {index + 1}
+                    </span>
                   ) : (
-                    <span
-                      className={cn(
-                        "text-sm font-semibold transition-colors max-sm:text-xs",
-                        isCurrent && "text-blue-primary",
-                        isUpcoming && "text-gray-500"
-                      )}
-                    >
-                      {step.number}
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {index + 1}
                     </span>
                   )}
                 </div>
 
                 <span
                   className={cn(
-                    "text-xs font-medium transition-colors max-sm:text-[10px]",
-                    (isCompleted || isCurrent) && "text-blue-primary",
-                    isUpcoming && "text-gray-500"
+                    "text-[10px] font-medium transition-all duration-300",
+                    (isCompleted || isCurrent) && "text-foreground opacity-100",
+                    isUpcoming && "text-muted-foreground opacity-60"
                   )}
                 >
                   {step.label}

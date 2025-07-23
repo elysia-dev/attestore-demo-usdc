@@ -14,10 +14,13 @@ export default function ProofResultComponent({
   return (
     <div>
       {proofResult.data?.extractedParameters && (
-        <div className="bg-white p-4 rounded border mb-4">
-          <h3 className="text font-semibold mb-4">✅ Proof Generated</h3>
+        <div className="p-4 rounded-lg">
+          <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+            <span className="text-green-500">✅</span>
+            Proof Generated
+          </h3>
           <div className="mt-3">
-            <pre className="bg-gray-100 p-3 rounded text-xs overflow-auto max-h-96 border">
+            <pre className="bg-secondary/50 p-3 rounded-lg text-xs overflow-auto max-h-96 border border-border/50 text-muted-foreground font-mono">
               {JSON.stringify(proofResult.data.extractedParameters, null, 2)}
             </pre>
           </div>

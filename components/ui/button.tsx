@@ -5,21 +5,21 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center disabled:opacity-50 justify-center gap-[5px] whitespace-nowrap rounded-full font-medium disabled:pointer-events-none [&_svg]:pointer-events-none shrink-0 [&_svg]:shrink-0 outline-none cursor-pointer transition-all duration-200",
+  "inline-flex items-center disabled:opacity-50 justify-center gap-2 whitespace-nowrap rounded-full font-medium disabled:pointer-events-none disabled:cursor-not-allowed [&_svg]:pointer-events-none shrink-0 [&_svg]:shrink-0 outline-none cursor-pointer transition-all duration-300 hover:shadow-lg",
   {
     variants: {
       variant: {
-        default: "bg-blue-primary text-white hover:bg-blue-primary/80",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(255,0,122,0.3)] hover:shadow-[0_0_30px_rgba(255,0,122,0.4)]",
         destructive:
-          "bg-destructive text-white shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
-          "border border-black text-black hover:bg-black hover:text-white",
+          "border border-border bg-secondary/50 hover:bg-secondary/70 text-foreground",
         outlineBlue:
-          "border border-blue-primary text-blue-primary hover:bg-blue-primary hover:text-white",
+          "border border-primary/20 text-primary bg-primary/10 hover:bg-primary/20",
         secondary:
-          "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
+          "bg-secondary/50 text-secondary-foreground hover:bg-secondary/70 border border-border/50",
         ghost:
-          "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
+          "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

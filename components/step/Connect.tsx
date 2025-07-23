@@ -3,100 +3,53 @@ import CustomConnectButton from "../utils/CustomConnectButton";
 
 export default function Connect() {
   return (
-    <section>
-      <div className="space-y-[15px] text-center max-sm:space-y-2">
-        <h2 className="header">Step 1: Connect Wallet</h2>
-        <p className="body">
-          Connect your wallet to get started with secure, private, and
-          verifiable cross-chain transfers.
+    <section className="space-y-6">
+      <div className="text-center space-y-4">
+        <p className="text-sm text-muted-foreground">
+          Connect your wallet to get started
         </p>
+        <div className="flex justify-center">
+          <CustomConnectButton />
+        </div>
       </div>
-      <div className="flex justify-center my-[30px] max-sm:my-5">
-        <CustomConnectButton />
-      </div>
+
       {/* Application Description */}
+      <div className="space-y-4 pt-6 border-t border-border/50">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="p-4 rounded-lg bg-secondary/50 space-y-1 transition-all duration-300 hover:bg-secondary/70 hover:scale-105 cursor-default">
+            <h4 className="text-sm font-semibold text-primary">Privacy First</h4>
+            <p className="text-xs text-muted-foreground">
+              Zero-knowledge proofs protect your data
+            </p>
+          </div>
+          <div className="p-4 rounded-lg bg-secondary/50 space-y-1 transition-all duration-300 hover:bg-secondary/70 hover:scale-105 cursor-default">
+            <h4 className="text-sm font-semibold text-primary">Instant Bridge</h4>
+            <p className="text-xs text-muted-foreground">
+              Bank to blockchain in seconds
+            </p>
+          </div>
+          <div className="p-4 rounded-lg bg-secondary/50 space-y-1 transition-all duration-300 hover:bg-secondary/70 hover:scale-105 cursor-default">
+            <h4 className="text-sm font-semibold text-primary">Verified</h4>
+            <p className="text-xs text-muted-foreground">
+              TLS attestation ensures authenticity
+            </p>
+          </div>
+          <div className="p-4 rounded-lg bg-secondary/50 space-y-1 transition-all duration-300 hover:bg-secondary/70 hover:scale-105 cursor-default">
+            <h4 className="text-sm font-semibold text-primary">Cross-Chain</h4>
+            <p className="text-xs text-muted-foreground">
+              Works across multiple networks
+            </p>
+          </div>
+        </div>
 
-      <section
-        className={cn(
-          "rounded-[10px] bg-white border border-gray-border py-[30px] px-5",
-          "max-sm:p-4 max-sm:rounded-[5px]"
-        )}
-      >
-        <p className="text">
-          A revolutionary blockchain application that bridges traditional
-          banking with decentralized finance using Zero-Knowledge proofs.
-        </p>
-        <section
-          className={cn(
-            "grid md:grid-cols-2 gap-x-2.5 gap-y-[22px] mt-6",
-            "max-sm:grid-cols-1 max-sm:gap-y-2.5 max-sm:mt-4"
-          )}
-        >
-          <Description>
-            <h4 className="body text-blue-primary font-semibold">
-              Privacy_First
-            </h4>
-            <p className="text text-gray-600">
-              Generate cryptographic proofs of your Bank transfers without
-              revealing sensitive transaction details.
-            </p>
-          </Description>
-          <Description>
-            <h4 className="body text-blue-primary font-semibold">
-              Seamless Bridge
-            </h4>
-            <p className="text text-gray-600">
-              Convert your traditional bank transfers into blockchain tokens
-              through automated escrow mechanisms.
-            </p>
-          </Description>
-          <Description>
-            <h4 className="body text-blue-primary font-semibold">
-              Instant Verification
-            </h4>
-            <p className="text text-gray-600">
-              Real-time validation of bank transfers using TLS attestation and
-              zero-knowledge cryptography.
-            </p>
-          </Description>
-          <Description>
-            <h4 className="body text-blue-primary font-semibold">
-              Cross-Chain Ready
-            </h4>
-            <p className="text text-gray-600">
-              Built for interoperability across multiple blockchain networks and
-              traditional financial systems.
-            </p>
-          </Description>
-        </section>
-
-        <section
-          className={cn(
-            "border border-gray-border rounded-[10px] p-5 mt-8 bg-blue-200",
-            "max-sm:p-3 max-sm:rounded-[5px] max-sm:mt-4"
-          )}
-        >
-          <p className="text">
-            <strong className="text-blue-primary">◆ How it works:</strong>
-            <br className="sm:hidden" />
-            Create an intent → Transfer via Bank → Generate ZK proof → Mint
-            tokens
+        <div className="p-4 rounded-lg bg-primary/10 border border-primary/20 transition-all duration-300 hover:bg-primary/20">
+          <p className="text-sm text-center">
+            <span className="text-primary font-semibold">How it works:</span>{" "}
+            Create intent → Transfer → Prove → Mint
           </p>
-        </section>
-      </section>
+        </div>
+      </div>
     </section>
   );
 }
 
-const Description = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <div
-      className={cn(
-        "px-5 py-[25px] border rounded-[10px] border-gray-border bg-white space-y-[10px]",
-        "max-sm:p-3 max-sm:rounded-[5px] max-sm:space-y-1"
-      )}
-    >
-      {children}
-    </div>
-  );
-};

@@ -10,14 +10,12 @@ const CustomConnectButton = () => {
         const connected = mounted && account && chain;
         if (!connected) {
           return (
-            <Button
-              variant="default"
-              size="lg"
+            <button
               onClick={openConnectModal}
-              className="font-bold max-sm:w-full"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 rounded-full font-semibold transition-all duration-200 hover:shadow-[0_0_30px_rgba(255,0,122,0.4)] shadow-[0_0_20px_rgba(255,0,122,0.3)] w-full"
             >
               Connect Wallet
-            </Button>
+            </button>
           );
         }
 
@@ -33,40 +31,36 @@ const CustomConnectButton = () => {
         return (
           <button
             onClick={openAccountModal}
-            className="flex items-center space-x-[5px] rounded-full pl-5 pr-2.5 py-[5px] shadow-md bg-white max-sm:w-full max-sm:px-2 max-sm:justify-between"
+            className="flex items-center gap-3 rounded-full pl-3 pr-3 py-2 bg-secondary/30 hover:bg-secondary/40 transition-all duration-200 border border-border/50"
           >
-            <span className="body font-semibold max-sm:mr-2.5 whitespace-nowrap flex-3">
-              {balance}
-            </span>
-            <div className="flex shadow-inner items-center space-x-[5px] rounded-full bg-gray-100 px-2.5 py-[5px] max-sm:justify-between flex-8">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-foreground">
+                {balance}
+              </span>
               {hasEnsAvatar ? (
                 <Image
                   src={account.ensAvatar ?? ""}
                   alt="ENS"
-                  className="h-6 w-6 rounded-full max-sm:h-5 max-sm:w-5"
-                  width={24}
-                  height={24}
+                  className="h-8 w-8 rounded-full border border-border/50"
+                  width={32}
+                  height={32}
                 />
               ) : (
                 <span
-                  className="flex h-6 w-6 items-center justify-center rounded-full text-[13px] max-sm:h-5 max-sm:w-5"
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium border border-border/50"
                   style={{ backgroundColor: color }}
                 >
                   {emoji}
                 </span>
               )}
-              <span className="body font-semibold whitespace-nowrap">
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/50">
+              <span className="text-sm font-medium text-foreground">
                 {account.displayName}
               </span>
-              <div className="flex items-center justify-center w-[25px] h-[25px] rounded-full bg-white shadow-md max-sm:w-5 max-sm:h-5">
-                <Image
-                  src="/arrow-down.svg"
-                  alt="arrow-down"
-                  width={15}
-                  height={8}
-                  className="max-sm:scale-75"
-                />
-              </div>
+              <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
             </div>
           </button>
         );

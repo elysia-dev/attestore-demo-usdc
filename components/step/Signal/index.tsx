@@ -190,64 +190,36 @@ export default function Signal({
 
   return (
     <>
-      <section className="space-y-[15px]">
-        <div className="space-y-[30px] text-center max-sm:space-y-4">
-          <h2 className="header">Step 2: Register Your Intent</h2>
-          <section
-            className={cn(
-              "px-5 py-[15px] bg-white border border-gray-border rounded-[10px] space-y-[15px]",
-              "max-sm:p-3 max-sm:rounded-[5px] max-sm:space-y-2.5"
-            )}
-          >
+      <section className="space-y-6">
+        <div className="text-center space-y-4">
+          <div className="space-y-4">
             <WalletStatus isConnected={isConnected} chainId={chainId} />
             {isConnected && (
-              <Button
+              <button
                 onClick={() => setShowHistory(!showHistory)}
-                variant="outline"
-                size="max"
-                className="flex items-center justify-center"
+                className="w-full px-4 py-3 rounded-full bg-secondary/30 hover:bg-secondary/40 transition-all duration-200 border border-border/50 flex items-center justify-center gap-2 text-sm font-medium"
               >
-                <div
-                  className="flex flex-col items-center justify-center relative"
-                  style={{ height: 14 }}
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  className={`transition-transform duration-200 ${
+                    showHistory ? "" : "rotate-180"
+                  }`}
                 >
-                  <svg
-                    width="22"
-                    height="10"
-                    viewBox="0 0 24 10"
-                    fill="none"
+                  <path
+                    d="M5 7.5L10 12.5L15 7.5"
                     stroke="currentColor"
-                    strokeWidth="2.5"
+                    strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className={`transition-transform duration-200 ${
-                      showHistory ? "rotate-180" : ""
-                    }`}
-                    style={{ marginBottom: -2 }}
-                  >
-                    <polyline points="6,8 12,2 18,8" />
-                  </svg>
-                  <svg
-                    width="22"
-                    height="10"
-                    viewBox="0 0 24 10"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className={`transition-transform duration-200 ${
-                      showHistory ? "rotate-180" : ""
-                    }`}
-                    style={{ marginTop: -2 }}
-                  >
-                    <polyline points="6,8 12,2 18,8" />
-                  </svg>
-                </div>
+                  />
+                </svg>
                 {showHistory ? "Hide" : "Show"} Minting History
-              </Button>
+              </button>
             )}
-          </section>
+          </div>
         </div>
         <MintingHistory showHistory={showHistory} />
         <ToggleSignalMode isOnramp={isOnramp} toggleMode={toggleMode}>
@@ -256,21 +228,18 @@ export default function Signal({
       </section>
 
       {isOnramp && !disableNextStep && (
-        <div className="text-left mt-5">
-          <Button
+        <div className="mt-6">
+          <button
             onClick={() => {
               setCurrentStep(WorkflowStep.TRANSFER);
               freeError();
             }}
             disabled={disableNextStep}
-            size="max"
-            className="mt-2.5 flex items-center gap-[5px]"
+            className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-8 py-3 rounded-full font-semibold transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-2"
           >
             Next
-            <div className="max-sm:scale-75">
-              <ArrowIcon />
-            </div>
-          </Button>
+            <ArrowIcon />
+          </button>
         </div>
       )}
     </>
@@ -288,65 +257,55 @@ const ToggleSignalMode = ({
 }) => {
   return (
     <>
-      <section
-        className={cn(
-          "border border-gray-border rounded-[10px] px-5 py-[30px] bg-white space-y-[15px]",
-          "max-sm:p-3 max-sm:rounded-[5px] max-sm:space-y-2.5"
-        )}
-      >
-        <div className="flex justify-between items-start max-sm:flex-col max-sm:items-start max-sm:space-y-2.5">
-          <section className="space-y-[5px]">
-            <h3 className="body text-black">
-              <span
-                className={cn(
-                  "mr-1 w-4 inline-block",
-                  "max-sm:mr-0.5 max-sm:w-3",
-                  isOnramp ? "text-blue-600" : "text-black"
-                )}
+      <section className="space-y-6">
+        <div className="bg-secondary/30 rounded-2xl p-5 border border-border/50">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <span className={cn(
+                "text-2xl",
+                isOnramp ? "text-primary" : "text-foreground"
+              )}>◆</span>
+              <div>
+                <h3 className="text-base font-semibold">
+                  {isOnramp ? "Onramp" : "Offramp"}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {isOnramp ? "KRW WON → KRW tokens" : "KRW tokens → KRW WON"}
+                </p>
+              </div>
+            </div>
+            <div className="relative bg-secondary/50 rounded-full p-0.5">
+              <button
+                onClick={toggleMode}
+                className="relative flex items-center"
               >
-                ◆
-              </span>
-              <strong className="mr-1 font-bold max-sm:mr-0.5">
-                {isOnramp ? "Onramp" : "Offramp"}
-              </strong>
-              <p className="text ml-5 max-sm:ml-3.5">
-                {isOnramp ? "KRW WON → KRW tokens" : "KRW tokens → KRW WON"}
-              </p>
-            </h3>
-          </section>
-          {/* Mode Toggle Slider */}
-          <button
-            onClick={toggleMode}
-            className={cn(
-              "relative text-[14px] leading-[18px] inline-flex font-semibold p-[5px] items-center rounded-full border border-gray-border bg-white",
-              "max-sm:w-full"
-            )}
-          >
-            <span
-              className={cn(
-                "absolute inset-y-[5px] left-0 w-[calc(50%-5px)] rounded-full px-[7px] py-[3px]  transition-all duration-200 ease-out",
-                isOnramp
-                  ? "translate-x-[5px] bg-blue-600"
-                  : "translate-x-[calc(100%+5px)] bg-black"
-              )}
-            />
-            <div
-              className={cn(
-                "relative z-10 flex-1 text-center px-[7px] py-[3px] transition-all duration-200",
-                isOnramp ? "text-white" : "text-[rgba(73,73,73,0.70)]"
-              )}
-            >
-              Onramp
+                <span
+                  className={cn(
+                    "absolute h-9 w-[88px] rounded-full bg-primary transition-all duration-300 ease-out shadow-[0_0_15px_rgba(255,0,122,0.4)]",
+                    isOnramp
+                      ? "translate-x-0"
+                      : "translate-x-[88px]"
+                  )}
+                />
+                <div
+                  className={cn(
+                    "relative z-10 px-6 py-2 text-sm font-medium transition-all duration-200 rounded-full",
+                    isOnramp ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Onramp
+                </div>
+                <div
+                  className={cn(
+                    "relative z-10 px-6 py-2 text-sm font-medium transition-all duration-200 rounded-full",
+                    !isOnramp ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Offramp
+                </div>
+              </button>
             </div>
-            <div
-              className={cn(
-                "relative z-10 flex-1 text-center px-[7px] py-[3px] transition-all duration-200",
-                !isOnramp ? "text-white" : "text-[rgba(73,73,73,0.70)]"
-              )}
-            >
-              Offramp
-            </div>
-          </button>
+          </div>
         </div>
 
         {children}
@@ -358,16 +317,15 @@ const ToggleSignalMode = ({
 const ArrowIcon = () => {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="21"
-      height="21"
-      viewBox="0 0 21 21"
+      width="20"
+      height="20"
+      viewBox="0 0 20 20"
       fill="none"
     >
       <path
-        d="M11.75 16.75L18 10.5M18 10.5L11.75 4.25M18 10.5H3"
-        stroke="white"
-        strokeWidth="1.5"
+        d="M7.5 15L12.5 10L7.5 5"
+        stroke="currentColor"
+        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />

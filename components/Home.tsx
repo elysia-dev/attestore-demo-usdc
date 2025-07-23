@@ -287,25 +287,72 @@ export default function Home() {
   };
 
   return (
-    <main
-      className={cn(
-        "min-h-screen bg-white pb-20 pt-[32px] px-4 min-w-[320px]",
-        "max-sm:pt-[12px] max-sm:pb-10 max-sm:px-0 max-sm:w-[90%] max-sm:mx-auto"
-      )}
-    >
-      <div className="max-w-container mx-auto max-sm:w-full">
-        <h2 className="title text-center">ZK Escrow Transfer System</h2>
+    <main className="min-h-screen relative overflow-hidden">
+      {/* Animated background - exactly like Zenie USDC */}
+      <div className="absolute inset-0 bg-gradient-radial" />
+      <div className="absolute inset-0">
+        {/* Pink blob - top left */}
+        <div className="absolute top-10 -left-10 sm:top-20 sm:left-20 w-40 h-40 sm:w-56 md:w-72 sm:h-56 md:h-72 bg-pink-500 rounded-full mix-blend-screen filter blur-xl opacity-20 animate-blob" />
+        {/* Purple blob - top right */}
+        <div
+          className="absolute top-1/4 -right-10 sm:top-40 sm:right-20 w-32 h-32 sm:w-48 md:w-72 sm:h-48 md:h-72 bg-purple-500 rounded-full mix-blend-screen filter blur-xl opacity-20 animate-blob"
+          style={{ animationDelay: "2s" }}
+        />
+        {/* Blue blob - bottom */}
+        <div
+          className="absolute bottom-20 left-1/4 sm:-bottom-20 sm:left-40 w-36 h-36 sm:w-56 md:w-72 sm:h-56 md:h-72 bg-blue-500 rounded-full mix-blend-screen filter blur-xl opacity-20 animate-blob"
+          style={{ animationDelay: "4s" }}
+        />
+      </div>
+      
+      <div className="relative z-10 min-h-screen">
+        {/* Header */}
+        <div className="px-4 py-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center justify-center">
+              <h1 className="text-2xl font-bold">
+                <span className="text-gradient">ZK Escrow Transfer System</span>
+              </h1>
+            </div>
+          </div>
+        </div>
 
-        {isConnected && <StepIndicator currentStep={currentStep} />}
+        {/* Main content */}
+        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-120px)] px-4">
+          <div className="w-full max-w-md">
+            {/* Subtitle */}
+            <p className="text-center text-muted-foreground mb-8">
+              Instant KRW to USDC swaps powered by zero-knowledge proofs
+            </p>
 
-        <section
-          className={cn(
-            "mt-15 p-15 bg-gray-300 rounded-[10px] border min-w-[320px] border-gray-border",
-            "max-sm:py-5 max-sm:px-2.5 max-sm:mt-8 max-sm:rounded-[5px]"
-          )}
-        >
-          {renderStepContent()}
-        </section>
+            {/* Step Indicator */}
+            {isConnected && (
+              <div className="mb-8">
+                <StepIndicator currentStep={currentStep} />
+              </div>
+            )}
+
+            {/* Card */}
+            <div className="bg-card/80 rounded-[32px] p-6 backdrop-blur-xl border border-border/50 shadow-2xl glow">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold">Swap</h2>
+                <button className="text-muted-foreground hover:text-foreground transition-colors p-2 hover:bg-secondary/30 rounded-lg">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </button>
+              </div>
+              
+              {renderStepContent()}
+            </div>
+
+            {/* Footer text */}
+            <p className="text-center text-muted-foreground text-sm mt-6">
+              Powered by Base • Secured by ZK Proofs • Instant Settlement
+            </p>
+          </div>
+        </div>
 
         <ErrorMessage error={error} freeError={freeError} ref={errorRef} />
       </div>
@@ -321,22 +368,27 @@ const ErrorMessage = React.forwardRef<
   return (
     <section
       ref={ref}
-      className="p-5 border border-red-primary rounded-[10px] bg-red-100 mt-2.5 max-sm:rounded-[5px] max-sm:p-3 max-sm:mt-2.5"
+      className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md px-4"
     >
-      <div className="gap-[5px] flex items-center">
-        <Image src="/error.svg" alt="error" width={20} height={20} />
-        <p className="text-red-primary font-semibold body">Error Message</p>
-      </div>
-      <p className="mt-[5px] text ml-[25px]">{error}</p>
-
-      <div className="flex w-full justify-end">
-        <Button
-          onClick={freeError}
-          variant="outline"
-          className="text-red-primary border-red-primary hover:text-white hover:bg-red-primary"
-        >
-          Close
-        </Button>
+      <div className="bg-destructive/10 border border-destructive/50 rounded-lg p-4 backdrop-blur-xl">
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0">
+            <svg className="w-5 h-5 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <p className="text-sm text-foreground">{error}</p>
+          </div>
+          <button
+            onClick={freeError}
+            className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
       </div>
     </section>
   );

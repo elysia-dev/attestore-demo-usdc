@@ -1,7 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useContractWrite } from "@/hooks/useContractWrite";
 import { TOKEN_SYMBOL } from "@/constant";
 import ADDRESSES from "@/lib/addresses";
@@ -99,79 +96,61 @@ const EnrollIntent = ({
   };
 
   return (
-    <section
-      className={cn(
-        "mt-5 p-5 bg-gray-300 rounded-[10px] border border-gray-border",
-        "max-sm:p-3 max-sm:rounded-none max-sm:px-0 max-sm:border-x-0 max-sm:border-b-0 max-sm:pb-0 max-sm:mt-2 max-sm:bg-white"
-      )}
-    >
-      <p className="body font-bold">
-        <strong
-          className={cn(
-            "text-blue-primary w-4 mr-1",
-            "max-sm:mr-0.5 max-sm:w-3"
-          )}
-        >
-          ◆
-        </strong>{" "}
-        Enroll Your Intent
-      </p>
-      <div
-        className={cn(
-          "space-y-[5px] text text-gray-600 pl-4 mt-[15px]",
-          "max-sm:pl-3.5 max-sm:mt-[5px]"
-        )}
-      >
-        <p>Register who you want to send money to and how much.</p>
+    <section className="space-y-6">
+      <div className="bg-secondary/30 rounded-2xl p-5 border border-border/50">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl text-primary">◆</span>
+          <div>
+            <h3 className="text-base font-semibold">
+              Enroll Your Intent
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Register who you want to send money to and how much.
+            </p>
+          </div>
+        </div>
       </div>
 
-      <form onSubmit={handleSignalIntent}>
-        <section
-          className={cn(
-            "space-y-2.5 mt-5 p-5 border border-gray-border rounded-[10px] bg-white",
-            "max-sm:rounded-[5px] max-sm:p-3 max-sm:mt-2.5 max-sm:bg-gray-300"
-          )}
-        >
-          <div className="space-y-[5px]">
-            <Label htmlFor="toAddress" className="text font-semibold">
-              · Recipient Address
-            </Label>
-            <Input
-              id="toAddress"
-              type="text"
-              value={toAddress}
-              disabled={!!intentId}
-              onChange={(e) => setToAddress(e.target.value)}
-              placeholder="0x..."
-              className="text max-sm:label border-gray-border rounded-[5px] py-2.5 px-[15px] max-sm:py-[5px] max-sm:px-2 bg-white"
-            />
-          </div>
+      <form onSubmit={handleSignalIntent} className="space-y-5">
+        <div className="space-y-2">
+          <label htmlFor="toAddress" className="text-sm font-medium text-muted-foreground">
+            Recipient Address
+          </label>
+          <input
+            id="toAddress"
+            type="text"
+            value={toAddress}
+            disabled={!!intentId}
+            onChange={(e) => setToAddress(e.target.value)}
+            placeholder="0x..."
+            className="w-full px-4 py-3.5 bg-secondary/30 rounded-2xl border border-border/50 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 text-foreground placeholder:text-muted-foreground/50 text-base disabled:opacity-50"
+          />
+        </div>
 
-          <div className="space-y-[5px]">
-            <Label htmlFor="amount" className="text font-semibold">
-              · Amount ({TOKEN_SYMBOL})
-            </Label>
-            <Input
-              id="amount"
-              type="text"
-              value={amount}
-              disabled={!!intentId}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="1.0"
-              className="text max-sm:label border-gray-border rounded-[5px] py-2.5 px-[15px] max-sm:py-[5px] max-sm:px-2 bg-white"
-            />
-          </div>
-        </section>
+        <div className="space-y-2">
+          <label htmlFor="amount" className="text-sm font-medium text-muted-foreground">
+            Amount ({TOKEN_SYMBOL})
+          </label>
+          <input
+            id="amount"
+            type="text"
+            value={amount}
+            disabled={!!intentId}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="1.0"
+            className="w-full px-4 py-3.5 bg-secondary/30 rounded-2xl border border-border/50 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 text-foreground placeholder:text-muted-foreground/50 text-base disabled:opacity-50"
+          />
+        </div>
 
-        <Button
+        <button
           type="submit"
-          className="mt-2.5 max-sm:w-full"
+          className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-8 py-4 rounded-full font-semibold transition-all duration-200 hover:shadow-[0_0_30px_rgba(255,0,122,0.4)] shadow-[0_0_20px_rgba(255,0,122,0.3)] text-base mt-3"
           disabled={
             !toAddress || !amount || isSignalIntentLoading || !!intentId
           }
         >
           {isSignalIntentLoading ? "Creating Intent..." : "Create New Intent"}
-        </Button>
+        </button>
       </form>
     </section>
   );

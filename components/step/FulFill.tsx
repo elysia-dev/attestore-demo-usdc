@@ -1,7 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { WorkflowStep, FulfillmentResult, ProofResult } from "../Home";
-// import ProofResultComponent from "../ProofResult";
-import { Button } from "../ui/button";
 import FulfillmentResultComponent from "../FulfillmentResult";
 import { decodeEventLog, encodeAbiParameters, keccak256, toBytes } from "viem";
 import { useContractWrite } from "@/hooks/useContractWrite";
@@ -14,8 +12,6 @@ import { extractErrorMessage } from "../utils/extractErrorMessage";
 import { trackUserAction } from "@/lib/sentry-utils";
 import * as Sentry from "@sentry/nextjs";
 import { cn } from "@/lib/utils";
-import { Input } from "../ui/input";
-import { Label } from "@radix-ui/react-label";
 
 export default function FulFill({
   issueDate,
@@ -261,91 +257,81 @@ export default function FulFill({
         <FulfillmentResultComponent fulfillmentResult={fulfillmentResult} />
       )}
       {!fulfillmentResult?.success && (
-        <section className="space-y-[20px]">
-          <h2 className="header text-center">Step 5: Token Minting</h2>
-
-          <section
-            className={cn(
-              "bg-white border border-gray-border rounded-[10px] py-[30px] px-[20px]",
-              "max-sm:rounded-[5px] max-sm:p-3 max-sm:mt-2.5"
-            )}
-          >
-            <p className="body font-bold">
-              <strong className="text-blue-primary w-4 mr-1 max-sm:mr-0.5 max-sm:w-3">
-                ◆
-              </strong>{" "}
-              Click &apos;Mint Tokens&apos;.
-            </p>
-            <div className="space-y-[5px] text text-gray-600 pl-4 mt-[15px] max-sm:pl-3.5 max-sm:mt-[5px]">
-              <p>Mint tokens to the recipient wallet.</p>
+        <section className="space-y-6">
+          <section className="bg-card/50 rounded-[24px] p-6 backdrop-blur-xl border border-border/50">
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <span className="text-primary">◆</span>
+                Click 'Mint Tokens'
+              </h3>
+              <p className="text-sm text-muted-foreground ml-6">
+                Mint tokens to the recipient wallet.
+              </p>
             </div>
           </section>
 
-          <section className="mt-5 p-5 bg-white border border-gray-border rounded-[10px] space-y-2.5">
-            {/* intentId */}
-            <p className="text font-semibold">· Intent ID</p>
-            <Input
-              id="intentId"
-              type="text"
-              value={intentId?.toString() || ""}
-              disabled={true}
-              className="text max-sm:label border rounded-[5px] py-2.5 px-[15px] max-sm:py-[5px] max-sm:px-2 bg-white"
-            />
-            <Label htmlFor="issueDate" className="text font-semibold">
-              · Issue Date
-            </Label>
-            <Input
-              id="issueDate"
-              type="text"
-              value={issueDate}
-              disabled={!!proofResult}
-              className={cn(
-                "text max-sm:label border rounded-[5px] py-2.5 px-[15px] max-sm:py-[5px] max-sm:px-2 bg-white"
-              )}
-            />
-            <Label htmlFor="certificateNumber" className="text font-semibold">
-              · Certificate Issue Number
-            </Label>
-            <Input
-              id="certificateNumber"
-              type="text"
-              value={certificateNumber}
-              disabled={!!proofResult}
-              className={cn(
-                "text max-sm:label border rounded-[5px] py-2.5 px-[15px] max-sm:py-[5px] max-sm:px-2 bg-white"
-              )}
-            />
+          <section className="bg-secondary/30 rounded-2xl p-4 space-y-3 border border-border/50">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Intent ID</label>
+              <input
+                id="intentId"
+                type="text"
+                value={intentId?.toString() || ""}
+                disabled={true}
+                className="w-full h-10 rounded-lg border border-border bg-background px-3 py-2 text-sm disabled:opacity-50"
+              />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="issueDate" className="text-sm font-medium">
+                Issue Date
+              </label>
+              <input
+                id="issueDate"
+                type="text"
+                value={issueDate}
+                disabled={!!proofResult}
+                className="w-full h-10 rounded-lg border border-border bg-background px-3 py-2 text-sm disabled:opacity-50"
+              />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="certificateNumber" className="text-sm font-medium">
+                Certificate Issue Number
+              </label>
+              <input
+                id="certificateNumber"
+                type="text"
+                value={certificateNumber}
+                disabled={!!proofResult}
+                className="w-full h-10 rounded-lg border border-border bg-background px-3 py-2 text-sm disabled:opacity-50"
+              />
+            </div>
           </section>
 
-          <div className="flex gap-2.5 mt-5">
-            <Button
+          <div className="flex gap-3">
+            <button
               onClick={() => setCurrentStep(WorkflowStep.PROOF)}
-              variant="outline"
-              className="flex-1 bg-white"
+              className="flex-1 px-4 py-2 rounded-full bg-secondary/50 hover:bg-secondary/70 transition-all duration-200 border border-border/50 flex items-center justify-center gap-2 text-sm font-medium"
             >
-              <div className="max-sm:scale-75">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="21"
-                  height="21"
-                  viewBox="0 0 21 21"
-                  fill="none"
-                >
-                  <path
-                    d="M9.25 16.75L3 10.5M3 10.5L9.25 4.25M3 10.5H18"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+              >
+                <path
+                  d="M12.5 15L7.5 10L12.5 5"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
               Previous
-            </Button>
+            </button>
 
-            <Button
+            <button
               onClick={handleFulfillIntent}
-              className="flex-1"
+              className="flex-1 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-8 py-3 rounded-full font-semibold transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-2"
               disabled={
                 isFulfillIntentLoading ||
                 !intentId ||
@@ -358,25 +344,22 @@ export default function FulFill({
                 ? "Minting Complete"
                 : "Mint Tokens"}
               {!isFulfillIntentLoading && !fulfillmentResult?.success && (
-                <div className="max-sm:scale-75">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="21"
-                    height="21"
-                    viewBox="0 0 21 21"
-                    fill="none"
-                  >
-                    <path
-                      d="M11.75 16.75L18 10.5M18 10.5L11.75 4.25M18 10.5H3"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                >
+                  <path
+                    d="M7.5 15L12.5 10L7.5 5"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               )}
-            </Button>
+            </button>
           </div>
         </section>
       )}

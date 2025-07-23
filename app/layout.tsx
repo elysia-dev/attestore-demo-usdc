@@ -8,7 +8,6 @@ import {
 import "./globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
 import { Providers } from "./providers";
-import Header from "@/components/Header";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,12 +30,10 @@ const chivoMono = Chivo_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Zenie - KRW Stablecoin Infra",
+  title: "ZK Escrow Transfer System",
   description:
-    "Zenie by ELYSIA enables KRW stablecoin issuance through simple KRW transfers using a zkTLS-based WebProof infrastructure tailored to Korea’s regulatory landscape.",
-
-  manifest: "/site.webmanifest",
-  themeColor: "#0074e5",
+    "Secure cross-chain transfers using Zero-Knowledge proofs. Convert traditional bank transfers into blockchain tokens through automated escrow mechanisms.",
+  themeColor: "#ff007a",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -57,12 +54,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${jakartaSans.variable} ${chivoMono.variable} antialiased`}
       >
-        <Header />
-        <Providers>
-          <div className="pt-[calc(64px+36px+70px)] max-sm:pt-[calc(64px+36px+30px)]">
-            {children}
-          </div>
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

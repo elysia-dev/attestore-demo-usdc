@@ -72,17 +72,12 @@ export default function MintingHistory({
   }
 
   return (
-    <section className="space-y-[10px]">
+    <section className="space-y-4">
       {showHistory && (
-        <section
-          className={cn(
-            "bg-white border border-gray-border rounded-[10px] py-[30px] px-[20px]",
-            "max-sm:rounded-[5px] max-sm:p-3"
-          )}
-        >
+        <section className="bg-card/50 rounded-[24px] p-6 backdrop-blur-xl border border-border/50">
           {isLoading ? (
             <div className="text-center py-8">
-              <p className="text-gray-600">Loading minting history...</p>
+              <p className="text-muted-foreground">Loading minting history...</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -92,9 +87,8 @@ export default function MintingHistory({
                   <div
                     key={`${item.txHash}-${index}`}
                     className={cn(
-                      "border border-gray-border rounded-[10px] p-4 bg-gray-50",
-                      "max-sm:rounded-[5px] max-sm:p-3",
-                      explorerUrl && "cursor-pointer hover:bg-gray-100 transition-colors"
+                      "bg-secondary/30 rounded-2xl p-4 border border-border/50 transition-all duration-300",
+                      explorerUrl && "cursor-pointer hover:bg-secondary/50 hover:scale-[1.02]"
                     )}
                     onClick={() => {
                       if (explorerUrl) {
@@ -103,16 +97,17 @@ export default function MintingHistory({
                     }}
                   >
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text font-semibold text-green-600">
-                        ✅ Minting Successful
+                      <h3 className="text-sm font-semibold flex items-center gap-2">
+                        <span className="text-green-500">✅</span>
+                        Minting Successful
                       </h3>
                       <div className="flex items-center gap-2">
-                        <span className="label text-gray-500">
+                        <span className="text-xs text-muted-foreground">
                           {new Date(item.timestamp * 1000).toLocaleDateString()}
                         </span>
                         {explorerUrl && (
                           <svg
-                            className="w-4 h-4 text-gray-500"
+                            className="w-4 h-4 text-muted-foreground"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -128,39 +123,39 @@ export default function MintingHistory({
                       </div>
                     </div>
 
-                  <div className="grid grid-cols-2 max-sm:grid-cols-1 gap-x-[15px] gap-y-[10px]">
-                    <div className="text">
-                      <span className="text-gray-600 font-chivo-mono">
-                        Amount:
+                  <div className="grid grid-cols-2 max-sm:grid-cols-1 gap-4">
+                    <div className="space-y-1">
+                      <span className="text-xs text-muted-foreground">
+                        Amount
                       </span>
-                      <p className="font-chivo-mono font-semibold">
+                      <p className="text-sm font-mono font-medium text-primary">
                         {formatUnits(BigInt(item.amount), 18)} {TOKEN_SYMBOL}
                       </p>
                     </div>
 
-                    <div className="text">
-                      <span className="text-gray-600 font-chivo-mono">
-                        Receiver:
+                    <div className="space-y-1">
+                      <span className="text-xs text-muted-foreground">
+                        Receiver
                       </span>
-                      <p className="font-chivo-mono">
+                      <p className="text-sm font-mono">
                         {item.to.slice(0, 6)}...{item.to.slice(-4)}
                       </p>
                     </div>
 
-                    <div className="text">
-                      <span className="text-gray-600 font-chivo-mono">
-                        Intent Hash:
+                    <div className="space-y-1">
+                      <span className="text-xs text-muted-foreground">
+                        Intent Hash
                       </span>
-                      <p className="font-chivo-mono label break-all">
+                      <p className="text-xs font-mono break-all">
                         {item.intentHash}
                       </p>
                     </div>
 
-                    <div className="text">
-                      <span className="text-gray-600 font-chivo-mono">
-                        Transaction:
+                    <div className="space-y-1">
+                      <span className="text-xs text-muted-foreground">
+                        Transaction
                       </span>
-                      <p className="font-chivo-mono label break-all hover:text-blue-600 transition-colors">
+                      <p className="text-xs font-mono break-all hover:text-primary transition-colors">
                         {item.txHash}
                       </p>
                     </div>
