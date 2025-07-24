@@ -1,6 +1,6 @@
 {
-  "name": "Zenie - KRW Stablecoin Infra",
-  "short_name": "Zenie",
+  "name": "Zenie - KRW onramp Infra",
+  "short_name": "Zenie-usdc",
   "icons": [
     {
       "src": "/favicon-192x192.png",
@@ -15,6 +15,6 @@
   ],
   "start_url": "/",
   "display": "standalone",
-  "theme_color": "#0074e5",
+  "theme_color": "#ff007a",
   "background_color": "#FFFFFF"
 }

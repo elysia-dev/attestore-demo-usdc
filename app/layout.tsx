@@ -36,9 +36,9 @@ export const metadata: Metadata = {
   themeColor: '#ff007a',
   icons: {
     icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/favicon-32x32.png', type: 'image/png', sizes: '32x32' },
-      { url: '/favicon-16x16.png', type: 'image/png', sizes: '16x16' },
+      { url: '/favicon-pink.svg', sizes: 'any' },
+      { url: '/favicon-pink-16x16.png', type: 'image/png', sizes: '16x16' },
+      { url: '/favicon-pink-32x32.png', type: 'image/png', sizes: '32x32' },
     ],
     apple: [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
   },
