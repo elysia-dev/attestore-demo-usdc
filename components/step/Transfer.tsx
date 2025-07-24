@@ -1,65 +1,64 @@
-import { formatUnits } from "viem";
-import { IntentDetails, WorkflowStep } from "../Home";
-import { TOSS_ACCOUNT_NUMBER } from "@/constant";
-import { useContext, useState } from "react";
-import { ErrorContext } from "@/context/ErrorContext";
-import QRCode from "react-qr-code";
+import { formatUnits } from 'viem'
+import { IntentDetails, WorkflowStep } from '../Home'
+import { TOSS_ACCOUNT_NUMBER } from '@/constant'
+import { useContext, useState } from 'react'
+import { ErrorContext } from '@/context/ErrorContext'
+import QRCode from 'react-qr-code'
 
-import { VideoPopup } from "@/components/ui/VideoPopup";
-import { cn } from "@/lib/utils";
-import { useTossLauncher } from "../../hooks/useTossLauncher";
-import ConfirmationModal from "../ui/ConfirmationModal";
+import { VideoPopup } from '@/components/ui/VideoPopup'
+import { cn } from '@/lib/utils'
+import { useTossLauncher } from '../../hooks/useTossLauncher'
+import ConfirmationModal from '../ui/ConfirmationModal'
 
 export default function Transfer({
   intentId,
   intentDetails,
   setCurrentStep,
 }: {
-  intentId: number | null;
-  intentDetails: IntentDetails | null;
-  setCurrentStep: (step: WorkflowStep) => void;
+  intentId: number | null
+  intentDetails: IntentDetails | null
+  setCurrentStep: (step: WorkflowStep) => void
 }) {
-  const { freeError } = useContext(ErrorContext);
-  const [isVideoPopupOpen, setIsVideoPopupOpen] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
-  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+  const { freeError } = useContext(ErrorContext)
+  const [isVideoPopupOpen, setIsVideoPopupOpen] = useState(false)
+  const [isCopied, setIsCopied] = useState(false)
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
 
   const checkAndGoNext = () => {
-    setCurrentStep(WorkflowStep.PROOF);
-    freeError();
-    setIsConfirmationModalOpen(false);
-  };
+    setCurrentStep(WorkflowStep.PROOF)
+    freeError()
+    setIsConfirmationModalOpen(false)
+  }
 
   const handleConfirmTransfer = () => {
-    setIsConfirmationModalOpen(true);
-  };
+    setIsConfirmationModalOpen(true)
+  }
 
-  const amount = formatUnits(intentDetails?.amount ?? BigInt(0), 18);
-  const qrCodeUrl = `supertoss://send?amount=${amount}&bank=%ED%86%A0%EC%8A%A4%EB%B1%85%ED%81%AC&accountNo=${TOSS_ACCOUNT_NUMBER}&origin=qr`;
+  const amount = formatUnits(intentDetails?.amount ?? BigInt(0), 18)
+  const qrCodeUrl = `supertoss://send?amount=${amount}&bank=%ED%86%A0%EC%8A%A4%EB%B1%85%ED%81%AC&accountNo=${TOSS_ACCOUNT_NUMBER}&origin=qr`
 
-  const { launch, fallback, storeURL, reset } = useTossLauncher(qrCodeUrl);
+  const { launch, fallback, storeURL, reset } = useTossLauncher(qrCodeUrl)
 
   // 계좌번호 복사 함수
   const handleCopyAccountNumber = async () => {
     try {
-      await navigator.clipboard.writeText(TOSS_ACCOUNT_NUMBER);
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
+      await navigator.clipboard.writeText(TOSS_ACCOUNT_NUMBER)
+      setIsCopied(true)
+      setTimeout(() => setIsCopied(false), 2000)
     } catch (err) {
-      console.error("Failed to copy account number:", err);
+      console.error('Failed to copy account number:', err)
     }
-  };
+  }
 
   const BackAccountCopyButton = () => {
     return (
       <button
         onClick={handleCopyAccountNumber}
         className={cn(
-          "flex items-center gap-2 text-primary bg-primary/10 border border-primary/20 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:border-primary",
-          isCopied && "bg-primary text-primary-foreground border-primary"
+          'flex items-center gap-2 text-primary bg-primary/10 border border-primary/20 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:border-primary',
+          isCopied && 'bg-primary text-primary-foreground border-primary',
         )}
-        title="Click to copy account number"
-      >
+        title="Click to copy account number">
         {isCopied ? (
           <span>Copied!</span>
         ) : (
@@ -69,18 +68,16 @@ export default function Transfer({
           </>
         )}
       </button>
-    );
-  };
+    )
+  }
 
   return (
     <section className="space-y-6">
-
       {/* 토스 송금 데모 비디오 */}
       <section className="bg-card/50 rounded-[24px] p-6 backdrop-blur-xl border border-border/50">
         <button
           onClick={() => setIsVideoPopupOpen(true)}
-          className="w-full px-4 py-2 rounded-full bg-primary/10 hover:bg-primary/20 transition-all duration-200 border border-primary/20 flex items-center justify-center gap-2 text-sm font-medium text-primary sm:hidden"
-        >
+          className="w-full px-4 py-2 rounded-full bg-primary/10 hover:bg-primary/20 transition-all duration-200 border border-primary/20 flex items-center justify-center gap-2 text-sm font-medium text-primary sm:hidden">
           <svg
             width="16"
             height="16"
@@ -89,8 +86,7 @@ export default function Transfer({
             stroke="currentColor"
             strokeWidth="2"
             strokeLinecap="round"
-            strokeLinejoin="round"
-          >
+            strokeLinejoin="round">
             <polygon points="5,3 19,12 5,21" />
           </svg>
           Play Tutorial Video
@@ -121,8 +117,17 @@ export default function Transfer({
               Send money via Bank app
             </h3>
             <div className="space-y-2 text-sm text-muted-foreground ml-6">
-              <p>1. Send KRW WON to the recipient via <span className="text-foreground font-medium">Bank app.</span></p>
-              <p>2. You <span className="text-foreground font-medium">must use Toss (In this version)</span> as the sending bank.</p>
+              <p>
+                1. Send KRW WON to the recipient via{' '}
+                <span className="text-foreground font-medium">Bank app.</span>
+              </p>
+              <p>
+                2. You{' '}
+                <span className="text-foreground font-medium">
+                  must use Toss (In this version)
+                </span>{' '}
+                as the sending bank.
+              </p>
             </div>
           </div>
           {/* QR Code for Toss payment */}
@@ -133,19 +138,17 @@ export default function Transfer({
           </div>
           <button
             onClick={launch}
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 rounded-full font-semibold transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-2 sm:hidden"
-          >
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 rounded-full font-semibold transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-2 sm:hidden">
             Send via Bank App
             <ExternalLinkIcon />
           </button>
           {fallback && (
             <button
               onClick={() => {
-                window.open(storeURL, "_blank");
-                reset();
+                window.open(storeURL, '_blank')
+                reset()
               }}
-              className="w-full px-4 py-2 rounded-full bg-secondary/50 hover:bg-secondary/70 transition-all duration-200 border border-border/50 flex items-center justify-center gap-2 text-sm font-medium sm:hidden mt-2"
-            >
+              className="w-full px-4 py-2 rounded-full bg-secondary/50 hover:bg-secondary/70 transition-all duration-200 border border-border/50 flex items-center justify-center gap-2 text-sm font-medium sm:hidden mt-2">
               Install Bank App
               <ExternalLinkIcon />
             </button>
@@ -154,7 +157,10 @@ export default function Transfer({
           <section className="bg-secondary/30 rounded-2xl p-4 space-y-3 border border-border/50">
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">Recipient Name</p>
-              <p className="text-sm font-medium">이 현 민 <span className="text-muted-foreground">(Bank account)</span></p>
+              <p className="text-sm font-medium">
+                이 현 민{' '}
+                <span className="text-muted-foreground">(Bank account)</span>
+              </p>
             </div>
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">Bank Account</p>
@@ -166,7 +172,9 @@ export default function Transfer({
             </div>
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">Amount</p>
-              <p className="text-sm font-medium">{formatUnits(intentDetails?.amount, 18)} KRW</p>
+              <p className="text-sm font-medium">
+                {formatUnits(intentDetails?.amount, 18)} KRW
+              </p>
             </div>
           </section>
         </section>
@@ -181,14 +189,8 @@ export default function Transfer({
       <div className="flex gap-3">
         <button
           onClick={() => setCurrentStep(WorkflowStep.SIGNAL)}
-          className="flex-1 px-4 py-2 rounded-full bg-secondary/50 hover:bg-secondary/70 transition-all duration-200 border border-border/50 flex items-center justify-center gap-2 text-sm font-medium"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 20 20"
-            fill="none"
-          >
+          className="flex-1 px-4 py-2 rounded-full bg-secondary/50 hover:bg-secondary/70 transition-all duration-200 border border-border/50 flex items-center justify-center gap-2 text-sm font-medium">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path
               d="M12.5 15L7.5 10L12.5 5"
               stroke="currentColor"
@@ -202,18 +204,12 @@ export default function Transfer({
 
         <button
           onClick={() => {
-            handleConfirmTransfer();
+            handleConfirmTransfer()
           }}
           disabled={!intentId}
-          className="flex-1 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-8 py-3 rounded-full font-semibold transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-2"
-        >
+          className="flex-1 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-8 py-3 rounded-full font-semibold transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-2">
           Next
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 20 20"
-            fill="none"
-          >
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path
               d="M7.5 15L12.5 10L7.5 5"
               stroke="currentColor"
@@ -232,11 +228,11 @@ export default function Transfer({
         onConfirm={checkAndGoNext}
         name={`이현민(모임통장)`}
         amount={amount}
-        memo={intentId ?? ""}
+        memo={intentId ?? ''}
         address={`토스뱅크 ${TOSS_ACCOUNT_NUMBER}`}
       />
     </section>
-  );
+  )
 }
 
 const CopyButtonIcon = () => {
@@ -249,22 +245,16 @@ const CopyButtonIcon = () => {
       stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
-      strokeLinejoin="round"
-    >
+      strokeLinejoin="round">
       <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
       <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
     </svg>
-  );
-};
+  )
+}
 
 const ExternalLinkIcon = () => {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 18 18"
-      fill="none"
-    >
+    <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
       <path
         d="M7 3H5.5C4.11929 3 3 4.11929 3 5.5V12.5C3 13.8807 4.11929 15 5.5 15H12.5C13.8807 15 15 13.8807 15 12.5V11"
         stroke="currentColor"
@@ -287,5 +277,5 @@ const ExternalLinkIcon = () => {
         strokeLinejoin="round"
       />
     </svg>
-  );
-};
+  )
+}

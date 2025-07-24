@@ -1,27 +1,26 @@
-import { Button } from "@/components/ui/button";
 import {
   IntentDetails,
   RedeemDetails,
   RedeemResult,
   WorkflowStep,
-} from "@/components/Home";
-import { useContext, useEffect, useState, useCallback } from "react";
-import { useAccount, usePublicClient } from "wagmi";
-import ADDRESSES from "@/lib/addresses";
-import { cn } from "@/lib/utils";
-import { ZK_MINTER_ABI } from "@/lib/abi";
-import { ErrorType } from "@/lib/errors";
-import EnrollIntent from "./EnrollIntent";
-import IntentManagement from "./IntentManagement";
-import Redeem from "./Redeem";
-import RedeemRequest from "./RedeemRequest";
-import WalletStatus from "@/components/step/Signal/WalletStatus";
-import { ErrorContext } from "@/context/ErrorContext";
-import MintingHistory from "@/components/MintingHistory";
+} from '@/components/Home'
+import { useContext, useEffect, useState, useCallback } from 'react'
+import { useAccount, usePublicClient } from 'wagmi'
+import ADDRESSES from '@/lib/addresses'
+import { cn } from '@/lib/utils'
+import { ESCROW_ABI } from '@/lib/abi'
+import { ErrorType } from '@/lib/errors'
+import EnrollIntent from './EnrollIntent'
+import IntentManagement from './IntentManagement'
+import Redeem from './Redeem'
+import RedeemRequest from './RedeemRequest'
+import WalletStatus from '@/components/step/Signal/WalletStatus'
+import { ErrorContext } from '@/context/ErrorContext'
+import MintingHistory from '@/components/MintingHistory'
 
 enum SignalMode {
-  ONRAMP = "onramp",
-  OFFRAMP = "offramp",
+  ONRAMP = 'onramp',
+  OFFRAMP = 'offramp',
 }
 
 export default function Signal({
@@ -35,103 +34,99 @@ export default function Signal({
   chainId,
   isConnected,
 }: {
-  intentId: number | null;
-  searchIntentId: number | null;
-  intentDetails: IntentDetails | null;
-  setIntentId: (intentId: number) => void;
-  setSearchIntentId: (searchIntentId: number) => void;
-  handleRefreshMyIntentId: () => void;
-  setCurrentStep: (step: WorkflowStep) => void;
-  chainId: number;
-  isConnected: boolean;
+  intentId: number | null
+  searchIntentId: number | null
+  intentDetails: IntentDetails | null
+  setIntentId: (intentId: number) => void
+  setSearchIntentId: (searchIntentId: number) => void
+  handleRefreshMyIntentId: () => void
+  setCurrentStep: (step: WorkflowStep) => void
+  chainId: number
+  isConnected: boolean
 }) {
-  const [mode, setMode] = useState<SignalMode>(SignalMode.ONRAMP);
-  const { setError, freeError } = useContext(ErrorContext);
-  const [redeemId, setRedeemId] = useState<number | null>(null);
-  const [redeemDetails, setRedeemDetails] = useState<RedeemDetails | null>(
-    null
-  );
-  const [redeemResult, setRedeemResult] = useState<RedeemResult | null>(null);
-  const [accountNumber, setAccountNumber] = useState("");
-  const [amount, setAmount] = useState("");
-  const [showHistory, setShowHistory] = useState(true);
+  const [mode, setMode] = useState<SignalMode>(SignalMode.ONRAMP)
+  const { setError, freeError } = useContext(ErrorContext)
+  const [redeemId, setRedeemId] = useState<number | null>(null)
+  const [redeemDetails, setRedeemDetails] = useState<RedeemDetails | null>(null)
+  const [redeemResult, setRedeemResult] = useState<RedeemResult | null>(null)
+  const [accountNumber, setAccountNumber] = useState('')
+  const [amount, setAmount] = useState('')
+  const [showHistory, setShowHistory] = useState(true)
 
-  const { address } = useAccount();
+  const { address } = useAccount()
 
-  const publicClient = usePublicClient();
+  const publicClient = usePublicClient()
 
   const handleRefreshRedeemDetails = useCallback(
     async (targetRedeemId: number) => {
-      if (!targetRedeemId) return;
+      if (!targetRedeemId) return
 
       try {
         const redeemData = await publicClient?.readContract({
-          address: ADDRESSES.ZK_MINTER,
-          abi: ZK_MINTER_ABI,
-          functionName: "redeemRequests",
+          address: ADDRESSES.ESCROW,
+          abi: ESCROW_ABI,
+          functionName: 'redeemRequests',
           args: [BigInt(targetRedeemId)],
-        });
+        })
 
         if (
           redeemData &&
-          redeemData[0] !== "0x0000000000000000000000000000000000000000"
+          redeemData[0] !== '0x0000000000000000000000000000000000000000'
         ) {
           const [owner, amount, timestamp] = redeemData as [
             string,
             bigint,
-            bigint
-          ];
+            bigint,
+          ]
           setRedeemDetails({
             owner,
             amount,
             timestamp: Number(timestamp),
-          });
+          })
         } else {
-          setRedeemDetails(null);
-          setError(ErrorType.REDEEM_NOT_FOUND, { redeemId: targetRedeemId });
+          setRedeemDetails(null)
+          setError(ErrorType.REDEEM_NOT_FOUND, { redeemId: targetRedeemId })
         }
       } catch (error) {
-        console.error("Failed to lookup Redeem ID:", error);
-        setRedeemDetails(null);
-        setError(ErrorType.REDEEM_NOT_FOUND, { redeemId: targetRedeemId });
+        console.error('Failed to lookup Redeem ID:', error)
+        setRedeemDetails(null)
+        setError(ErrorType.REDEEM_NOT_FOUND, { redeemId: targetRedeemId })
       }
     },
-    [publicClient, setError]
-  );
+    [publicClient, setError],
+  )
 
   const readRedeemRequest = useCallback(async () => {
-    if (!address) return;
+    if (!address) return
 
     try {
       const redeemRequestId = await publicClient?.readContract({
-        address: ADDRESSES.ZK_MINTER,
-        abi: ZK_MINTER_ABI,
-        functionName: "accountRedeemRequest",
-        args: [address],
-      });
+        address: ADDRESSES.ESCROW,
+        abi: ESCROW_ABI,
+        functionName: 'accountDeposits',
+        args: [address, BigInt(0)],
+      })
 
       if (redeemRequestId && Number(redeemRequestId) > 0) {
-        setRedeemId(Number(redeemRequestId));
-        await handleRefreshRedeemDetails(Number(redeemRequestId));
+        setRedeemId(Number(redeemRequestId))
+        await handleRefreshRedeemDetails(Number(redeemRequestId))
       }
     } catch (error) {
-      console.error("Failed to read redeem request:", error);
+      console.error('Failed to read redeem request:', error)
     }
-  }, [address, publicClient, handleRefreshRedeemDetails]);
+  }, [address, publicClient, handleRefreshRedeemDetails])
 
-  const disableNextStep = !intentId || !intentDetails?.amount;
-  const isOnramp = mode === SignalMode.ONRAMP;
+  const disableNextStep = !intentId || !intentDetails?.amount
+  const isOnramp = mode === SignalMode.ONRAMP
   const toggleMode = () => {
-    setMode(
-      mode === SignalMode.ONRAMP ? SignalMode.OFFRAMP : SignalMode.ONRAMP
-    );
-  };
+    setMode(mode === SignalMode.ONRAMP ? SignalMode.OFFRAMP : SignalMode.ONRAMP)
+  }
 
   useEffect(() => {
     if (!isOnramp) {
-      readRedeemRequest();
+      readRedeemRequest()
     }
-  }, [address, isOnramp, readRedeemRequest]);
+  }, [address, isOnramp, readRedeemRequest])
 
   const renderSignalContent = () => {
     if (isOnramp) {
@@ -145,7 +140,7 @@ export default function Signal({
             setIntentId={setIntentId}
             setSearchIntentId={setSearchIntentId}
           />
-        );
+        )
       } else {
         return (
           <EnrollIntent
@@ -155,7 +150,7 @@ export default function Signal({
             handleRefreshMyIntentId={handleRefreshMyIntentId}
             intentId={intentId}
           />
-        );
+        )
       }
     } else {
       if (redeemId) {
@@ -169,7 +164,7 @@ export default function Signal({
             setAccountNumber={setAccountNumber}
             setAmount={setAmount}
           />
-        );
+        )
       } else {
         return (
           <Redeem
@@ -183,10 +178,10 @@ export default function Signal({
             setAccountNumber={setAccountNumber}
             setAmount={setAmount}
           />
-        );
+        )
       }
     }
-  };
+  }
 
   return (
     <>
@@ -197,17 +192,15 @@ export default function Signal({
             {isConnected && (
               <button
                 onClick={() => setShowHistory(!showHistory)}
-                className="w-full px-4 py-3 rounded-full bg-secondary/30 hover:bg-secondary/40 transition-all duration-200 border border-border/50 flex items-center justify-center gap-2 text-sm font-medium"
-              >
+                className="w-full px-4 py-3 rounded-full bg-secondary/30 hover:bg-secondary/40 transition-all duration-200 border border-border/50 flex items-center justify-center gap-2 text-sm font-medium">
                 <svg
                   width="16"
                   height="16"
                   viewBox="0 0 20 20"
                   fill="none"
                   className={`transition-transform duration-200 ${
-                    showHistory ? "" : "rotate-180"
-                  }`}
-                >
+                    showHistory ? '' : 'rotate-180'
+                  }`}>
                   <path
                     d="M5 7.5L10 12.5L15 7.5"
                     stroke="currentColor"
@@ -216,7 +209,7 @@ export default function Signal({
                     strokeLinejoin="round"
                   />
                 </svg>
-                {showHistory ? "Hide" : "Show"} Minting History
+                {showHistory ? 'Hide' : 'Show'} Transfer History
               </button>
             )}
           </div>
@@ -231,19 +224,18 @@ export default function Signal({
         <div className="mt-6">
           <button
             onClick={() => {
-              setCurrentStep(WorkflowStep.TRANSFER);
-              freeError();
+              setCurrentStep(WorkflowStep.TRANSFER)
+              freeError()
             }}
             disabled={disableNextStep}
-            className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-8 py-3 rounded-full font-semibold transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-2"
-          >
+            className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-8 py-3 rounded-full font-semibold transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-2">
             Next
             <ArrowIcon />
           </button>
         </div>
       )}
     </>
-  );
+  )
 }
 
 const ToggleSignalMode = ({
@@ -251,9 +243,9 @@ const ToggleSignalMode = ({
   toggleMode,
   children,
 }: {
-  isOnramp: boolean;
-  toggleMode: () => void;
-  children: React.ReactNode;
+  isOnramp: boolean
+  toggleMode: () => void
+  children: React.ReactNode
 }) => {
   return (
     <>
@@ -261,46 +253,48 @@ const ToggleSignalMode = ({
         <div className="bg-secondary/30 rounded-2xl p-5 border border-border/50">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <span className={cn(
-                "text-2xl",
-                isOnramp ? "text-primary" : "text-foreground"
-              )}>◆</span>
+              <span
+                className={cn(
+                  'text-2xl',
+                  isOnramp ? 'text-primary' : 'text-foreground',
+                )}>
+                ◆
+              </span>
               <div>
                 <h3 className="text-base font-semibold">
-                  {isOnramp ? "Onramp" : "Offramp"}
+                  {isOnramp ? 'Onramp' : 'Offramp'}
                 </h3>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {isOnramp ? "KRW WON → KRW tokens" : "KRW tokens → KRW WON"}
+                  {isOnramp ? 'KRW WON → KRW tokens' : 'KRW tokens → KRW WON'}
                 </p>
               </div>
             </div>
             <div className="relative bg-secondary/50 rounded-full p-0.5">
               <button
                 onClick={toggleMode}
-                className="relative flex items-center"
-              >
+                className="relative flex items-center">
                 <span
                   className={cn(
-                    "absolute h-9 w-[88px] rounded-full bg-primary transition-all duration-300 ease-out shadow-[0_0_15px_rgba(255,0,122,0.4)]",
-                    isOnramp
-                      ? "translate-x-0"
-                      : "translate-x-[88px]"
+                    'absolute h-9 w-[88px] rounded-full bg-primary transition-all duration-300 ease-out shadow-[0_0_15px_rgba(255,0,122,0.4)]',
+                    isOnramp ? 'translate-x-0' : 'translate-x-[88px]',
                   )}
                 />
                 <div
                   className={cn(
-                    "relative z-10 px-6 py-2 text-sm font-medium transition-all duration-200 rounded-full",
-                    isOnramp ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
+                    'relative z-10 px-6 py-2 text-sm font-medium transition-all duration-200 rounded-full',
+                    isOnramp
+                      ? 'text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground',
+                  )}>
                   Onramp
                 </div>
                 <div
                   className={cn(
-                    "relative z-10 px-6 py-2 text-sm font-medium transition-all duration-200 rounded-full",
-                    !isOnramp ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
+                    'relative z-10 px-6 py-2 text-sm font-medium transition-all duration-200 rounded-full',
+                    !isOnramp
+                      ? 'text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground',
+                  )}>
                   Offramp
                 </div>
               </button>
@@ -311,17 +305,12 @@ const ToggleSignalMode = ({
         {children}
       </section>
     </>
-  );
-};
+  )
+}
 
 const ArrowIcon = () => {
   return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
-      fill="none"
-    >
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
       <path
         d="M7.5 15L12.5 10L7.5 5"
         stroke="currentColor"
@@ -330,5 +319,5 @@ const ArrowIcon = () => {
         strokeLinejoin="round"
       />
     </svg>
-  );
-};
+  )
+}

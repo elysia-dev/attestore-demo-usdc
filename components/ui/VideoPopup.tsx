@@ -1,9 +1,9 @@
 interface VideoPopupProps {
-  isOpen: boolean;
-  onClose: () => void;
-  videoSrc: string;
-  posterSrc?: string;
-  title?: string;
+  isOpen: boolean
+  onClose: () => void
+  videoSrc: string
+  posterSrc?: string
+  title?: string
 }
 
 export function VideoPopup({
@@ -11,9 +11,9 @@ export function VideoPopup({
   onClose,
   videoSrc,
   posterSrc,
-  title = "Video Player",
+  title = 'Video Player',
 }: VideoPopupProps) {
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center mb-0">
@@ -37,8 +37,7 @@ export function VideoPopup({
               stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
-              strokeLinejoin="round"
-            >
+              strokeLinejoin="round">
               <path d="M18 6 6 18" />
               <path d="m6 6 12 12" />
             </svg>
@@ -51,13 +50,12 @@ export function VideoPopup({
             controls
             className="w-full h-auto max-h-[70vh] aspect-[720/1558]"
             poster={posterSrc}
-            autoPlay={isOpen}
-          >
+            autoPlay={isOpen}>
             <source src={videoSrc} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
         </div>
       </aside>
     </div>
-  );
+  )
 }

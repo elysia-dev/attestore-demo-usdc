@@ -1,15 +1,15 @@
 // import { useState } from "react";
 // import { Button } from "@/components/ui/button";
-import { ProofResult } from "./Home";
+import { ProofResult } from './Home'
 
 export default function ProofResultComponent({
   proofResult,
 }: {
-  proofResult: ProofResult | null;
+  proofResult: ProofResult | null
 }) {
   // const [showAPIResponse, setShowAPIResponse] = useState(false);
-  if (!proofResult) return null;
-  if (proofResult.error) return null;
+  if (!proofResult) return null
+  if (proofResult.error) return null
 
   return (
     <div>
@@ -71,5 +71,5 @@ export default function ProofResultComponent({
       </div>
     */}
     </div>
-  );
+  )
 }

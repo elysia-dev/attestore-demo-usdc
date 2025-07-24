@@ -1,4 +1,4 @@
-import { Button } from "./button";
+import { Button } from './button'
 
 function ConfirmationModal({
   isOpen,
@@ -9,15 +9,15 @@ function ConfirmationModal({
   memo,
   address,
 }: {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  name: string;
-  amount: string;
-  memo: number | string;
-  address: string;
+  isOpen: boolean
+  onClose: () => void
+  onConfirm: () => void
+  name: string
+  amount: string
+  memo: number | string
+  address: string
 }) {
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   const ArrowIcon = () => {
     return (
@@ -33,12 +33,11 @@ function ConfirmationModal({
         strokeLinejoin="round"
         className="inline-block"
         aria-hidden="true"
-        focusable="false"
-      >
+        focusable="false">
         <path d="M9 18l6-6-6-6" />
       </svg>
-    );
-  };
+    )
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center mb-0">
@@ -62,8 +61,7 @@ function ConfirmationModal({
               stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
-              strokeLinejoin="round"
-            >
+              strokeLinejoin="round">
               <path d="M18 6 6 18" />
               <path d="m6 6 12 12" />
             </svg>
@@ -126,7 +124,7 @@ function ConfirmationModal({
         </div>
       </aside>
     </div>
-  );
+  )
 }
 
-export default ConfirmationModal;
+export default ConfirmationModal

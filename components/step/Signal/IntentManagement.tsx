@@ -1,15 +1,15 @@
-import { IntentDetails } from "@/components/Home";
-import { TOKEN_SYMBOL } from "@/constant";
-import { useContractWrite } from "@/hooks/useContractWrite";
-import ADDRESSES from "@/lib/addresses";
-import { ZK_MINTER_ABI } from "@/lib/abi";
-import { ErrorType } from "@/lib/errors";
-import { extractErrorMessage } from "@/components/utils/extractErrorMessage";
-import { useCallback, useContext, useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
-import { erc20Abi, formatUnits } from "viem";
-import { usePublicClient } from "wagmi";
-import { ErrorContext } from "@/context/ErrorContext";
+import { IntentDetails } from '@/components/Home'
+import { TOKEN_SYMBOL, USDC_SYMBOL } from '@/constant'
+import { useContractWrite } from '@/hooks/useContractWrite'
+import ADDRESSES from '@/lib/addresses'
+import { ESCROW_ABI } from '@/lib/abi'
+import { ErrorType } from '@/lib/errors'
+import { extractErrorMessage } from '@/components/utils/extractErrorMessage'
+import { useCallback, useContext, useEffect, useState } from 'react'
+import { cn } from '@/lib/utils'
+import { erc20Abi, formatUnits } from 'viem'
+import { usePublicClient } from 'wagmi'
+import { ErrorContext } from '@/context/ErrorContext'
 
 const IntentManagement = ({
   intentId,
@@ -19,67 +19,67 @@ const IntentManagement = ({
   setIntentId,
   setSearchIntentId,
 }: {
-  intentId: number | null;
-  searchIntentId: number | null;
-  intentDetails: IntentDetails | null;
-  handleRefreshMyIntentId: () => void;
-  setIntentId: (intentId: number) => void;
-  setSearchIntentId: (searchIntentId: number) => void;
+  intentId: number | null
+  searchIntentId: number | null
+  intentDetails: IntentDetails | null
+  handleRefreshMyIntentId: () => void
+  setIntentId: (intentId: number) => void
+  setSearchIntentId: (searchIntentId: number) => void
 }) => {
-  const publicClient = usePublicClient();
-  const { setError } = useContext(ErrorContext);
+  const publicClient = usePublicClient()
+  const { setError } = useContext(ErrorContext)
 
   const [receiverTokenBalance, setReceiverTokenBalance] = useState<
     bigint | undefined
-  >(undefined);
+  >(undefined)
 
   const readReceiverTokenBalance = useCallback(
     async (to: string) => {
-      if (!to) return;
+      if (!to) return
 
       const balance = await publicClient?.readContract({
         address: ADDRESSES.TOKEN,
         abi: erc20Abi,
-        functionName: "balanceOf",
+        functionName: 'balanceOf',
         args: [to as `0x${string}`],
-      });
-      setReceiverTokenBalance(balance);
+      })
+      setReceiverTokenBalance(balance)
     },
-    [publicClient]
-  );
+    [publicClient],
+  )
 
   useEffect(() => {
     if (intentDetails) {
-      readReceiverTokenBalance(intentDetails.to);
+      readReceiverTokenBalance(intentDetails.to)
     }
-  }, [intentDetails, readReceiverTokenBalance]);
+  }, [intentDetails, readReceiverTokenBalance])
 
   const { writeAndWait: cancelIntentWrite, isLoading: isCancelIntentLoading } =
     useContractWrite({
       onSuccess: () => {
-        if (setIntentId) setIntentId(0);
-        if (setSearchIntentId) setSearchIntentId(0);
-        handleRefreshMyIntentId();
+        if (setIntentId) setIntentId(0)
+        if (setSearchIntentId) setSearchIntentId(0)
+        handleRefreshMyIntentId()
       },
-    });
+    })
 
   const handleCancelIntent = async () => {
-    if (!intentId) return;
+    if (!intentId) return
 
     try {
       await cancelIntentWrite({
-        address: ADDRESSES.ZK_MINTER,
-        abi: ZK_MINTER_ABI,
-        functionName: "cancelIntent",
+        address: ADDRESSES.ESCROW,
+        abi: ESCROW_ABI,
+        functionName: 'cancelIntent',
         args: [BigInt(intentId)],
-      });
+      })
     } catch (error) {
-      const errorMessage = extractErrorMessage(error);
+      const errorMessage = extractErrorMessage(error)
       setError(ErrorType.INTENT_CANCEL_FAILED, {
         error: errorMessage,
-      });
+      })
     }
-  };
+  }
 
   return (
     <>
@@ -102,23 +102,29 @@ const IntentManagement = ({
                     </p>
                   </div>
                   <div className="space-y-1">
-                    <span className="text-xs text-muted-foreground">Receiver</span>
+                    <span className="text-xs text-muted-foreground">
+                      Receiver
+                    </span>
                     <p className="text-sm font-mono">
                       {intentDetails.to.slice(0, 6)}...
                       {intentDetails.to.slice(-4)}
                     </p>
                   </div>
                   <div className="space-y-1">
-                    <span className="text-xs text-muted-foreground">Amount</span>
+                    <span className="text-xs text-muted-foreground">
+                      Amount
+                    </span>
                     <p className="text-sm font-mono font-medium text-primary">
                       {formatUnits(intentDetails.amount, 18)} {TOKEN_SYMBOL}
                     </p>
                   </div>
                   <div className="space-y-1">
-                    <span className="text-xs text-muted-foreground">Created Time</span>
+                    <span className="text-xs text-muted-foreground">
+                      Created Time
+                    </span>
                     <p className="text-sm font-mono">
                       {new Date(
-                        intentDetails.timestamp * 1000
+                        intentDetails.timestamp * 1000,
                       ).toLocaleString()}
                     </p>
                   </div>
@@ -130,20 +136,22 @@ const IntentManagement = ({
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-semibold text-primary">
                     {receiverTokenBalance
-                      ? formatUnits(receiverTokenBalance, 18)
-                      : "0"}{" "}
-                    {TOKEN_SYMBOL}
+                      ? formatUnits(receiverTokenBalance, 6)
+                      : '0'}{' '}
+                    {USDC_SYMBOL}
                   </p>
                 </div>
                 <div className="flex items-center mt-2 gap-2">
-                  <span className="text-xs text-muted-foreground">Address:</span>
+                  <span className="text-xs text-muted-foreground">
+                    Address:
+                  </span>
                   <span className="text-xs font-mono max-sm:hidden">
                     {intentDetails.to}
                   </span>
                   <span className="text-xs font-mono hidden max-sm:inline">
                     {`${intentDetails.to.slice(
                       0,
-                      8
+                      8,
                     )}...${intentDetails.to.slice(-6)}`}
                   </span>
                 </div>
@@ -154,9 +162,8 @@ const IntentManagement = ({
                 <button
                   onClick={handleCancelIntent}
                   disabled={isCancelIntentLoading}
-                  className="w-full px-4 py-2 rounded-full bg-destructive/10 hover:bg-destructive hover:text-destructive-foreground transition-all duration-200 border border-destructive/20 text-sm font-medium text-destructive"
-                >
-                  {isCancelIntentLoading ? "Cancelling..." : "Cancel Intent"}
+                  className="w-full px-4 py-2 rounded-full bg-destructive/10 hover:bg-destructive hover:text-destructive-foreground transition-all duration-200 border border-destructive/20 text-sm font-medium text-destructive">
+                  {isCancelIntentLoading ? 'Cancelling...' : 'Cancel Intent'}
                 </button>
               </div>
             </div>
@@ -164,7 +171,7 @@ const IntentManagement = ({
         </div>
       )}
     </>
-  );
-};
+  )
+}
 
-export default IntentManagement;
+export default IntentManagement

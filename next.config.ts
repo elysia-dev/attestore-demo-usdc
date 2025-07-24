@@ -1,24 +1,24 @@
-import { withSentryConfig } from "@sentry/nextjs";
-import type { NextConfig } from "next";
+import { withSentryConfig } from '@sentry/nextjs'
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   webpack: (config) => {
-    config.resolve.fallback = { fs: false, net: false, tls: false };
-    config.externals.push('pino-pretty', 'encoding');
-    return config;
+    config.resolve.fallback = { fs: false, net: false, tls: false }
+    config.externals.push('pino-pretty', 'encoding')
+    return config
   },
-};
+}
 
 const project =
-  process.env.NODE_ENV === "production"
-    ? "zenie-web-frontend"
-    : "zenie-web-frontend-lc";
+  process.env.NODE_ENV === 'production'
+    ? 'zenie-web-frontend'
+    : 'zenie-web-frontend-lc'
 
 export default withSentryConfig(nextConfig, {
   // For all available options, see:
   // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
-  org: "modori2",
+  org: 'modori2',
   project,
 
   // Only print logs for uploading source maps in CI
@@ -44,4 +44,4 @@ export default withSentryConfig(nextConfig, {
   // https://docs.sentry.io/product/crons/
   // https://vercel.com/docs/cron-jobs
   automaticVercelMonitors: true,
-});
+})

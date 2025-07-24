@@ -1,61 +1,60 @@
-import type { Metadata } from "next";
+import type { Metadata } from 'next'
 import {
   Geist,
   Geist_Mono,
   Plus_Jakarta_Sans,
   Chivo_Mono,
-} from "next/font/google";
-import "./globals.css";
-import "@rainbow-me/rainbowkit/styles.css";
-import { Providers } from "./providers";
+} from 'next/font/google'
+import './globals.css'
+import '@rainbow-me/rainbowkit/styles.css'
+import { Providers } from './providers'
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
+})
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
+})
 
 const jakartaSans = Plus_Jakarta_Sans({
-  variable: "--font-jakarta-sans",
-  subsets: ["latin"],
-});
+  variable: '--font-jakarta-sans',
+  subsets: ['latin'],
+})
 
 const chivoMono = Chivo_Mono({
-  variable: "--font-chivo-mono",
-  subsets: ["latin"],
-});
+  variable: '--font-chivo-mono',
+  subsets: ['latin'],
+})
 
 export const metadata: Metadata = {
-  title: "ZK Escrow Transfer System",
+  title: 'ZK Escrow Transfer System',
   description:
-    "Secure cross-chain transfers using Zero-Knowledge proofs. Convert traditional bank transfers into blockchain tokens through automated escrow mechanisms.",
-  themeColor: "#ff007a",
+    'Secure cross-chain transfers using Zero-Knowledge proofs. Convert traditional bank transfers into blockchain tokens through automated escrow mechanisms.',
+  themeColor: '#ff007a',
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
-      { url: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon-32x32.png', type: 'image/png', sizes: '32x32' },
+      { url: '/favicon-16x16.png', type: 'image/png', sizes: '16x16' },
     ],
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
   },
-};
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${jakartaSans.variable} ${chivoMono.variable} antialiased`}
-      >
+        className={`${geistSans.variable} ${geistMono.variable} ${jakartaSans.variable} ${chivoMono.variable} antialiased`}>
         <Providers>{children}</Providers>
       </body>
     </html>
-  );
+  )
 }

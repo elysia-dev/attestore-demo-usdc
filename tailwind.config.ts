@@ -1,9 +1,9 @@
 const config = {
   theme: {
     screens: {
-      sm: "940px",
+      sm: '940px',
     },
   },
-};
+}
 
-export default config;
+export default config
