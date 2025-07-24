@@ -1,235 +1,249 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use client";
+'use client'
 
 // Extend window object for Ethereum provider
 declare global {
   interface Window {
-    ethereum?: any;
+    ethereum?: any
   }
 }
 
-import React, { useEffect, useState, useRef, useContext } from "react";
+import React, { useEffect, useState, useRef, useContext } from 'react'
 
-import { useAccount, useChainId, useDisconnect, usePublicClient } from "wagmi";
-import ADDRESSES from "@/lib/addresses";
-import { ZK_MINTER_ABI } from "@/lib/abi";
-import { ErrorType } from "@/lib/errors";
-import Connect from "./step/Connect";
-import Signal from "./step/Signal/index";
-import Transfer from "./step/Transfer";
-import Proof from "./step/Proof";
-import FulFill from "./step/FulFill";
-import MintingHistory from "./MintingHistory";
-import { Button } from "./ui/button";
-import Image from "next/image";
-import { ErrorContext } from "@/context/ErrorContext";
-import { cn } from "@/lib/utils";
-import { StepIndicator } from "./StepIndicator";
+import { useAccount, useChainId, useDisconnect, usePublicClient } from 'wagmi'
+import ADDRESSES from '@/lib/addresses'
+import { ESCROW_ABI } from '@/lib/abi'
+import { ErrorType } from '@/lib/errors'
+import Connect from './step/Connect'
+import Signal from './step/Signal/index'
+import Transfer from './step/Transfer'
+import Proof from './step/Proof'
+import FulFill from './step/FulFill'
+import TransferHistory from './TransferHistory'
+import { Button } from './ui/button'
+import Image from 'next/image'
+import { ErrorContext } from '@/context/ErrorContext'
+import { cn } from '@/lib/utils'
+import { StepIndicator } from './StepIndicator'
 
 export enum WorkflowStep {
-  CONNECT = "connect",
-  SIGNAL = "signal",
-  TRANSFER = "transfer",
-  PROOF = "proof",
-  FULFILL = "fulfill",
+  CONNECT = 'connect',
+  SIGNAL = 'signal',
+  TRANSFER = 'transfer',
+  PROOF = 'proof',
+  FULFILL = 'fulfill',
 }
 export type FulfillmentResult = {
-  success: boolean;
-  intentHash?: string;
-  verifier?: string;
-  owner?: string;
-  to?: string;
-  amount?: bigint;
-  txHash?: string;
-};
+  success: boolean
+  intentHash?: string
+  verifier?: string
+  owner?: string
+  to?: string
+  amount?: bigint
+  txHash?: string
+}
 export type IntentDetails = {
-  owner: string;
-  to: string;
-  amount: bigint;
-  timestamp: number;
-  verifier: string;
-};
+  owner: string
+  to: string
+  depositId: bigint
+  amount: bigint
+  timestamp: number
+  paymentVerifier: string
+  fiatCurrency: string
+  conversionRate: bigint
+}
 
 export type RedeemDetails = {
-  owner: string;
-  amount: bigint;
-  timestamp: number;
-};
+  owner: string
+  amount: bigint
+  timestamp: number
+}
 
 export type RedeemResult = {
-  success: boolean;
-  redeemId?: number;
-  txHash?: string;
-};
+  success: boolean
+  redeemId?: number
+  txHash?: string
+}
 
 export type ProofResult = {
-  success?: boolean;
-  error?: string;
+  success?: boolean
+  error?: string
   data?: {
     extractedParameters: {
-      documentTitle: string;
-      receivingBankAccount: string;
-      recipientName: string;
-      senderNickname: string;
-      transactionAmount: string;
-      transactionDate: string;
-    };
-    provider: string;
+      documentTitle: string
+      receivingBankAccount: string
+      recipientName: string
+      senderNickname: string
+      transactionAmount: string
+      transactionDate: string
+    }
+    provider: string
     receipt: {
-      request: any;
+      request: any
       claim: {
-        context: string;
-        epoch: number;
-        identifier: string;
-        owner: string;
-        parameters: string;
-        provider: string;
-        timestampS: number;
-      };
+        context: string
+        epoch: number
+        identifier: string
+        owner: string
+        parameters: string
+        provider: string
+        timestampS: number
+      }
       signatures: {
-        attestorAddresS: string;
-        claimSignature: any;
-        resultSignature: any;
-      };
-    };
-  };
-};
+        attestorAddresS: string
+        claimSignature: any
+        resultSignature: any
+      }
+    }
+  }
+}
 
 export default function Home() {
-  const { address, isConnected } = useAccount();
-  const chainId = useChainId();
-  const publicClient = usePublicClient();
-  const errorRef = useRef<HTMLDivElement>(null);
+  const { address, isConnected } = useAccount()
+  const chainId = useChainId()
+  const publicClient = usePublicClient()
+  const errorRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    handleRefreshMyIntentId();
-  }, [isConnected, address]); // eslint-disable-line react-hooks/exhaustive-deps
+    handleRefreshMyIntentId()
+  }, [isConnected, address]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const [currentStep, setCurrentStep] = useState<WorkflowStep>(
-    WorkflowStep.CONNECT
-  );
+    WorkflowStep.CONNECT,
+  )
 
-  const [intentId, setIntentId] = useState<number | null>(null);
-  const [searchIntentId, setSearchIntentId] = useState<number | null>(null);
-  const [intentDetails, setIntentDetails] = useState<IntentDetails | null>(
-    null
-  );
+  const [intentId, setIntentId] = useState<number | null>(null)
+  const [searchIntentId, setSearchIntentId] = useState<number | null>(null)
+  const [intentDetails, setIntentDetails] = useState<IntentDetails | null>(null)
 
-  const [issueDate, setIssueDate] = useState("");
-  const [certificateNumber, setCertificateNumber] = useState("");
+  const [issueDate, setIssueDate] = useState('')
+  const [certificateNumber, setCertificateNumber] = useState('')
 
-  const [isLoading, setIsLoading] = useState(false);
-  const { error, setError, freeError } = useContext(ErrorContext);
+  const [isLoading, setIsLoading] = useState(false)
+  const { error, setError, freeError } = useContext(ErrorContext)
 
   const [fulfillmentResult, setFulfillmentResult] =
-    useState<FulfillmentResult | null>(null);
+    useState<FulfillmentResult | null>(null)
 
-  const [proofResult, setProofResult] = useState<ProofResult | null>(null);
+  const [proofResult, setProofResult] = useState<ProofResult | null>(null)
 
   // 에러가 생성되면 에러 메세지창으로 포커싱
   useEffect(() => {
     if (error && errorRef.current) {
       errorRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
+        behavior: 'smooth',
+        block: 'center',
+      })
     }
-  }, [error]);
+  }, [error])
 
   // 지갑 연결 상태가 변경될 때 단계 업데이트
   useEffect(() => {
     if (isConnected && currentStep === WorkflowStep.CONNECT) {
-      setCurrentStep(WorkflowStep.SIGNAL);
+      setCurrentStep(WorkflowStep.SIGNAL)
     } else if (!isConnected) {
-      setCurrentStep(WorkflowStep.CONNECT);
-      setIntentId(null);
-      setProofResult(null);
-      setIssueDate("");
-      setCertificateNumber("");
-      setFulfillmentResult(null);
-      setSearchIntentId(null);
-      setIntentDetails(null);
+      setCurrentStep(WorkflowStep.CONNECT)
+      setIntentId(null)
+      setProofResult(null)
+      setIssueDate('')
+      setCertificateNumber('')
+      setFulfillmentResult(null)
+      setSearchIntentId(null)
+      setIntentDetails(null)
     }
-  }, [isConnected, currentStep]);
+  }, [isConnected, currentStep])
 
   // 내 intentId 조회 함수 (address 기반)
   const handleRefreshMyIntentId = async () => {
-    if (!address) return;
+    if (!address) return
     try {
-      setIsLoading(true);
+      setIsLoading(true)
       // accountIntent 함수로 현재 사용자의 intentId 조회
       const userIntentId = await publicClient?.readContract({
-        address: ADDRESSES.ZK_MINTER,
-        abi: ZK_MINTER_ABI,
-        functionName: "accountIntent",
+        address: ADDRESSES.ESCROW,
+        abi: ESCROW_ABI,
+        functionName: 'accountIntent',
         args: [address],
-      });
+      })
 
       if (userIntentId && Number(userIntentId) > 0) {
-        const newIntentId = Number(userIntentId);
-        setSearchIntentId(newIntentId); // 검색 필드에도 표시
-        setIntentId(newIntentId);
-        handleSearchIntentDetails(newIntentId);
+        const newIntentId = Number(userIntentId)
+        setSearchIntentId(newIntentId) // 검색 필드에도 표시
+        setIntentId(newIntentId)
+        handleSearchIntentDetails(newIntentId)
       } else {
-        setIntentDetails(null);
+        setIntentDetails(null)
       }
     } catch (error) {
-      console.error("Failed to lookup Intent ID:", error);
-      setError(ErrorType.INTENT_LOOKUP_FAILED);
+      console.error('Failed to lookup Intent ID:', error)
+      setError(ErrorType.INTENT_LOOKUP_FAILED)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   // 임의의 Intent ID로 상세 정보 조회
   const handleSearchIntentDetails = async (targetIntentId: number) => {
-    if (!targetIntentId) return;
+    if (!targetIntentId) return
 
     try {
-      setIsLoading(true);
+      setIsLoading(true)
       const intentData = await publicClient?.readContract({
-        address: ADDRESSES.ZK_MINTER,
-        abi: ZK_MINTER_ABI,
-        functionName: "intents",
+        address: ADDRESSES.ESCROW,
+        abi: ESCROW_ABI,
+        functionName: 'intents',
         args: [BigInt(targetIntentId)],
-      });
+      })
 
       if (
         intentData &&
-        intentData[0] !== "0x0000000000000000000000000000000000000000"
+        intentData[0] !== '0x0000000000000000000000000000000000000000'
       ) {
-        const [owner, to, amount, timestamp, verifier] = intentData as [
+        const [
+          owner,
+          to,
+          depositId,
+          amount,
+          timestamp,
+          paymentVerifier,
+          fiatCurrency,
+          conversionRate,
+        ] = intentData as [
           string,
           string,
           bigint,
           bigint,
-          string
-        ];
+          bigint,
+          string,
+          string,
+          bigint,
+        ]
         setIntentDetails({
           owner,
           to,
           amount,
           timestamp: Number(timestamp),
-          verifier,
-        });
+          paymentVerifier,
+          fiatCurrency,
+          conversionRate,
+        })
       } else {
-        setIntentDetails(null);
-        setError(ErrorType.INTENT_NOT_FOUND, { id: targetIntentId });
+        setIntentDetails(null)
+        setError(ErrorType.INTENT_NOT_FOUND, { id: targetIntentId })
       }
     } catch (error) {
-      console.error("Failed to lookup Intent ID:", error);
-      setIntentDetails(null);
-      setError(ErrorType.INTENT_NOT_FOUND, { id: targetIntentId });
+      console.error('Failed to lookup Intent ID:', error)
+      setIntentDetails(null)
+      setError(ErrorType.INTENT_NOT_FOUND, { id: targetIntentId })
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const renderStepContent = () => {
     switch (currentStep) {
       case WorkflowStep.CONNECT:
-        return <Connect />;
+        return <Connect />
       case WorkflowStep.SIGNAL:
         return (
           <Signal
@@ -243,7 +257,7 @@ export default function Home() {
             chainId={chainId}
             isConnected={isConnected}
           />
-        );
+        )
 
       case WorkflowStep.TRANSFER:
         return (
@@ -252,7 +266,7 @@ export default function Home() {
             intentDetails={intentDetails}
             setCurrentStep={setCurrentStep}
           />
-        );
+        )
 
       case WorkflowStep.PROOF:
         return (
@@ -268,7 +282,7 @@ export default function Home() {
             setProofResult={setProofResult}
             proofResult={proofResult}
           />
-        );
+        )
       case WorkflowStep.FULFILL:
         return (
           <FulFill
@@ -280,11 +294,11 @@ export default function Home() {
             proofResult={proofResult}
             setFulfillmentResult={setFulfillmentResult}
           />
-        );
+        )
 
       default:
     }
-  };
+  }
 
   return (
     <main className="min-h-screen relative overflow-hidden">
@@ -296,15 +310,15 @@ export default function Home() {
         {/* Purple blob - top right */}
         <div
           className="absolute top-1/4 -right-10 sm:top-40 sm:right-20 w-32 h-32 sm:w-48 md:w-72 sm:h-48 md:h-72 bg-purple-500 rounded-full mix-blend-screen filter blur-xl opacity-20 animate-blob"
-          style={{ animationDelay: "2s" }}
+          style={{ animationDelay: '2s' }}
         />
         {/* Blue blob - bottom */}
         <div
           className="absolute bottom-20 left-1/4 sm:-bottom-20 sm:left-40 w-36 h-36 sm:w-56 md:w-72 sm:h-56 md:h-72 bg-blue-500 rounded-full mix-blend-screen filter blur-xl opacity-20 animate-blob"
-          style={{ animationDelay: "4s" }}
+          style={{ animationDelay: '4s' }}
         />
       </div>
-      
+
       <div className="relative z-10 min-h-screen">
         {/* Header */}
         <div className="px-4 py-6">
@@ -337,13 +351,27 @@ export default function Home() {
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold">Swap</h2>
                 <button className="text-muted-foreground hover:text-foreground transition-colors p-2 hover:bg-secondary/30 rounded-lg">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
                   </svg>
                 </button>
               </div>
-              
+
               {renderStepContent()}
             </div>
 
@@ -357,24 +385,32 @@ export default function Home() {
         <ErrorMessage error={error} freeError={freeError} ref={errorRef} />
       </div>
     </main>
-  );
+  )
 }
 const ErrorMessage = React.forwardRef<
   HTMLDivElement,
   { error: string | null; freeError: () => void }
 >(function ErrorMessage({ error, freeError }, ref) {
-  if (!error) return null;
+  if (!error) return null
 
   return (
     <section
       ref={ref}
-      className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md px-4"
-    >
+      className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md px-4">
       <div className="bg-destructive/10 border border-destructive/50 rounded-lg p-4 backdrop-blur-xl">
         <div className="flex items-start gap-3">
           <div className="flex-shrink-0">
-            <svg className="w-5 h-5 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="w-5 h-5 text-destructive"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
           </div>
           <div className="flex-1">
@@ -382,14 +418,22 @@ const ErrorMessage = React.forwardRef<
           </div>
           <button
             onClick={freeError}
-            className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors">
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
       </div>
     </section>
-  );
-});
+  )
+})

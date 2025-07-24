@@ -1,17 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { WorkflowStep, FulfillmentResult, ProofResult } from "../Home";
-import FulfillmentResultComponent from "../FulfillmentResult";
-import { decodeEventLog, encodeAbiParameters, keccak256, toBytes } from "viem";
-import { useContractWrite } from "@/hooks/useContractWrite";
-import ADDRESSES from "@/lib/addresses";
-import { ZK_MINTER_ABI } from "@/lib/abi";
-import { ErrorType } from "@/lib/errors";
-import { useContext } from "react";
-import { ErrorContext } from "@/context/ErrorContext";
-import { extractErrorMessage } from "../utils/extractErrorMessage";
-import { trackUserAction } from "@/lib/sentry-utils";
-import * as Sentry from "@sentry/nextjs";
-import { cn } from "@/lib/utils";
+import { WorkflowStep, FulfillmentResult, ProofResult } from '../Home'
+import FulfillmentResultComponent from '../FulfillmentResult'
+import { decodeEventLog, encodeAbiParameters, keccak256, toBytes } from 'viem'
+import { useContractWrite } from '@/hooks/useContractWrite'
+import ADDRESSES from '@/lib/addresses'
+import { ESCROW_ABI } from '@/lib/abi'
+import { ErrorType } from '@/lib/errors'
+import { useContext } from 'react'
+import { ErrorContext } from '@/context/ErrorContext'
+import { extractErrorMessage } from '../utils/extractErrorMessage'
+import { trackUserAction } from '@/lib/sentry-utils'
+import * as Sentry from '@sentry/nextjs'
+import { cn } from '@/lib/utils'
 
 export default function FulFill({
   issueDate,
@@ -22,15 +22,15 @@ export default function FulFill({
   proofResult,
   setFulfillmentResult,
 }: {
-  issueDate: string;
-  certificateNumber: string;
-  intentId: number | null;
-  setCurrentStep: (step: WorkflowStep) => void;
-  fulfillmentResult: FulfillmentResult | null;
-  proofResult: ProofResult | null;
-  setFulfillmentResult: (result: FulfillmentResult | null) => void;
+  issueDate: string
+  certificateNumber: string
+  intentId: number | null
+  setCurrentStep: (step: WorkflowStep) => void
+  fulfillmentResult: FulfillmentResult | null
+  proofResult: ProofResult | null
+  setFulfillmentResult: (result: FulfillmentResult | null) => void
 }) {
-  const { setError } = useContext(ErrorContext);
+  const { setError } = useContext(ErrorContext)
   const {
     writeAndWait: fulfillIntentWrite,
     isLoading: isFulfillIntentLoading,
@@ -40,37 +40,37 @@ export default function FulFill({
       try {
         const intentFulfilledEvent = receipt.logs.find((log: any) => {
           const intentFulfilledTopic = keccak256(
-            toBytes("IntentFulfilled(bytes32,address,address,address,uint256)")
-          );
+            toBytes('IntentFulfilled(bytes32,address,address,address,uint256)'),
+          )
           return (
             log.topics[0] === intentFulfilledTopic &&
-            log.address.toLowerCase() === ADDRESSES.ZK_MINTER.toLowerCase()
-          );
-        });
+            log.address.toLowerCase() === ADDRESSES.ESCROW.toLowerCase()
+          )
+        })
 
         if (intentFulfilledEvent) {
           const decodedLog = decodeEventLog({
             abi: ZK_MINTER_ABI,
             data: intentFulfilledEvent.data,
             topics: intentFulfilledEvent.topics,
-          });
+          })
 
           const { intentHash, verifier, owner, to, amount } =
             decodedLog.args as {
-              intentHash: string;
-              verifier: string;
-              owner: string;
-              to: string;
-              amount: bigint;
-            };
+              intentHash: string
+              verifier: string
+              owner: string
+              to: string
+              amount: bigint
+            }
 
           // 성공 추적
-          trackUserAction("Token minting successful", {
+          trackUserAction('Token minting successful', {
             intentHash,
             amount: amount.toString(),
             receiver: to,
             txHash: receipt.transactionHash,
-          });
+          })
 
           setFulfillmentResult({
             success: true,
@@ -80,30 +80,30 @@ export default function FulFill({
             to,
             amount,
             txHash: receipt.transactionHash,
-          });
+          })
         }
       } catch (error) {
-        console.error("Failed to parse IntentFulfilled event:", error);
+        console.error('Failed to parse IntentFulfilled event:', error)
       }
     },
-  });
+  })
 
   const formatProofForContract = (receiptData: any) => {
     if (!receiptData) {
-      throw new Error("Invalid receipt data");
+      throw new Error('Invalid receipt data')
     }
 
-    const receipt = receiptData.data.receipt;
-    const claim = receipt.claim;
-    const signatures = receipt.signatures;
+    const receipt = receiptData.data.receipt
+    const claim = receipt.claim
+    const signatures = receipt.signatures
 
-    let claimSignatureHex = signatures.claimSignature;
+    let claimSignatureHex = signatures.claimSignature
     if (
       signatures.claimSignature &&
-      typeof signatures.claimSignature === "object"
+      typeof signatures.claimSignature === 'object'
     ) {
       claimSignatureHex =
-        "0x" + Buffer.from(signatures.claimSignature).toString("hex");
+        '0x' + Buffer.from(signatures.claimSignature).toString('hex')
     }
 
     const proofObject = {
@@ -122,10 +122,10 @@ export default function FulFill({
         signatures: [claimSignatureHex],
       },
       isAppclipProof: false,
-    };
+    }
 
-    return proofObject;
-  };
+    return proofObject
+  }
 
   // proof 객체를 바이트로 인코딩하는 함수 (ABI 인코딩 사용)
   const encodeProofToBytes = (proofObject: any) => {
@@ -134,35 +134,35 @@ export default function FulFill({
       const encodedProof = encodeAbiParameters(
         [
           {
-            type: "tuple",
+            type: 'tuple',
             components: [
               {
-                type: "tuple",
-                name: "claimInfo",
+                type: 'tuple',
+                name: 'claimInfo',
                 components: [
-                  { type: "string", name: "provider" },
-                  { type: "string", name: "parameters" },
-                  { type: "string", name: "context" },
+                  { type: 'string', name: 'provider' },
+                  { type: 'string', name: 'parameters' },
+                  { type: 'string', name: 'context' },
                 ],
               },
               {
-                type: "tuple",
-                name: "signedClaim",
+                type: 'tuple',
+                name: 'signedClaim',
                 components: [
                   {
-                    type: "tuple",
-                    name: "claim",
+                    type: 'tuple',
+                    name: 'claim',
                     components: [
-                      { type: "bytes32", name: "identifier" },
-                      { type: "address", name: "owner" },
-                      { type: "uint32", name: "timestampS" },
-                      { type: "uint32", name: "epoch" },
+                      { type: 'bytes32', name: 'identifier' },
+                      { type: 'address', name: 'owner' },
+                      { type: 'uint32', name: 'timestampS' },
+                      { type: 'uint32', name: 'epoch' },
                     ],
                   },
-                  { type: "bytes[]", name: "signatures" },
+                  { type: 'bytes[]', name: 'signatures' },
                 ],
               },
-              { type: "bool", name: "isAppclipProof" },
+              { type: 'bool', name: 'isAppclipProof' },
             ],
           },
         ],
@@ -185,72 +185,72 @@ export default function FulFill({
             },
             isAppclipProof: false,
           },
-        ]
-      );
+        ],
+      )
 
-      return encodedProof;
+      return encodedProof
     } catch (error) {
-      console.error("ABI encoding error:", error);
-      throw new Error("Failed to ABI encode proof: " + error);
+      console.error('ABI encoding error:', error)
+      throw new Error('Failed to ABI encode proof: ' + error)
     }
-  };
+  }
 
   // fulfillIntent 호출
   const handleFulfillIntent = async () => {
     if (!intentId || !proofResult) {
-      console.error("Missing intentId or proofResult");
-      setError(ErrorType.MISSING_INTENT_OR_PROOF);
-      return;
+      console.error('Missing intentId or proofResult')
+      setError(ErrorType.MISSING_INTENT_OR_PROOF)
+      return
     }
 
     try {
-      setFulfillmentResult(null); // 이전 결과 초기화
+      setFulfillmentResult(null) // 이전 결과 초기화
 
       // result 데이터를 컨트랙트가 요구하는 형태로 변환
-      const formattedProof = formatProofForContract(proofResult);
+      const formattedProof = formatProofForContract(proofResult)
 
       // proof 객체를 바이트로 인코딩
-      const encodedProof = encodeProofToBytes(formattedProof);
+      const encodedProof = encodeProofToBytes(formattedProof)
       // 사용자 액션 추적
-      trackUserAction("Mint Tokens clicked", {
+      trackUserAction('Transfer USDC clicked', {
         intentId,
         encodedProof,
-      });
+      })
 
       await fulfillIntentWrite({
-        address: ADDRESSES.ZK_MINTER,
-        abi: ZK_MINTER_ABI,
-        functionName: "fulfillIntent",
+        address: ADDRESSES.ESCROW,
+        abi: ESCROW_ABI,
+        functionName: 'fulfillIntent',
         args: [
           encodedProof, // _paymentProof as bytes
           BigInt(intentId), // intentId
         ],
-      });
+      })
     } catch (error) {
-      const errorMessage = extractErrorMessage(error);
-      console.error("Failed to fulfillIntent:", error);
+      const errorMessage = extractErrorMessage(error)
+      console.error('Failed to fulfillIntent:', error)
 
       // 포맷팅/인코딩 에러 추적
       Sentry.captureException(error, {
         tags: {
-          type: "proof_formatting_error",
-          step: "5_token_minting",
+          type: 'proof_formatting_error',
+          step: '5_token_minting',
         },
         contexts: {
           proof_formatting: {
             intentId,
             proofIdentifier: proofResult?.data,
             errorMessage,
-            errorPhase: "pre_transaction",
+            errorPhase: 'pre_transaction',
             proofResultKeys: Object.keys(proofResult || {}),
           },
         },
-      });
+      })
 
-      setError(`Token minting failed: ${errorMessage}`);
-      setFulfillmentResult({ success: false });
+      setError(`USDC transfer failed: ${errorMessage}`)
+      setFulfillmentResult({ success: false })
     }
-  };
+  }
   return (
     <>
       {fulfillmentResult?.success && (
@@ -262,7 +262,7 @@ export default function FulFill({
             <div className="space-y-2">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <span className="text-primary">◆</span>
-                Click 'Mint Tokens'
+                Click &apos;Transfer USDC&apos;
               </h3>
               <p className="text-sm text-muted-foreground ml-6">
                 Mint tokens to the recipient wallet.
@@ -276,7 +276,7 @@ export default function FulFill({
               <input
                 id="intentId"
                 type="text"
-                value={intentId?.toString() || ""}
+                value={intentId?.toString() || ''}
                 disabled={true}
                 className="w-full h-10 rounded-lg border border-border bg-background px-3 py-2 text-sm disabled:opacity-50"
               />
@@ -294,7 +294,9 @@ export default function FulFill({
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="certificateNumber" className="text-sm font-medium">
+              <label
+                htmlFor="certificateNumber"
+                className="text-sm font-medium">
                 Certificate Issue Number
               </label>
               <input
@@ -310,14 +312,8 @@ export default function FulFill({
           <div className="flex gap-3">
             <button
               onClick={() => setCurrentStep(WorkflowStep.PROOF)}
-              className="flex-1 px-4 py-2 rounded-full bg-secondary/50 hover:bg-secondary/70 transition-all duration-200 border border-border/50 flex items-center justify-center gap-2 text-sm font-medium"
-            >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-              >
+              className="flex-1 px-4 py-2 rounded-full bg-secondary/50 hover:bg-secondary/70 transition-all duration-200 border border-border/50 flex items-center justify-center gap-2 text-sm font-medium">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path
                   d="M12.5 15L7.5 10L12.5 5"
                   stroke="currentColor"
@@ -336,20 +332,14 @@ export default function FulFill({
                 isFulfillIntentLoading ||
                 !intentId ||
                 fulfillmentResult?.success
-              }
-            >
+              }>
               {isFulfillIntentLoading
-                ? "Minting Tokens..."
+                ? 'Transferring USDC...'
                 : fulfillmentResult?.success
-                ? "Minting Complete"
-                : "Mint Tokens"}
+                  ? 'Transfer Complete'
+                  : 'Transfer USDC'}
               {!isFulfillIntentLoading && !fulfillmentResult?.success && (
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                   <path
                     d="M7.5 15L12.5 10L7.5 5"
                     stroke="currentColor"
@@ -364,5 +354,5 @@ export default function FulFill({
         </section>
       )}
     </>
-  );
+  )
 }
