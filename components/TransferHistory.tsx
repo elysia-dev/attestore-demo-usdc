@@ -15,16 +15,17 @@ export type TransferHistoryItem = {
   timestamp: number
 }
 
-export default function MintingHistory({
+export default function TransferHistory({
   showHistory,
 }: {
   showHistory: boolean
 }) {
   const { address, isConnected } = useAccount()
-  const [mintingHistory, setMintingHistory] = useState<TransferHistoryItem[]>(
+  const [transferHistory, setTransferHistory] = useState<TransferHistoryItem[]>(
     [],
   )
   const [isLoading, setIsLoading] = useState(false)
+  const [filter, setFilter] = useState<'all' | 'my'>('all')
 
   const fetchTransferHistory = useCallback(async () => {
     if (!address) return
@@ -32,21 +33,27 @@ export default function MintingHistory({
     try {
       setIsLoading(true)
 
-      // Call our API route instead of querying blockchain directly
-      const response = await fetch(`/api/transfer-history?address=${address}`)
+      // Call our API route - fetch all history or just user's history based on filter
+      const url =
+        filter === 'my'
+          ? `/api/transfer-history?address=${address}`
+          : '/api/transfer-history'
+
+      const response = await fetch(url)
 
       if (!response.ok) {
         throw new Error('Failed to fetch transfer history')
       }
 
       const data = await response.json()
-      setMintingHistory(data.mintingHistory)
+      console.log('data', data)
+      setTransferHistory(data.transferHistory)
     } catch (error) {
       console.error('Failed to fetch transfer history:', error)
     } finally {
       setIsLoading(false)
     }
-  }, [address])
+  }, [address, filter])
 
   // Get block explorer URL based on network
   const getExplorerUrl = (txHash: string) => {
@@ -62,7 +69,7 @@ export default function MintingHistory({
     if (isConnected) {
       fetchTransferHistory()
     }
-  }, [isConnected, fetchTransferHistory])
+  }, [isConnected, fetchTransferHistory, filter])
 
   if (!isConnected) {
     return null
@@ -74,7 +81,31 @@ export default function MintingHistory({
   return (
     <section className="space-y-4">
       {showHistory && (
-        <section className="bg-card/50 rounded-[24px] p-6 backdrop-blur-xl border border-border/50">
+        <section className="bg-card/50 rounded-[24px] p-6 backdrop-blur-xl border border-border/50 space-y-4">
+          {/* Filter tabs */}
+          <div className="flex gap-2 p-1 bg-secondary/30 rounded-full">
+            <button
+              onClick={() => setFilter('all')}
+              className={cn(
+                'flex-1 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200',
+                filter === 'all'
+                  ? 'bg-primary text-primary-foreground shadow-lg'
+                  : 'text-muted-foreground hover:text-foreground',
+              )}>
+              All
+            </button>
+            <button
+              onClick={() => setFilter('my')}
+              className={cn(
+                'flex-1 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200',
+                filter === 'my'
+                  ? 'bg-primary text-primary-foreground shadow-lg'
+                  : 'text-muted-foreground hover:text-foreground',
+              )}>
+              My History
+            </button>
+          </div>
+
           {isLoading ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">
@@ -83,7 +114,7 @@ export default function MintingHistory({
             </div>
           ) : (
             <div className="space-y-4">
-              {mintingHistory.map((item, index) => {
+              {transferHistory.map((item, index) => {
                 const explorerUrl = getExplorerUrl(item.txHash)
                 return (
                   <div
@@ -101,7 +132,7 @@ export default function MintingHistory({
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-sm font-semibold flex items-center gap-2">
                         <span className="text-green-500">✅</span>
-                        Minting Successful
+                        Transfer Successful
                       </h3>
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-muted-foreground">
