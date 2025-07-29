@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useContractWrite } from '@/hooks/useContractWrite'
-import { TOKEN_SYMBOL } from '@/constant'
+import { DEFAULT_DEPOSIT_ID, KRW_CURRENCY_CODE, TOKEN_SYMBOL } from '@/constant'
 import ADDRESSES from '@/lib/addresses'
-import { ESCROW_ABI, ZK_MINTER_ABI } from '@/lib/abi'
+import { ESCROW_ABI } from '@/lib/abi'
 import { decodeEventLog, keccak256, parseUnits, toBytes } from 'viem'
 import { useContext, useState } from 'react'
 import { ErrorType } from '@/lib/errors'
@@ -16,16 +16,18 @@ const EnrollIntent = ({
   setSearchIntentId,
   handleRefreshMyIntentId,
   intentId,
+  initialAmount,
 }: {
   address: `0x${string}` | undefined
   handleRefreshMyIntentId: () => void
   setIntentId: (intentId: number) => void
   setSearchIntentId: (searchIntentId: number) => void
   intentId: number | null
+  initialAmount?: string
 }) => {
   const { setError } = useContext(ErrorContext)
   const [toAddress, setToAddress] = useState('')
-  const [amount, setAmount] = useState('')
+  const [amount, setAmount] = useState(initialAmount || '')
 
   const { writeAndWait: signalIntentWrite, isLoading: isSignalIntentLoading } =
     useContractWrite({
@@ -44,7 +46,7 @@ const EnrollIntent = ({
 
           if (intentSignaledEvent) {
             const decodedLog = decodeEventLog({
-              abi: ZK_MINTER_ABI,
+              abi: ESCROW_ABI,
               data: intentSignaledEvent.data,
               topics: intentSignaledEvent.topics,
             })
@@ -81,9 +83,11 @@ const EnrollIntent = ({
         abi: ESCROW_ABI,
         functionName: 'signalIntent',
         args: [
+          BigInt(DEFAULT_DEPOSIT_ID),
+          parseUnits(amount, 6), // USDC has 6 decimals
           toAddress as `0x${string}`,
-          parseUnits(amount, 18),
           ADDRESSES.TOSS_BANK_VERIFIER,
+          KRW_CURRENCY_CODE,
         ],
       })
       // 성공 시 onSuccess 콜백에서 자동으로 intentId 설정됨

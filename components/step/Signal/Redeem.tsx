@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label'
 import { decodeEventLog, erc20Abi, keccak256, parseUnits, toBytes } from 'viem'
 import { RedeemResult } from '@/components/Home'
 import ADDRESSES from '@/lib/addresses'
-import { ZK_MINTER_ABI } from '@/lib/abi'
+import { ESCROW_ABI } from '@/lib/abi'
 import { useContext, useState } from 'react'
 import { useAccount, usePublicClient } from 'wagmi'
 import { useContractWrite } from '@/hooks/useContractWrite'
@@ -62,13 +62,13 @@ export default function Redeem({
           )
           return (
             log.topics[0] === redeemSignaledTopic &&
-            log.address.toLowerCase() === ADDRESSES.ZK_MINTER.toLowerCase()
+            log.address.toLowerCase() === ADDRESSES.ESCROW.toLowerCase()
           )
         })
 
         if (redeemSignaledEvent) {
           const decodedLog = decodeEventLog({
-            abi: ZK_MINTER_ABI,
+            abi: ESCROW_ABI,
             data: redeemSignaledEvent.data,
             topics: redeemSignaledEvent.topics,
           })
@@ -99,7 +99,7 @@ export default function Redeem({
       address: ADDRESSES.TOKEN,
       abi: erc20Abi,
       functionName: 'allowance',
-      args: [address, ADDRESSES.ZK_MINTER],
+      args: [address, ADDRESSES.ESCROW],
     })
 
     return allowance >= redeemAmount
@@ -120,8 +120,8 @@ export default function Redeem({
 
       // 1. Check if user already has an existing redeem request
       const existingRedeemId = await publicClient?.readContract({
-        address: ADDRESSES.ZK_MINTER,
-        abi: ZK_MINTER_ABI,
+        address: ADDRESSES.ESCROW,
+        abi: ESCROW_ABI,
         functionName: 'accountRedeemRequest',
         args: [address],
       })
@@ -165,7 +165,7 @@ export default function Redeem({
           address: ADDRESSES.TOKEN,
           abi: erc20Abi,
           functionName: 'approve',
-          args: [ADDRESSES.ZK_MINTER, redeemAmount],
+          args: [ADDRESSES.ESCROW, redeemAmount],
         })
 
         console.log('Approval successful')
@@ -176,8 +176,8 @@ export default function Redeem({
       setProcessProgress({ current: 3, total: 3 })
 
       await signalRedeemWrite({
-        address: ADDRESSES.ZK_MINTER,
-        abi: ZK_MINTER_ABI,
+        address: ADDRESSES.ESCROW,
+        abi: ESCROW_ABI,
         functionName: 'signalRedeem',
         args: [accountNumber.trim(), redeemAmount],
       })

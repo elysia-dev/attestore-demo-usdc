@@ -1,5 +1,5 @@
 import { formatUnits } from 'viem'
-import { IntentDetails, WorkflowStep } from '../Home'
+import { IntentDetails } from '../Home'
 import { TOSS_ACCOUNT_NUMBER } from '@/constant'
 import { useContext, useState } from 'react'
 import { ErrorContext } from '@/context/ErrorContext'
@@ -9,6 +9,7 @@ import { VideoPopup } from '@/components/ui/VideoPopup'
 import { cn } from '@/lib/utils'
 import { useTossLauncher } from '../../hooks/useTossLauncher'
 import ConfirmationModal from '../ui/ConfirmationModal'
+import { WorkflowStep } from '../StepIndicator'
 
 export default function Transfer({
   intentId,
@@ -33,8 +34,9 @@ export default function Transfer({
   const handleConfirmTransfer = () => {
     setIsConfirmationModalOpen(true)
   }
+  console.log('intentDetails', intentDetails)
 
-  const amount = formatUnits(intentDetails?.amount ?? BigInt(0), 18)
+  const amount = formatUnits(intentDetails?.amount ?? BigInt(0), 6)
   const qrCodeUrl = `supertoss://send?amount=${amount}&bank=%ED%86%A0%EC%8A%A4%EB%B1%85%ED%81%AC&accountNo=${TOSS_ACCOUNT_NUMBER}&origin=qr`
 
   const { launch, fallback, storeURL, reset } = useTossLauncher(qrCodeUrl)
@@ -173,7 +175,7 @@ export default function Transfer({
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">Amount</p>
               <p className="text-sm font-medium">
-                {formatUnits(intentDetails?.amount, 18)} KRW
+                {formatUnits(intentDetails?.amount, 6)} USDC
               </p>
             </div>
           </section>

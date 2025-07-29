@@ -19,20 +19,21 @@ import Signal from './step/Signal/index'
 import Transfer from './step/Transfer'
 import Proof from './step/Proof'
 import FulFill from './step/FulFill'
-import TransferHistory from './TransferHistory'
-import { Button } from './ui/button'
-import Image from 'next/image'
+import { IntentHistory } from './IntentHistory'
 import { ErrorContext } from '@/context/ErrorContext'
-import { cn } from '@/lib/utils'
-import { StepIndicator } from './StepIndicator'
+import { StepIndicator, WorkflowStep } from './StepIndicator'
+import ErrorMessage from './ErrorMessage'
+import { testData } from '@/data'
+import { useSearchParams } from 'next/navigation'
 
-export enum WorkflowStep {
-  CONNECT = 'connect',
-  SIGNAL = 'signal',
-  TRANSFER = 'transfer',
-  PROOF = 'proof',
-  FULFILL = 'fulfill',
+export const workflowStepToLabel = {
+  [WorkflowStep.CONNECT]: 'Connect Wallet',
+  [WorkflowStep.SIGNAL]: 'Swap',
+  [WorkflowStep.TRANSFER]: 'Transfer KRW',
+  [WorkflowStep.PROOF]: 'Proof',
+  [WorkflowStep.FULFILL]: 'Get USDC',
 }
+
 export type FulfillmentResult = {
   success: boolean
   intentHash?: string
@@ -54,9 +55,16 @@ export type IntentDetails = {
 }
 
 export type RedeemDetails = {
-  owner: string
+  depositor: string
+  token: string
   amount: bigint
-  timestamp: number
+  intentAmountRange: {
+    min: bigint
+    max: bigint
+  }
+  acceptingIntents: boolean
+  remainingDeposits: bigint
+  outstandingIntentAmount: bigint
 }
 
 export type RedeemResult = {
@@ -103,6 +111,8 @@ export default function Home() {
   const chainId = useChainId()
   const publicClient = usePublicClient()
   const errorRef = useRef<HTMLDivElement>(null)
+  const searchParams = useSearchParams()
+  const view = searchParams.get('view')
 
   useEffect(() => {
     handleRefreshMyIntentId()
@@ -116,8 +126,12 @@ export default function Home() {
   const [searchIntentId, setSearchIntentId] = useState<number | null>(null)
   const [intentDetails, setIntentDetails] = useState<IntentDetails | null>(null)
 
-  const [issueDate, setIssueDate] = useState('')
-  const [certificateNumber, setCertificateNumber] = useState('')
+  const defaultValue = testData[0]
+  const [issueDate, setIssueDate] = useState(defaultValue.issueDate)
+  console.log('issueDate in Home', issueDate)
+  const [certificateNumber, setCertificateNumber] = useState(
+    defaultValue.certificateNumber,
+  )
 
   const [isLoading, setIsLoading] = useState(false)
   const { error, setError, freeError } = useContext(ErrorContext)
@@ -221,6 +235,7 @@ export default function Home() {
         setIntentDetails({
           owner,
           to,
+          depositId,
           amount,
           timestamp: Number(timestamp),
           paymentVerifier,
@@ -301,7 +316,7 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen relative overflow-hidden">
+    <main className="min-h-screen relative overflow-hidden pt-20">
       {/* Animated background - exactly like Zenie USDC */}
       <div className="absolute inset-0 bg-gradient-radial" />
       <div className="absolute inset-0">
@@ -320,65 +335,42 @@ export default function Home() {
       </div>
 
       <div className="relative z-10 min-h-screen">
-        {/* Header */}
-        <div className="px-4 py-6">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-center">
-              <h1 className="text-2xl font-bold">
-                <span className="text-gradient">ZK Escrow Transfer System</span>
-              </h1>
-            </div>
-          </div>
-        </div>
-
         {/* Main content */}
-        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-120px)] px-4">
+        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] px-4">
           <div className="w-full max-w-md">
-            {/* Subtitle */}
-            <p className="text-center text-muted-foreground mb-8">
-              Instant KRW to USDC swaps powered by zero-knowledge proofs
-            </p>
+            {view !== 'history' ? (
+              <>
+                {/* Subtitle */}
+                <p className="text-center text-muted-foreground mb-8">
+                  Instant KRW to USDC swaps powered by zero-knowledge proofs
+                </p>
 
-            {/* Step Indicator */}
-            {isConnected && (
-              <div className="mb-8">
-                <StepIndicator currentStep={currentStep} />
-              </div>
+                {/* Step Indicator */}
+                {isConnected && (
+                  <div className="mb-8">
+                    <StepIndicator currentStep={currentStep} />
+                  </div>
+                )}
+
+                {/* Card */}
+                <div className="bg-card/80 rounded-[32px] p-6 backdrop-blur-xl border border-border/50 shadow-2xl glow">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-xl font-semibold">
+                      {workflowStepToLabel[currentStep]}
+                    </h2>
+                  </div>
+
+                  {renderStepContent()}
+                </div>
+
+                {/* Footer text */}
+                <p className="text-center text-muted-foreground text-sm mt-6">
+                  Powered by Base • Secured by ZK Proofs • Instant Settlement
+                </p>
+              </>
+            ) : (
+              <IntentHistory />
             )}
-
-            {/* Card */}
-            <div className="bg-card/80 rounded-[32px] p-6 backdrop-blur-xl border border-border/50 shadow-2xl glow">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold">Swap</h2>
-                <button className="text-muted-foreground hover:text-foreground transition-colors p-2 hover:bg-secondary/30 rounded-lg">
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
-                </button>
-              </div>
-
-              {renderStepContent()}
-            </div>
-
-            {/* Footer text */}
-            <p className="text-center text-muted-foreground text-sm mt-6">
-              Powered by Base • Secured by ZK Proofs • Instant Settlement
-            </p>
           </div>
         </div>
 
@@ -387,53 +379,3 @@ export default function Home() {
     </main>
   )
 }
-const ErrorMessage = React.forwardRef<
-  HTMLDivElement,
-  { error: string | null; freeError: () => void }
->(function ErrorMessage({ error, freeError }, ref) {
-  if (!error) return null
-
-  return (
-    <section
-      ref={ref}
-      className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md px-4">
-      <div className="bg-destructive/10 border border-destructive/50 rounded-lg p-4 backdrop-blur-xl">
-        <div className="flex items-start gap-3">
-          <div className="flex-shrink-0">
-            <svg
-              className="w-5 h-5 text-destructive"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-          </div>
-          <div className="flex-1">
-            <p className="text-sm text-foreground">{error}</p>
-          </div>
-          <button
-            onClick={freeError}
-            className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors">
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
-      </div>
-    </section>
-  )
-})

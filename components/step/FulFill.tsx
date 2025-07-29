@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { WorkflowStep, FulfillmentResult, ProofResult } from '../Home'
+import { FulfillmentResult, ProofResult } from '../Home'
 import FulfillmentResultComponent from '../FulfillmentResult'
 import { decodeEventLog, encodeAbiParameters, keccak256, toBytes } from 'viem'
 import { useContractWrite } from '@/hooks/useContractWrite'
@@ -12,6 +12,7 @@ import { extractErrorMessage } from '../utils/extractErrorMessage'
 import { trackUserAction } from '@/lib/sentry-utils'
 import * as Sentry from '@sentry/nextjs'
 import { cn } from '@/lib/utils'
+import { WorkflowStep } from '../StepIndicator'
 
 export default function FulFill({
   issueDate,
@@ -50,7 +51,7 @@ export default function FulFill({
 
         if (intentFulfilledEvent) {
           const decodedLog = decodeEventLog({
-            abi: ZK_MINTER_ABI,
+            abi: ESCROW_ABI,
             data: intentFulfilledEvent.data,
             topics: intentFulfilledEvent.topics,
           })
@@ -216,6 +217,8 @@ export default function FulFill({
         intentId,
         encodedProof,
       })
+      console.log('encodedProof', encodedProof)
+      console.log('intentId', intentId)
 
       await fulfillIntentWrite({
         address: ADDRESSES.ESCROW,
@@ -265,7 +268,7 @@ export default function FulFill({
                 Click &apos;Transfer USDC&apos;
               </h3>
               <p className="text-sm text-muted-foreground ml-6">
-                Mint tokens to the recipient wallet.
+                Transfer USDC to the recipient wallet.
               </p>
             </div>
           </section>

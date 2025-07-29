@@ -6,7 +6,7 @@ import { ESCROW_ABI } from '@/lib/abi'
 import { ErrorType } from '@/lib/errors'
 import { extractErrorMessage } from '@/components/utils/extractErrorMessage'
 import { useCallback, useContext, useEffect, useState } from 'react'
-import { cn } from '@/lib/utils'
+import { cn, getExplorerUrl, truncateAddress } from '@/lib/utils'
 import { erc20Abi, formatUnits } from 'viem'
 import { usePublicClient } from 'wagmi'
 import { ErrorContext } from '@/context/ErrorContext'
@@ -38,7 +38,7 @@ const IntentManagement = ({
       if (!to) return
 
       const balance = await publicClient?.readContract({
-        address: ADDRESSES.TOKEN,
+        address: ADDRESSES.USDC, // USDC token
         abi: erc20Abi,
         functionName: 'balanceOf',
         args: [to as `0x${string}`],
@@ -87,7 +87,7 @@ const IntentManagement = ({
         <div className="mt-4 space-y-3">
           {intentDetails && (
             <div className="bg-secondary/30 rounded-2xl p-4 border border-border/50">
-              <h4 className="text-sm font-semibold mb-3">Intent Details</h4>
+              <h4 className="text-sm font-semibold mb-3">Pending Intent</h4>
               <section className="bg-background/50 rounded-xl p-4 border border-border/30 mb-4">
                 <div className="grid grid-cols-2 max-sm:grid-cols-1 gap-4">
                   <div className="space-y-1">
@@ -115,7 +115,7 @@ const IntentManagement = ({
                       Amount
                     </span>
                     <p className="text-sm font-mono font-medium text-primary">
-                      {formatUnits(intentDetails.amount, 18)} {TOKEN_SYMBOL}
+                      {formatUnits(intentDetails.amount, 6)} {USDC_SYMBOL}
                     </p>
                   </div>
                   <div className="space-y-1">
@@ -145,9 +145,14 @@ const IntentManagement = ({
                   <span className="text-xs text-muted-foreground">
                     Address:
                   </span>
-                  <span className="text-xs font-mono max-sm:hidden">
-                    {intentDetails.to}
-                  </span>
+                  <button
+                    className="text-xs font-mono max-sm:hidden"
+                    onClick={() => {
+                      const url = getExplorerUrl(intentDetails.to)
+                      window.open(url, '_blank')
+                    }}>
+                    {truncateAddress(intentDetails.to)}
+                  </button>
                   <span className="text-xs font-mono hidden max-sm:inline">
                     {`${intentDetails.to.slice(
                       0,

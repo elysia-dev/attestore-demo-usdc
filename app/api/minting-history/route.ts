@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
 
       try {
         const logs = await publicClient.getLogs({
-          address: ADDRESSES.ZK_MINTER as `0x${string}`,
+          address: ADDRESSES.ESCROW as `0x${string}`,
           event: {
             anonymous: false,
             inputs: [

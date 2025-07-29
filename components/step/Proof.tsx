@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Label } from '@radix-ui/react-label'
-import { ProofResult, WorkflowStep } from '../Home'
+import { ProofResult } from '../Home'
 import { Input } from '../ui/input'
 import axios from 'axios'
 import { BASE_URL } from '@/constant'
@@ -12,6 +12,7 @@ import { trackUserAction } from '@/lib/sentry-utils'
 import * as Sentry from '@sentry/nextjs'
 import { cn } from '@/lib/utils'
 import { VideoPopup } from '../ui/VideoPopup'
+import { WorkflowStep } from '../StepIndicator'
 
 // Certificate number formatting function
 const formatCertificateNumber = (value: string): string => {
@@ -100,6 +101,8 @@ export default function Proof({
   const { setError, freeError } = useContext(ErrorContext)
   const [showTooltip, setShowTooltip] = useState(false)
   const [showGuide, setShowGuide] = useState(false)
+  console.log('issueDate', issueDate)
+  console.log('certificateNumber', certificateNumber)
 
   // Validation states
   const [validationErrors, setValidationErrors] = useState<{
@@ -220,17 +223,17 @@ export default function Proof({
             Click &apos;Generate Transfer Proof&apos;
           </h3>
           <div className="relative inline-block">
-            <button
+            {/* <button
               type="button"
               onMouseEnter={() => setShowTooltip(true)}
               onMouseLeave={() => setShowTooltip(false)}
               onClick={() => setShowTooltip(!showTooltip)}
               className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors">
               ?
-            </button>
-            <span className="text-primary text-xs ml-1 max-sm:hidden">
+            </button> */}
+            {/* <span className="text-primary text-xs ml-1 max-sm:hidden">
               (for devs)
-            </span>
+            </span> */}
 
             {showTooltip && (
               <div className="absolute bottom-full right-0 mb-2 px-3 py-2 bg-card text-foreground text-xs rounded-lg shadow-lg z-10 w-64 border border-border">

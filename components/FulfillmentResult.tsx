@@ -17,7 +17,7 @@ export default function FulfillmentResultComponent({
       <section className="bg-card/50 rounded-[24px] p-6 backdrop-blur-xl border border-border/50">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <span className="text-2xl">🎉</span>
-          Minting Info
+          Transfer Info
         </h3>
         <section className="bg-secondary/30 rounded-2xl p-4 border border-border/50">
           <div className="grid grid-cols-2 max-sm:grid-cols-1 gap-4">
