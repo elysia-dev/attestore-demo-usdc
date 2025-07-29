@@ -81,101 +81,93 @@ const IntentManagement = ({
     }
   }
 
-  return (
-    <>
-      {searchIntentId && (
-        <div className="mt-4 space-y-3">
-          {intentDetails && (
-            <div className="bg-secondary/30 rounded-2xl p-4 border border-border/50">
-              <h4 className="text-sm font-semibold mb-3">Pending Intent</h4>
-              <section className="bg-background/50 rounded-xl p-4 border border-border/30 mb-4">
-                <div className="grid grid-cols-2 max-sm:grid-cols-1 gap-4">
-                  <div className="space-y-1">
-                    <span className="text-xs text-muted-foreground">Id</span>
-                    <p className="text-sm font-mono">{intentId}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-xs text-muted-foreground">Owner</span>
-                    <p className="text-sm font-mono">
-                      {intentDetails.owner.slice(0, 6)}...
-                      {intentDetails.owner.slice(-4)}
-                    </p>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-xs text-muted-foreground">
-                      Receiver
-                    </span>
-                    <p className="text-sm font-mono">
-                      {intentDetails.to.slice(0, 6)}...
-                      {intentDetails.to.slice(-4)}
-                    </p>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-xs text-muted-foreground">
-                      Amount
-                    </span>
-                    <p className="text-sm font-mono font-medium text-primary">
-                      {formatUnits(intentDetails.amount, 6)} {USDC_SYMBOL}
-                    </p>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-xs text-muted-foreground">
-                      Created Time
-                    </span>
-                    <p className="text-sm font-mono">
-                      {new Date(
-                        intentDetails.timestamp * 1000,
-                      ).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              </section>
-              {/* Receiver token balance*/}
-              <h5 className="text-sm font-semibold mb-2">Receiver Info</h5>
-              <div className="bg-primary/10 rounded-xl p-3 border border-primary/20">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold text-primary">
-                    {receiverTokenBalance
-                      ? formatUnits(receiverTokenBalance, 6)
-                      : '0'}{' '}
-                    {USDC_SYMBOL}
-                  </p>
-                </div>
-                <div className="flex items-center mt-2 gap-2">
-                  <span className="text-xs text-muted-foreground">
-                    Address:
-                  </span>
-                  <button
-                    className="text-xs font-mono max-sm:hidden"
-                    onClick={() => {
-                      const url = getExplorerUrl(intentDetails.to)
-                      window.open(url, '_blank')
-                    }}>
-                    {truncateAddress(intentDetails.to)}
-                  </button>
-                  <span className="text-xs font-mono hidden max-sm:inline">
-                    {`${intentDetails.to.slice(
-                      0,
-                      8,
-                    )}...${intentDetails.to.slice(-6)}`}
-                  </span>
-                </div>
-              </div>
+  if (!searchIntentId) {
+    return null
+  }
 
-              {/* Cancel Intent Button */}
-              <div className="mt-4">
-                <button
-                  onClick={handleCancelIntent}
-                  disabled={isCancelIntentLoading}
-                  className="w-full px-4 py-2 rounded-full bg-destructive/10 hover:bg-destructive hover:text-destructive-foreground transition-all duration-200 border border-destructive/20 text-sm font-medium text-destructive">
-                  {isCancelIntentLoading ? 'Cancelling...' : 'Cancel Intent'}
-                </button>
+  return (
+    <div className="mt-4 space-y-3">
+      {intentDetails && (
+        <div className=" rounded-2xl p-4 border border-border/50">
+          <h4 className="text-sm font-semibold mb-3">Pending Intent</h4>
+          <section className="bg-background/50 rounded-xl p-4 border border-border/30 mb-4">
+            <div className="grid grid-cols-2 max-sm:grid-cols-1 gap-4">
+              <div className="space-y-1">
+                <span className="text-xs text-muted-foreground">Id</span>
+                <p className="text-sm font-mono">{intentId}</p>
+              </div>
+              <div className="space-y-1">
+                <span className="text-xs text-muted-foreground">Owner</span>
+                <p className="text-sm font-mono">
+                  {intentDetails.owner.slice(0, 6)}...
+                  {intentDetails.owner.slice(-4)}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <span className="text-xs text-muted-foreground">Receiver</span>
+                <p className="text-sm font-mono">
+                  {intentDetails.to.slice(0, 6)}...
+                  {intentDetails.to.slice(-4)}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <span className="text-xs text-muted-foreground">Amount</span>
+                <p className="text-sm font-mono font-medium text-primary">
+                  {formatUnits(intentDetails.amount, 6)} {USDC_SYMBOL}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <span className="text-xs text-muted-foreground">
+                  Created Time
+                </span>
+                <p className="text-sm font-mono">
+                  {new Date(intentDetails.timestamp * 1000).toLocaleString()}
+                </p>
               </div>
             </div>
-          )}
+          </section>
+          {/* Receiver token balance*/}
+          <h5 className="text-sm font-semibold mb-2">Receiver Info</h5>
+          <div className="bg-primary/10 rounded-xl p-3 border border-primary/20">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-primary">
+                {receiverTokenBalance
+                  ? formatUnits(receiverTokenBalance, 6)
+                  : '0'}{' '}
+                {USDC_SYMBOL}
+              </p>
+            </div>
+            <div className="flex items-center mt-2 gap-2">
+              <span className="text-xs text-muted-foreground">Address:</span>
+              <button
+                className="text-xs font-mono max-sm:hidden"
+                onClick={() => {
+                  const url = getExplorerUrl(intentDetails.to)
+                  window.open(url, '_blank')
+                }}>
+                {truncateAddress(intentDetails.to)}
+              </button>
+              <span className="text-xs font-mono hidden max-sm:inline">
+                {`${intentDetails.to.slice(
+                  0,
+                  8,
+                )}...${intentDetails.to.slice(-6)}`}
+              </span>
+            </div>
+          </div>
+
+          {/* Cancel Intent Button */}
+          <div className="mt-4">
+            <button
+              onClick={handleCancelIntent}
+              disabled={isCancelIntentLoading}
+              className="w-full px-4 py-2 rounded-full bg-destructive/10 hover:bg-destructive hover:text-destructive-foreground transition-all duration-200 border border-destructive/20 text-sm font-medium text-destructive">
+              {isCancelIntentLoading ? 'Cancelling...' : 'Cancel Intent'}
+            </button>
+          </div>
         </div>
       )}
-    </>
+    </div>
   )
 }
 

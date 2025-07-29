@@ -61,10 +61,8 @@ export default function Signal({
   const [redeemResult, setRedeemResult] = useState<RedeemResult | null>(null)
   const [accountNumber, setAccountNumber] = useState('')
   const [amount, setAmount] = useState('138')
-  const [showHistory, setShowHistory] = useState(true)
   const [swapMode, setSwapMode] = useState<'buy' | 'sell'>('buy')
   const [conversionRate, setConversionRate] = useState<bigint | null>(null)
-  const [isLoadingRate, setIsLoadingRate] = useState(false)
   const [recipientAddress, setRecipientAddress] = useState('')
   const [isSwapping, setIsSwapping] = useState(false)
 
@@ -214,16 +212,11 @@ export default function Signal({
 
   const disableNextStep = !intentId || !intentDetails?.amount
   const isOnramp = mode === SignalMode.ONRAMP
-  const toggleMode = () => {
-    setMode(mode === SignalMode.ONRAMP ? SignalMode.OFFRAMP : SignalMode.ONRAMP)
-  }
 
-  // Fetch conversion rate from contract
   const fetchConversionRate = useCallback(async () => {
     if (!publicClient) return
 
     try {
-      setIsLoadingRate(true)
       // Read conversion rate for depositId 1, TOSS_BANK_VERIFIER, and KRW currency
       // rate: 1380 * 1e18
       const rate = await publicClient.readContract({
@@ -240,9 +233,6 @@ export default function Signal({
       setConversionRate(rate)
     } catch (error) {
       console.error('Failed to fetch conversion rate:', error)
-      // Set a default rate if fetch fails (1 KRW = 0.00074 USDC, represented in 18 decimals)
-    } finally {
-      setIsLoadingRate(false)
     }
   }, [publicClient])
 
@@ -259,61 +249,6 @@ export default function Signal({
     }
   }, [isConnected, fetchConversionRate])
 
-  const renderSignalContent = () => {
-    if (isOnramp) {
-      if (intentId) {
-        return (
-          <IntentManagement
-            intentId={intentId}
-            searchIntentId={searchIntentId}
-            intentDetails={intentDetails}
-            handleRefreshMyIntentId={handleRefreshMyIntentId}
-            setIntentId={setIntentId}
-            setSearchIntentId={setSearchIntentId}
-          />
-        )
-      } else {
-        return (
-          <EnrollIntent
-            address={address}
-            setIntentId={setIntentId}
-            setSearchIntentId={setSearchIntentId}
-            handleRefreshMyIntentId={handleRefreshMyIntentId}
-            intentId={intentId}
-          />
-        )
-      }
-    } else {
-      if (redeemId) {
-        return (
-          <RedeemRequest
-            redeemId={redeemId}
-            redeemDetails={redeemDetails}
-            setRedeemId={setRedeemId}
-            setRedeemDetails={setRedeemDetails}
-            setRedeemResult={setRedeemResult}
-            setAccountNumber={setAccountNumber}
-            setAmount={setAmount}
-          />
-        )
-      } else {
-        return (
-          <Redeem
-            redeemId={redeemId}
-            accountNumber={accountNumber}
-            amount={amount}
-            setRedeemId={setRedeemId}
-            handleRefreshRedeemDetails={handleRefreshRedeemDetails}
-            redeemResult={redeemResult}
-            setRedeemResult={setRedeemResult}
-            setAccountNumber={setAccountNumber}
-            setAmount={setAmount}
-          />
-        )
-      }
-    }
-  }
-
   const handleSwap = async () => {
     if (swapMode === 'buy') {
       // KRW -> USDC (onramp)
@@ -324,16 +259,6 @@ export default function Signal({
 
       // Calculate USDC amount from KRW input
       const usdcAmount = calculateConvertedAmount(amount, true)
-
-      console.log('=== Signal Intent Debug ===')
-      console.log('Recipient Address:', recipientAddress)
-      console.log('KRW Amount:', amount)
-      console.log('USDC Amount:', usdcAmount)
-      console.log('Deposit ID:', DEFAULT_DEPOSIT_ID)
-      console.log('Verifier:', ADDRESSES.TOSS_BANK_VERIFIER)
-      console.log('Escrow Address:', ADDRESSES.ESCROW)
-      console.log('=========================')
-
       try {
         setIsSwapping(true)
         await signalIntentWrite({
@@ -369,8 +294,6 @@ export default function Signal({
     inputAmount: string,
     isBuying: boolean,
   ): string => {
-    console.log('inputamount', inputAmount)
-    console.log('conversionRate', conversionRate)
     if (!inputAmount || !conversionRate || parseFloat(inputAmount) === 0) {
       return '0.00'
     }
