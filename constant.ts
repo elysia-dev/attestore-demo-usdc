@@ -1,3 +1,5 @@
+import { keccak256, toBytes } from 'viem'
+
 export const BASE_URL = 'https://attestor-core-production-5795.up.railway.app'
 
 // export const faucetLink = "https://www.alchemy.com/faucets/ethereum-holesky";
@@ -18,10 +20,8 @@ export const USDC_SYMBOL = 'USDC'
 // Fixed depositId for frontend
 export const DEFAULT_DEPOSIT_ID = 1
 
-// KRW currency code for contract ("KRW" in bytes32)
-// K=0x4B, R=0x52, W=0x57, padded with zeros to 32 bytes
-export const KRW_CURRENCY_CODE =
-  '0x4b52570000000000000000000000000000000000000000000000000000000000' as const
+export const USD_CURRENCY_CODE = keccak256(toBytes('USD'))
+export const KRW_CURRENCY_CODE = keccak256(toBytes('KRW'))
 
 export const TOSS_PLAY =
   'https://play.google.com/store/apps/details?id=viva.republica.toss'
@@ -35,3 +35,16 @@ export const FROM_BLOCK =
     : FROM_BLOCK_PROD
 
 export const isLocal = process.env.NEXT_PUBLIC_CHAIN_NETWORK === 'local'
+
+export enum NetworkName {
+  LOCAL = 'local',
+  TEST = 'holesky',
+  PRODUCTION = 'production',
+}
+
+export const networkName = (function () {
+  const chainNetwork = process.env.NEXT_PUBLIC_CHAIN_NETWORK
+  if (chainNetwork === 'local') return NetworkName.LOCAL
+  if (chainNetwork === 'test') return NetworkName.TEST
+  return NetworkName.PRODUCTION
+})()

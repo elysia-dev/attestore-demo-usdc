@@ -467,6 +467,18 @@ export const ESCROW_ABI = [
   {
     anonymous: false,
     inputs: [
+      { indexed: true, name: 'intentId', type: 'uint256' },
+      { indexed: true, name: 'depositId', type: 'uint256' },
+      { indexed: false, name: 'owner', type: 'address' },
+      { indexed: false, name: 'to', type: 'address' },
+      { indexed: false, name: 'amount', type: 'uint256' },
+    ],
+    name: 'IntentReleased',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
       { indexed: false, name: 'depositId', type: 'uint256' },
       { indexed: false, name: 'depositor', type: 'address' },
       { indexed: false, name: 'token', type: 'address' },
