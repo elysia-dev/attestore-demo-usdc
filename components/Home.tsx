@@ -30,7 +30,7 @@ export const workflowStepToLabel = {
   [WorkflowStep.CONNECT]: 'Connect Wallet',
   [WorkflowStep.SIGNAL]: 'Swap',
   [WorkflowStep.TRANSFER]: 'Transfer KRW',
-  [WorkflowStep.PROOF]: 'Proof',
+  [WorkflowStep.PROOF]: 'Wait / Proof',
   [WorkflowStep.FULFILL]: 'Get USDC',
 }
 
@@ -291,6 +291,7 @@ export default function Home() {
             certificateNumber={certificateNumber}
             setCertificateNumber={setCertificateNumber}
             intentId={intentId}
+            intentDetails={intentDetails}
             setCurrentStep={setCurrentStep}
             isLoading={isLoading}
             setIsLoading={setIsLoading}

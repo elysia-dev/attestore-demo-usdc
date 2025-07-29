@@ -13,6 +13,7 @@ import * as Sentry from '@sentry/nextjs'
 import { cn } from '@/lib/utils'
 import { VideoPopup } from '../ui/VideoPopup'
 import { WorkflowStep } from '../StepIndicator'
+import { WaitingForRelease } from '../WaitingForRelease'
 
 // Certificate number formatting function
 const formatCertificateNumber = (value: string): string => {
@@ -77,6 +78,7 @@ const validateCertificateNumber = (certNumber: string): string | undefined => {
 
 export default function Proof({
   intentId,
+  intentDetails,
   issueDate,
   setIssueDate,
   certificateNumber,
@@ -88,6 +90,7 @@ export default function Proof({
   proofResult,
 }: {
   intentId: number | null
+  intentDetails: any | null
   issueDate: string
   setIssueDate: (issueDate: string) => void
   certificateNumber: string
@@ -101,6 +104,7 @@ export default function Proof({
   const { setError, freeError } = useContext(ErrorContext)
   const [showTooltip, setShowTooltip] = useState(false)
   const [showGuide, setShowGuide] = useState(false)
+  const [showManualProof, setShowManualProof] = useState(false)
   console.log('issueDate', issueDate)
   console.log('certificateNumber', certificateNumber)
 
@@ -212,6 +216,18 @@ export default function Proof({
   const handleNext = () => {
     setCurrentStep(WorkflowStep.FULFILL)
     freeError()
+  }
+
+  // If manual proof is not requested, show waiting screen
+  if (!showManualProof && !proofResult) {
+    return (
+      <WaitingForRelease
+        intentId={intentId?.toString() || ''}
+        intentTimestamp={intentDetails?.timestamp}
+        onManualProof={() => setShowManualProof(true)}
+        onComplete={() => setCurrentStep(WorkflowStep.FULFILL)}
+      />
+    )
   }
 
   return (
