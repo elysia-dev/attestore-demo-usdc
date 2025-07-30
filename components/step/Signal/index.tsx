@@ -1,6 +1,7 @@
 import { IntentDetails, DepositDetails, DepositResult } from '@/components/Home'
 import { useContext, useEffect, useState, useCallback } from 'react'
 import { useAccount, usePublicClient } from 'wagmi'
+import useDepositStore from '@/stores/useDepositStore'
 import { useSearchParams } from 'next/navigation'
 import ADDRESSES from '@/lib/addresses'
 import { cn } from '@/lib/utils'
@@ -30,8 +31,6 @@ export enum SignalMode {
 }
 
 export default function Signal({
-  deposits,
-  fetchAllDeposits,
   intentId,
   searchIntentId,
   intentDetails,
@@ -41,10 +40,7 @@ export default function Signal({
   setCurrentStep,
   chainId,
   isConnected,
-  isLoadingDeposits,
 }: {
-  deposits: DepositDetails[]
-  fetchAllDeposits: () => void
   intentId: number | null
   searchIntentId: number | null
   intentDetails: IntentDetails | null
@@ -54,23 +50,29 @@ export default function Signal({
   setCurrentStep: (step: WorkflowStep) => void
   chainId: number
   isConnected: boolean
-  isLoadingDeposits: boolean
+  deposits?: DepositDetails[] // Optional for backward compatibility
+  isLoadingDeposits?: boolean // Optional for backward compatibility
 }) {
-  console.log('deposits', deposits)
+  // Get data from Zustand store
+  const { myDeposits, depositDetail, setDepositDetail } = useDepositStore()
+
+  console.log('myDeposits', myDeposits)
   const [mode, setMode] = useState<SignalMode>(SignalMode.ONRAMP)
   const [accountNumber, setAccountNumber] = useState('')
   const [amount, setAmount] = useState('138')
   const [conversionRate, setConversionRate] = useState<bigint | null>(null)
   const [recipientAddress, setRecipientAddress] = useState('')
 
-  const lastDeposit = deposits[deposits.length - 1]
-  console.log('lastDeposit', lastDeposit)
-
-  // Deposit related states
+  // Use depositDetail from store as the default depositDetails
   const [depositDetails, setDepositDetails] = useState<DepositDetails | null>(
-    lastDeposit,
+    depositDetail,
   )
   console.log('depositDetails', depositDetails)
+
+  // Update local state when store changes
+  useEffect(() => {
+    setDepositDetails(depositDetail)
+  }, [depositDetail])
   const [depositResult, setDepositResult] = useState<DepositResult | null>(null)
   const [showDepositWaiting, setShowDepositWaiting] = useState(false)
   const [depositTimestamp, setDepositTimestamp] = useState<number | null>(null)
@@ -79,7 +81,7 @@ export default function Signal({
   const searchParams = useSearchParams()
   const view = searchParams.get('view')
 
-  const depositId = deposits[deposits.length - 1]?.id
+  const depositId = depositDetail?.id || myDeposits[myDeposits.length - 1]?.id
 
   const publicClient = usePublicClient()
   const { setError, freeError } = useContext(ErrorContext)
@@ -110,7 +112,7 @@ export default function Signal({
             remainingDeposits,
             outstandingIntentAmount,
           ] = depositData
-          setDepositDetails({
+          const newDepositDetails = {
             id: targetDepositId,
             depositor,
             token,
@@ -119,7 +121,12 @@ export default function Signal({
             acceptingIntents,
             remainingDeposits,
             outstandingIntentAmount,
-          })
+          }
+          setDepositDetails(newDepositDetails)
+          // Also update store if it's the current user's deposit
+          if (depositor.toLowerCase() === address?.toLowerCase()) {
+            setDepositDetail(newDepositDetails)
+          }
         } else {
           setError('Deposit not found')
         }
@@ -207,7 +214,6 @@ export default function Signal({
     if (showSwapInterface) {
       return (
         <SwapInterface
-          fetchAllDeposits={fetchAllDeposits}
           amount={amount}
           setAmount={setAmount}
           isOnramp={isOnramp}

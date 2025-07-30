@@ -20,7 +20,6 @@ import CreateDeposit from './CreateDeposit'
 import { DepositResult } from '@/components/Home'
 
 interface SwapInterfaceProps {
-  fetchAllDeposits: () => void
   amount: string
   setAmount: (amount: string) => void
   isOnramp: boolean
@@ -42,7 +41,6 @@ interface SwapInterfaceProps {
 }
 
 export default function SwapInterface({
-  fetchAllDeposits,
   amount,
   setAmount,
   isOnramp,

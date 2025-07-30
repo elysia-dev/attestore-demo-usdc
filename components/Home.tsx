@@ -11,6 +11,7 @@ declare global {
 import React, { useEffect, useState, useRef, useContext } from 'react'
 
 import { useAccount, useChainId, useDisconnect, usePublicClient } from 'wagmi'
+import useDepositStore from '@/stores/useDepositStore'
 import ADDRESSES from '@/lib/addresses'
 import { ESCROW_ABI } from '@/lib/abi'
 import { ErrorType } from '@/lib/errors'
@@ -118,8 +119,11 @@ export default function Home() {
 
   useEffect(() => {
     handleRefreshMyIntentId()
-    fetchAllDeposits()
-  }, [isConnected, address]) // eslint-disable-line react-hooks/exhaustive-deps
+    if (address) {
+      setCurrentAddress(address)
+      fetchAndFilterDeposits(publicClient)
+    }
+  }, [isConnected, address, publicClient]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const [currentStep, setCurrentStep] = useState<WorkflowStep>(
     WorkflowStep.CONNECT,
@@ -144,11 +148,13 @@ export default function Home() {
 
   const [proofResult, setProofResult] = useState<ProofResult | null>(null)
 
-  const [allDeposits, setAllDeposits] = useState<DepositDetails[]>([])
-  const deposits = allDeposits.filter(
-    (deposit) => deposit.depositor === address,
-  )
-  const [isLoadingDeposits, setIsLoadingDeposits] = useState(false)
+  // Zustand store
+  const {
+    myDeposits: deposits,
+    isLoadingDeposits,
+    setCurrentAddress,
+    fetchAndFilterDeposits,
+  } = useDepositStore()
 
   // 에러가 생성되면 에러 메세지창으로 포커싱
   useEffect(() => {
@@ -205,78 +211,10 @@ export default function Home() {
     }
   }
 
-  // Fetch all deposits
-  const fetchAllDeposits = async () => {
-    if (!publicClient) return
-
-    try {
-      setIsLoadingDeposits(true)
-
-      // First get depositCounter
-      const depositCounter = await publicClient.readContract({
-        address: ADDRESSES.ESCROW,
-        abi: ESCROW_ABI,
-        functionName: 'depositCounter',
-      })
-
-      if (!depositCounter || Number(depositCounter) === 0) {
-        setAllDeposits([])
-        return
-      }
-
-      // Fetch all deposits individually (fallback for when multicall is not available)
-      const processedDeposits: DepositDetails[] = []
-
-      for (let i = 0; i < Number(depositCounter); i++) {
-        const depositId = i + 1
-        try {
-          const depositData = await publicClient.readContract({
-            address: ADDRESSES.ESCROW,
-            abi: ESCROW_ABI,
-            functionName: 'deposits',
-            args: [BigInt(depositId)],
-          })
-          console.log('depositData', depositData)
-
-          if (depositData) {
-            const [
-              depositor,
-              token,
-              amount,
-              intentAmountRange,
-              acceptingIntents,
-              remainingDeposits,
-              outstandingIntentAmount,
-              intentIds,
-            ] = depositData as any
-
-            // Filter out empty deposits
-            if (depositor !== '0x0000000000000000000000000000000000000000') {
-              processedDeposits.push({
-                id: depositId,
-                depositor,
-                token,
-                amount,
-                intentAmountRange,
-                acceptingIntents,
-                remainingDeposits,
-                outstandingIntentAmount,
-                intentIds,
-              })
-            }
-          }
-        } catch (err) {
-          console.error(`Failed to fetch deposit ${i}:`, err)
-        }
-      }
-
-      setAllDeposits(processedDeposits)
-    } catch (error) {
-      console.error('Failed to fetch deposits:', error)
-      setError(ErrorType.INTENT_LOOKUP_FAILED)
-    } finally {
-      setIsLoadingDeposits(false)
-    }
+  // This function can be removed as it's now in the store
+  // Keep for backward compatibility with Signal component for now
+  const fetchAllDeposits = () => {
+    fetchAndFilterDeposits(publicClient)
   }
 
   // 임의의 Intent ID로 상세 정보 조회
@@ -355,8 +293,6 @@ export default function Home() {
             setCurrentStep={setCurrentStep}
             chainId={chainId}
             isConnected={isConnected}
-            deposits={deposits}
-            isLoadingDeposits={isLoadingDeposits}
           />
         )
 
