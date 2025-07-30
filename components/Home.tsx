@@ -54,7 +54,8 @@ export type IntentDetails = {
   conversionRate: bigint
 }
 
-export type RedeemDetails = {
+export type DepositDetails = {
+  id: number
   depositor: string
   token: string
   amount: bigint
@@ -65,11 +66,12 @@ export type RedeemDetails = {
   acceptingIntents: boolean
   remainingDeposits: bigint
   outstandingIntentAmount: bigint
+  intentIds?: bigint[]
 }
 
-export type RedeemResult = {
+export type DepositResult = {
   success: boolean
-  redeemId?: number
+  depositId?: number
   txHash?: string
 }
 
@@ -116,6 +118,7 @@ export default function Home() {
 
   useEffect(() => {
     handleRefreshMyIntentId()
+    fetchAllDeposits()
   }, [isConnected, address]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const [currentStep, setCurrentStep] = useState<WorkflowStep>(
@@ -140,6 +143,12 @@ export default function Home() {
     useState<FulfillmentResult | null>(null)
 
   const [proofResult, setProofResult] = useState<ProofResult | null>(null)
+
+  const [allDeposits, setAllDeposits] = useState<DepositDetails[]>([])
+  const deposits = allDeposits.filter(
+    (deposit) => deposit.depositor === address,
+  )
+  const [isLoadingDeposits, setIsLoadingDeposits] = useState(false)
 
   // 에러가 생성되면 에러 메세지창으로 포커싱
   useEffect(() => {
@@ -193,6 +202,80 @@ export default function Home() {
       setError(ErrorType.INTENT_LOOKUP_FAILED)
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  // Fetch all deposits
+  const fetchAllDeposits = async () => {
+    if (!publicClient) return
+
+    try {
+      setIsLoadingDeposits(true)
+
+      // First get depositCounter
+      const depositCounter = await publicClient.readContract({
+        address: ADDRESSES.ESCROW,
+        abi: ESCROW_ABI,
+        functionName: 'depositCounter',
+      })
+
+      if (!depositCounter || Number(depositCounter) === 0) {
+        setAllDeposits([])
+        return
+      }
+
+      // Fetch all deposits individually (fallback for when multicall is not available)
+      const processedDeposits: DepositDetails[] = []
+
+      for (let i = 0; i < Number(depositCounter); i++) {
+        const depositId = i + 1
+        try {
+          const depositData = await publicClient.readContract({
+            address: ADDRESSES.ESCROW,
+            abi: ESCROW_ABI,
+            functionName: 'deposits',
+            args: [BigInt(depositId)],
+          })
+          console.log('depositData', depositData)
+
+          if (depositData) {
+            const [
+              depositor,
+              token,
+              amount,
+              intentAmountRange,
+              acceptingIntents,
+              remainingDeposits,
+              outstandingIntentAmount,
+              intentIds,
+            ] = depositData as any
+
+            // Filter out empty deposits
+            if (depositor !== '0x0000000000000000000000000000000000000000') {
+              processedDeposits.push({
+                id: depositId,
+                depositor,
+                token,
+                amount,
+                intentAmountRange,
+                acceptingIntents,
+                remainingDeposits,
+                outstandingIntentAmount,
+                intentIds,
+              })
+            }
+          }
+        } catch (err) {
+          console.error(`Failed to fetch deposit ${i}:`, err)
+        }
+      }
+
+      setAllDeposits(processedDeposits)
+    } catch (error) {
+      console.error('Failed to fetch deposits:', error)
+      setError(ErrorType.INTENT_LOOKUP_FAILED)
+    } finally {
+      setIsLoadingDeposits(false)
     }
   }
 
@@ -262,6 +345,7 @@ export default function Home() {
       case WorkflowStep.SIGNAL:
         return (
           <Signal
+            fetchAllDeposits={fetchAllDeposits}
             intentId={intentId}
             searchIntentId={searchIntentId}
             intentDetails={intentDetails}
@@ -271,6 +355,8 @@ export default function Home() {
             setCurrentStep={setCurrentStep}
             chainId={chainId}
             isConnected={isConnected}
+            deposits={deposits}
+            isLoadingDeposits={isLoadingDeposits}
           />
         )
 

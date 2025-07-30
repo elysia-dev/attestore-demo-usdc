@@ -46,6 +46,13 @@ export function useContractWrite(options?: UseContractWriteOptions) {
           console.log(`🚀 Calling ${functionName}...`)
 
           // 1. 트랜잭션 전송
+          console.log('Contract write params:', {
+            address,
+            functionName,
+            hasArgs: !!args,
+            argsLength: args?.length,
+          })
+
           const hash = await writeContractAsync({
             address,
             abi,

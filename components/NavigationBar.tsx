@@ -17,11 +17,10 @@ enum Tab {
 
 export default function NavigationBar({ className }: NavigationBarProps) {
   const router = useRouter()
-  const pathname = usePathname()
   const searchParams = useSearchParams()
   const view = searchParams.get('view')
   const [activeTab, setActiveTab] = useState<Tab>(Tab.SWAP)
-  const { address, isConnected } = useAccount()
+  const { isConnected } = useAccount()
   const chainId = useChainId()
 
   useEffect(() => {
@@ -93,7 +92,7 @@ export default function NavigationBar({ className }: NavigationBarProps) {
                     : chainId === 11155111
                       ? 'Sepolia'
                       : chainId === 31337
-                        ? 'Localhost'
+                        ? 'Anvil'
                         : chainId === 17000
                           ? 'Holesky'
                           : `Chain ${chainId}`}

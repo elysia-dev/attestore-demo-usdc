@@ -11,6 +11,7 @@ export const ErrorType = {
   NO_REDEEM_FOUND: 'No Redeem request found',
   REDEEM_LOOKUP_FAILED: 'Failed to lookup Redeem ID',
   INTENT_SIGNAL_FAILED: 'Intent signal failed: {error}',
+  DEPOSIT_FAILED: 'Deposit failed: {error}',
   INSUFFICIENT_BALANCE: 'Insufficient token balance for redeem request',
   CANCEL_REDEEM_FAILED: 'Cancel redeem failed: {error}',
   REDEEM_ALREADY_EXISTS:
