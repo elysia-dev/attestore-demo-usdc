@@ -53,7 +53,7 @@ export default function Header() {
             </div>
 
             {/* 데스크톱 메뉴 */}
-            <section className="hidden sm:flex items-center gap-2">
+            <section className="items-center gap-2">
               <HeaderButton onClick={handleUserGuideClick}>
                 User Guide
               </HeaderButton>

@@ -32,7 +32,7 @@ export const workflowStepToLabel = {
   [WorkflowStep.SIGNAL]: 'Swap',
   [WorkflowStep.TRANSFER]: 'Transfer KRW',
   [WorkflowStep.PROOF]: 'Wait / Proof',
-  [WorkflowStep.FULFILL]: 'Get USDC',
+  [WorkflowStep.FULFILL]: 'Transfer USDC',
 }
 
 export type FulfillmentResult = {
@@ -283,7 +283,6 @@ export default function Home() {
       case WorkflowStep.SIGNAL:
         return (
           <Signal
-            fetchAllDeposits={fetchAllDeposits}
             intentId={intentId}
             searchIntentId={searchIntentId}
             intentDetails={intentDetails}
@@ -297,6 +296,9 @@ export default function Home() {
         )
 
       case WorkflowStep.TRANSFER:
+        if (!intentId || !intentDetails) {
+          return <>no intent</>
+        }
         return (
           <Transfer
             intentId={intentId}
@@ -359,7 +361,7 @@ export default function Home() {
 
       <div className="relative z-10 min-h-screen">
         {/* Main content */}
-        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] px-4">
+        <div className="flex flex-col items-center justify-center px-4">
           <div className="w-full max-w-md">
             {view !== 'history' ? (
               <>
@@ -372,26 +374,28 @@ export default function Home() {
 
                 {/* Step Indicator */}
                 {isConnected && (
-                  <div className="mb-8">
+                  <div className="sm:my-12 my-4">
                     <StepIndicator currentStep={currentStep} />
                   </div>
                 )}
 
                 {/* Card */}
                 <div className="bg-card/80 rounded-[32px] p-6 backdrop-blur-xl border border-border/50 shadow-2xl glow">
-                  <div className="flex items-center justify-between mb-6">
+                  {/* <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-semibold">
                       {workflowStepToLabel[currentStep]}
                     </h2>
-                  </div>
+                  </div> */}
 
                   {renderStepContent()}
                 </div>
 
                 {/* Footer text */}
-                <p className="text-center text-muted-foreground text-sm mt-6">
-                  Powered by Base • Secured by ZK Proofs • Instant Settlement
-                </p>
+                <div className="hidden sm:flex justify-center mt-4">
+                  <p className="text-center text-muted-foreground text-sm">
+                    Secured by ZK Proofs • Instant Settlement
+                  </p>
+                </div>
               </>
             ) : (
               <IntentHistory />

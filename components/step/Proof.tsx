@@ -232,6 +232,9 @@ export default function Proof({
 
   return (
     <section className="space-y-6">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-semibold">Proof</h2>
+      </div>
       <section className="bg-card/50 rounded-[24px] p-6 backdrop-blur-xl border border-border/50">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold flex items-center gap-2">
@@ -273,9 +276,7 @@ export default function Proof({
         </div>
         <div className="space-y-2 text-sm text-muted-foreground ml-6 mt-4">
           <p>1. Generate ZK Proof of your transfer.</p>
-          <p>
-            2. Using this proof, anyone can verify that your transfer is valid.
-          </p>
+          <p>2. Using this proof, you can receive USDC instantly.</p>
         </div>
         <button
           onClick={() => setShowGuide(true)}
@@ -412,7 +413,7 @@ export default function Proof({
             <button
               type="button"
               onClick={handleNext}
-              className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 rounded-full font-semibold transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-2">
+              className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-full font-medium  transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-2">
               Next
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path
@@ -427,9 +428,9 @@ export default function Proof({
           ) : (
             <button
               type="submit"
-              className="flex-1 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-8 py-3 rounded-full font-semibold transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-2"
+              className="flex-1 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-4 py-2 rounded-full font-medium text-sm transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-2"
               disabled={!issueDate || !certificateNumber || isLoading}>
-              Generate Transfer Proof
+              Generate Proof
               <svg
                 width="20"
                 height="20"

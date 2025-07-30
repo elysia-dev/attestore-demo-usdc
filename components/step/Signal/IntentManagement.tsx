@@ -26,6 +26,7 @@ const IntentManagement = ({
   setIntentId: (intentId: number) => void
   setSearchIntentId: (searchIntentId: number) => void
 }) => {
+  console.log('intentDetails', intentDetails)
   const publicClient = usePublicClient()
   const { setError } = useContext(ErrorContext)
 
@@ -86,83 +87,122 @@ const IntentManagement = ({
   }
 
   return (
-    <div className="mt-4 space-y-3">
+    <div className="space-y-6">
       {intentDetails && (
-        <div className=" rounded-2xl p-4 border border-border/50">
-          <h4 className="text-sm font-semibold mb-3">Pending Intent</h4>
-          <section className="bg-background/50 rounded-xl p-4 border border-border/30 mb-4">
-            <div className="grid grid-cols-2 max-sm:grid-cols-1 gap-4">
-              <div className="space-y-1">
-                <span className="text-xs text-muted-foreground">Id</span>
-                <p className="text-sm font-mono">{intentId}</p>
+        <div className="bg-card/50 backdrop-blur-sm rounded-3xl border border-border/50 overflow-hidden">
+          {/* Pending Swap Section */}
+          <div className="p-6 pb-4">
+            <h3 className="text-lg font-semibold mb-5">Pending Swap</h3>
+
+            {/* Compact Info Grid */}
+            <div className="space-y-4">
+              {/* ID and Receiver Row */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Id</p>
+                  <p className="font-mono font-medium text-lg">{intentId}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-muted-foreground mb-1">Receiver</p>
+                  <p className="font-mono">
+                    {intentDetails.to.slice(0, 6)}...
+                    {intentDetails.to.slice(-4)}
+                  </p>
+                </div>
               </div>
-              <div className="space-y-1">
-                <span className="text-xs text-muted-foreground">Owner</span>
-                <p className="text-sm font-mono">
-                  {intentDetails.owner.slice(0, 6)}...
-                  {intentDetails.owner.slice(-4)}
-                </p>
+
+              {/* Amount and Created Time Row */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Amount</p>
+                  <p className="font-mono font-medium text-lg text-primary">
+                    {formatUnits(intentDetails.amount, 6)} USDC
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Created Time
+                  </p>
+                  <p className="text-sm">
+                    {new Date(
+                      intentDetails.timestamp * 1000,
+                    ).toLocaleDateString('ko-KR', {
+                      month: 'numeric',
+                      day: 'numeric',
+                    })}{' '}
+                    {new Date(
+                      intentDetails.timestamp * 1000,
+                    ).toLocaleTimeString('ko-KR', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </p>
+                </div>
               </div>
-              <div className="space-y-1">
-                <span className="text-xs text-muted-foreground">Receiver</span>
-                <p className="text-sm font-mono">
-                  {intentDetails.to.slice(0, 6)}...
-                  {intentDetails.to.slice(-4)}
-                </p>
-              </div>
-              <div className="space-y-1">
-                <span className="text-xs text-muted-foreground">Amount</span>
-                <p className="text-sm font-mono font-medium text-primary">
-                  {formatUnits(intentDetails.amount, 6)} {USDC_SYMBOL}
-                </p>
-              </div>
-              <div className="space-y-1">
-                <span className="text-xs text-muted-foreground">
-                  Created Time
-                </span>
-                <p className="text-sm font-mono">
-                  {new Date(intentDetails.timestamp * 1000).toLocaleString()}
-                </p>
-              </div>
-            </div>
-          </section>
-          {/* Receiver token balance*/}
-          <h5 className="text-sm font-semibold mb-2">Receiver Info</h5>
-          <div className="bg-primary/10 rounded-xl p-3 border border-primary/20">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-primary">
-                {receiverTokenBalance
-                  ? formatUnits(receiverTokenBalance, 6)
-                  : '0'}{' '}
-                {USDC_SYMBOL}
-              </p>
-            </div>
-            <div className="flex items-center mt-2 gap-2">
-              <span className="text-xs text-muted-foreground">Address:</span>
-              <button
-                className="text-xs font-mono max-sm:hidden"
-                onClick={() => {
-                  const url = getExplorerUrl(intentDetails.to)
-                  window.open(url, '_blank')
-                }}>
-                {truncateAddress(intentDetails.to)}
-              </button>
-              <span className="text-xs font-mono hidden max-sm:inline">
-                {`${intentDetails.to.slice(
-                  0,
-                  8,
-                )}...${intentDetails.to.slice(-6)}`}
-              </span>
             </div>
           </div>
 
-          {/* Cancel Intent Button */}
-          <div className="mt-4">
+          {/* Receiver Info Section - Inside the same card */}
+          <div className="p-6 border-t border-border/30">
+            <h4 className="text-base font-semibold mb-3">Receiver Info</h4>
+
+            <div className="space-y-3">
+              {/* Balance and Address in one row */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Balance</p>
+                  <p className="font-mono font-medium text-lg">
+                    {receiverTokenBalance
+                      ? formatUnits(receiverTokenBalance, 6)
+                      : '0'}{' '}
+                    USDC
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-muted-foreground mb-1">Address</p>
+                  <button
+                    className="font-mono text-sm hover:text-primary transition-colors"
+                    onClick={() => {
+                      const url = getExplorerUrl(intentDetails.to)
+                      window.open(url, '_blank')
+                    }}>
+                    {intentDetails.to.slice(0, 8)}...
+                    {intentDetails.to.slice(-6)}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Cancel Intent Button - Inside the same card */}
+          <div className="p-6 pt-4">
             <button
               onClick={handleCancelIntent}
               disabled={isCancelIntentLoading}
-              className="w-full px-4 py-2 rounded-full bg-destructive/10 hover:bg-destructive hover:text-destructive-foreground transition-all duration-200 border border-destructive/20 text-sm font-medium text-destructive">
-              {isCancelIntentLoading ? 'Cancelling...' : 'Cancel Intent'}
+              className="w-full bg-destructive hover:bg-destructive/90 disabled:opacity-50 disabled:cursor-not-allowed text-destructive-foreground px-4 py-2 rounded-2xl font-semibold transition-all duration-200 hover:shadow-lg">
+              {isCancelIntentLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  Cancelling...
+                </span>
+              ) : (
+                'Cancel Intent'
+              )}
             </button>
           </div>
         </div>

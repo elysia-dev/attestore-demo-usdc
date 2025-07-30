@@ -5,7 +5,7 @@ function ConfirmationModal({
   onClose,
   onConfirm,
   name,
-  amount,
+  transferAmount,
   memo,
   address,
 }: {
@@ -13,7 +13,7 @@ function ConfirmationModal({
   onClose: () => void
   onConfirm: () => void
   name: string
-  amount: string
+  transferAmount: number
   memo: number | string
   address: string
 }) {
@@ -48,11 +48,13 @@ function ConfirmationModal({
       />
 
       {/* Modal Content */}
-      <aside className="relative min-w-[320px] z-10 max-w-[400px] mx-auto w-[90%] bg-white rounded-[5px] overflow-hidden">
+      <aside className="relative min-w-[320px] z-10 max-w-[400px] mx-auto w-[90%] bg-card/95 backdrop-blur-xl rounded-3xl overflow-hidden border border-border/50 shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-border">
-          <h3 className="body font-bold">Transfer Confirmation</h3>
-          <button onClick={onClose}>
+        <div className="flex items-center justify-between p-5 border-b border-border/30">
+          <h3 className="text-lg font-semibold">Transfer Confirmation</h3>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-full hover:bg-secondary/50 transition-colors">
             <svg
               width="20"
               height="20"
@@ -69,15 +71,17 @@ function ConfirmationModal({
         </div>
 
         {/* Content */}
-        <div className="p-4">
-          <p className="text mb-4">Did your KRW transfer completed?</p>
-          <section className="relative w-full max-h-[600px] aspect-[1080/1394] bg-[#18171c]">
+        <div className="p-5">
+          <p className="text-sm text-muted-foreground mb-4">
+            Did your KRW transfer completed?
+          </p>
+          <section className="relative w-full max-h-[600px] aspect-[1080/1394] bg-[#18171c] rounded-2xl overflow-hidden">
             <section className="pt-10">
               <p className="text-white text-center text-[22px] font-bold">
                 <span className="text-[#3a83f1]">{name}</span>님에게
               </p>
               <p className="text-white text-center text-[22px] font-bold">
-                {amount}원을
+                {transferAmount.toLocaleString()}원을
               </p>
               <p className="text-white text-center text-[22px] font-bold">
                 보낼까요?
@@ -113,13 +117,17 @@ function ConfirmationModal({
           </section>
 
           {/* Buttons */}
-          <div className="flex gap-2 justify-end mt-4">
-            <Button onClick={onClose} variant="outline" className="flex-1">
+          <div className="flex gap-3 mt-5">
+            <button
+              onClick={onClose}
+              className="flex-1 px-6 py-3 rounded-2xl bg-secondary/50 hover:bg-secondary/70 transition-all duration-200 border border-border/30 hover:border-border/50 font-semibold">
               No
-            </Button>
-            <Button onClick={onConfirm} className="flex-1">
+            </button>
+            <button
+              onClick={onConfirm}
+              className="flex-1 px-6 py-3 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-all duration-200 hover:shadow-lg">
               Yes
-            </Button>
+            </button>
           </div>
         </div>
       </aside>

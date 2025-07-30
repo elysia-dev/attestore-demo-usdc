@@ -50,74 +50,136 @@ const DepositManagement = ({
   }
 
   return (
-    <div>
+    <div className="space-y-6">
       {depositId && depositDetails && (
-        <section
-          className={cn(
-            'p-5 border border-gray-border rounded-[10px] bg-white mt-5',
-            'max-sm:p-3 max-sm:rounded-none max-sm:px-0 max-sm:border-x-0 max-sm:border-b-0 max-sm:pb-0 max-sm:mt-2',
-          )}>
-          <h4 className="font-semibold text">· Deposit Details</h4>
-          <section className="border border-gray-border rounded-[10px] p-5 mt-5 bg-gray-300 max-sm:rounded-[5px] max-sm:p-3 max-sm:mt-2.5">
-            <div className="grid grid-cols-2 gap-x-[15px] gap-y-[10px] max-sm:grid-cols-1">
-              <div className="text">
-                <span className="text-gray-600 font-chivo-mono">
-                  Deposit ID:
-                </span>
-                <p className="font-chivo-mono">{depositId}</p>
+        <div className="bg-card/50 backdrop-blur-sm rounded-3xl border border-border/50 overflow-hidden">
+          {/* Deposit Details Section */}
+          <div className="p-6 pb-4">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-lg font-semibold">Deposit Details</h3>
+              <span
+                className={cn(
+                  'px-3 py-1 rounded-full text-xs font-medium',
+                  depositDetails.acceptingIntents
+                    ? 'bg-green-500/10 text-green-500'
+                    : 'bg-gray-500/10 text-gray-500',
+                )}>
+                {depositDetails.acceptingIntents ? 'Active' : 'Inactive'}
+              </span>
+            </div>
+
+            {/* Compact Info Grid */}
+            <div className="space-y-4">
+              {/* Deposit ID and Amount Row */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Deposit ID
+                  </p>
+                  <p className="font-mono font-medium text-lg">#{depositId}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-muted-foreground mb-1">Amount</p>
+                  <p className="font-mono font-medium text-lg">
+                    {formatUnits(depositDetails.amount, 6)} USDC
+                  </p>
+                </div>
               </div>
-              <div className="text">
-                <span className="text-gray-600 font-chivo-mono">Amount:</span>
-                <p className="font-chivo-mono">
-                  {formatUnits(depositDetails.amount, 6)} {USDC_SYMBOL}
-                </p>
+
+              {/* Remaining and Outstanding Intents Row */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Remaining
+                  </p>
+                  <p className="font-mono font-medium text-lg">
+                    {formatUnits(depositDetails.remainingDeposits, 6)} USDC
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Outstanding Intents
+                  </p>
+                  <p className="font-mono font-medium text-lg">
+                    {formatUnits(depositDetails.outstandingIntentAmount, 6)}{' '}
+                    USDC
+                  </p>
+                </div>
               </div>
-              <div className="text">
-                <span className="text-gray-600 font-chivo-mono">Status:</span>
-                <p className="font-chivo-mono">
-                  {depositDetails.acceptingIntents ? 'Active' : 'Inactive'}
-                </p>
-              </div>
-              <div className="text">
-                <span className="text-gray-600 font-chivo-mono">
-                  Remaining:
-                </span>
-                <p className="font-chivo-mono">
-                  {formatUnits(depositDetails.remainingDeposits, 6)}{' '}
-                  {USDC_SYMBOL}
-                </p>
-              </div>
-              <div className="text">
-                <span className="text-gray-600 font-chivo-mono">
-                  Outstanding Intents:
-                </span>
-                <p className="font-chivo-mono">
-                  {formatUnits(depositDetails.outstandingIntentAmount, 6)}{' '}
-                  {USDC_SYMBOL}
-                </p>
-              </div>
-              <div className="text">
-                <span className="text-gray-600 font-chivo-mono">
-                  Intent Range:
-                </span>
-                <p className="font-chivo-mono">
-                  {formatUnits(depositDetails.intentAmountRange.min, 6)} -{' '}
-                  {formatUnits(depositDetails.intentAmountRange.max, 6)}{' '}
-                  {USDC_SYMBOL}
-                </p>
+
+              {/* Intent Range and Usage Row */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Intent Range
+                  </p>
+                  <p className="text-sm">
+                    {formatUnits(depositDetails.intentAmountRange.min, 6)} -{' '}
+                    {formatUnits(depositDetails.intentAmountRange.max, 6)} USDC
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-muted-foreground mb-1">Usage</p>
+                  <p className="font-medium text-lg">
+                    {Math.round(
+                      (Number(
+                        depositDetails.amount -
+                          depositDetails.remainingDeposits,
+                      ) /
+                        Number(depositDetails.amount)) *
+                        100,
+                    )}
+                    %
+                  </p>
+                </div>
               </div>
             </div>
-          </section>
-          <div className="mt-4">
-            <Button
+
+            {/* Progress Bar */}
+            <div className="mt-5">
+              <div className="w-full bg-secondary/50 rounded-full h-1.5 overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-300"
+                  style={{
+                    width: `${Math.round((Number(depositDetails.amount - depositDetails.remainingDeposits) / Number(depositDetails.amount)) * 100)}%`,
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Withdraw Deposit Button - Inside the same card */}
+          <div className="p-6 pt-4">
+            <button
               onClick={handleWithdrawDeposit}
               disabled={isWithdrawDepositLoading}
-              variant="outline"
-              className="text-red-600 border-red-300 hover:bg-red-600 hover:text-white max-sm:w-full">
-              {isWithdrawDepositLoading ? 'Withdrawing...' : 'Withdraw Deposit'}
-            </Button>
+              className="w-full bg-destructive hover:bg-destructive/90 disabled:opacity-50 disabled:cursor-not-allowed text-destructive-foreground px-6 py-3 rounded-2xl font-semibold transition-all duration-200 hover:shadow-lg">
+              {isWithdrawDepositLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  Withdrawing...
+                </span>
+              ) : (
+                'Withdraw Deposit'
+              )}
+            </button>
           </div>
-        </section>
+        </div>
       )}
     </div>
   )

@@ -5,6 +5,8 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useAccount, useChainId } from 'wagmi'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
+import Image from 'next/image'
+import Link from 'next/link'
 
 interface NavigationBarProps {
   className?: string
@@ -33,16 +35,21 @@ export default function NavigationBar({ className }: NavigationBarProps) {
 
   return (
     <nav className={cn('fixed top-0 left-0 right-0 z-50 px-6 py-4', className)}>
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
+      <div className="flex items-center justify-between">
         {/* Left side - Logo and main navigation */}
-        <div className="flex items-center gap-8">
-          {/* Logo */}
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-orange-500" />
-          </div>
+        <div className="flex items-center gap-2">
+          <Link href="/">
+            <Image
+              src="/favicon-pink.svg"
+              alt="Zenie"
+              width={30}
+              height={30}
+              className="w-8 h-8"
+            />
+          </Link>
 
           {/* Main navigation tabs */}
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             <button
               onClick={() => {
                 setActiveTab(Tab.SWAP)
@@ -79,7 +86,7 @@ export default function NavigationBar({ className }: NavigationBarProps) {
         </div>
 
         {/* Right side - Wallet and Network info */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 flex-shrink-0">
           {/* Network Badge */}
           {isConnected && (
             <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full">
@@ -100,8 +107,17 @@ export default function NavigationBar({ className }: NavigationBarProps) {
             </div>
           )}
 
-          {/* Connect Button */}
-          <ConnectButton showBalance={false} chainStatus="icon" />
+          {/* Connect Button with custom styles to prevent truncation */}
+          <div className="min-w-0">
+            <ConnectButton
+              showBalance={false}
+              chainStatus="icon"
+              accountStatus={{
+                smallScreen: 'avatar',
+                largeScreen: 'full',
+              }}
+            />
+          </div>
         </div>
       </div>
     </nav>

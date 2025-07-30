@@ -1,29 +1,18 @@
-import { IntentDetails, DepositDetails, DepositResult } from '@/components/Home'
+import { IntentDetails, DepositDetails } from '@/components/Home'
 import { useContext, useEffect, useState, useCallback } from 'react'
 import { useAccount, usePublicClient } from 'wagmi'
 import useDepositStore from '@/stores/useDepositStore'
 import { useSearchParams } from 'next/navigation'
 import ADDRESSES from '@/lib/addresses'
-import { cn } from '@/lib/utils'
 import { ESCROW_ABI } from '@/lib/abi'
-import { ErrorType } from '@/lib/errors'
-import OnrampFlow from './OnrampFlow'
-import OfframpFlow from './OfframpFlow'
 import SwapInterface from './SwapInterface'
 import { ErrorContext } from '@/context/ErrorContext'
 import TransferHistory from '@/components/TransferHistory'
 import { ArrowIcon } from '@/components/icons/ArrowIcon'
 import { DEFAULT_DEPOSIT_ID, KRW_CURRENCY_CODE } from '@/constant'
-import {
-  parseUnits,
-  formatUnits,
-  keccak256,
-  toBytes,
-  decodeEventLog,
-} from 'viem'
-import { useContractWrite } from '@/hooks/useContractWrite'
-import { extractErrorMessage } from '@/components/utils/extractErrorMessage'
 import { WorkflowStep } from '@/components/StepIndicator'
+import DepositManagement from './DepositManagement'
+import IntentManagement from './IntentManagement'
 
 export enum SignalMode {
   ONRAMP = 'onramp',
@@ -73,9 +62,6 @@ export default function Signal({
   useEffect(() => {
     setDepositDetails(depositDetail)
   }, [depositDetail])
-  const [depositResult, setDepositResult] = useState<DepositResult | null>(null)
-  const [showDepositWaiting, setShowDepositWaiting] = useState(false)
-  const [depositTimestamp, setDepositTimestamp] = useState<number | null>(null)
 
   const { address } = useAccount()
   const searchParams = useSearchParams()
@@ -217,7 +203,6 @@ export default function Signal({
           amount={amount}
           setAmount={setAmount}
           isOnramp={isOnramp}
-          setMode={setMode}
           recipientAddress={recipientAddress}
           setRecipientAddress={setRecipientAddress}
           accountNumber={accountNumber}
@@ -227,9 +212,6 @@ export default function Signal({
           setIntentId={setIntentId}
           setSearchIntentId={setSearchIntentId}
           handleRefreshMyIntentId={handleRefreshMyIntentId}
-          setDepositResult={setDepositResult}
-          setShowDepositWaiting={setShowDepositWaiting}
-          setDepositTimestamp={setDepositTimestamp}
           handleRefreshDepositDetails={handleRefreshDepositDetails}
         />
       )
@@ -238,14 +220,13 @@ export default function Signal({
         return <> no intentId </>
       }
       return (
-        <OnrampFlow
+        <IntentManagement
           intentId={intentId}
           searchIntentId={searchIntentId}
           intentDetails={intentDetails}
           handleRefreshMyIntentId={handleRefreshMyIntentId}
           setIntentId={setIntentId}
           setSearchIntentId={setSearchIntentId}
-          amount={amount}
         />
       )
     } else {
@@ -253,31 +234,58 @@ export default function Signal({
         return <> no depositId </>
       }
       return (
-        <OfframpFlow
+        <DepositManagement
           depositId={depositId}
           depositDetails={depositDetails}
-          depositResult={depositResult}
-          showDepositWaiting={showDepositWaiting}
-          depositTimestamp={depositTimestamp}
-          accountNumber={accountNumber}
-          amount={amount}
           setDepositDetails={setDepositDetails}
-          setDepositResult={setDepositResult}
-          setShowDepositWaiting={setShowDepositWaiting}
-          setDepositTimestamp={setDepositTimestamp}
-          setAccountNumber={setAccountNumber}
-          setAmount={setAmount}
-          handleRefreshDepositDetails={handleRefreshDepositDetails}
-          isOnramp={isOnramp}
-          setMode={setMode}
         />
       )
     }
   }
 
   const disableNextStep = !intentId || !intentDetails?.amount
+  const swapText = isOnramp ? 'Swap(KRW->USDC)' : 'Swap(USDC->KRW)'
   return (
     <>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-semibold">{swapText}</h2>
+
+        {/* Swap Direction Button */}
+        <div className="justify-center py-2">
+          <button
+            onClick={() => {
+              // Calculate the converted amount before switching
+              const convertedAmount = calculateConvertedAmount(amount, isOnramp)
+              // Switch mode
+              setMode(isOnramp ? SignalMode.OFFRAMP : SignalMode.ONRAMP)
+              // Set the converted amount as the new input
+              setAmount(convertedAmount)
+            }}
+            className="p-3 rounded-full bg-secondary/50 hover:bg-secondary/70 transition-all duration-200 border border-border/30 hover:border-border/50">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              className="transform rotate-90">
+              <path
+                d="M7 4V16M7 16L3 12M7 16L11 12"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M13 16V4M13 4L9 8M13 4L17 8"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
       <section className="space-y-6">
         {/* Content based on URL parameter */}
         {renderSignal()}
@@ -291,7 +299,7 @@ export default function Signal({
               freeError()
             }}
             disabled={disableNextStep}
-            className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-8 py-3 rounded-full font-semibold transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-2">
+            className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-4 py-2 rounded-full font-semibold transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-2">
             Next
             <ArrowIcon />
           </button>

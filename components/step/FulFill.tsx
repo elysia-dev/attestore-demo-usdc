@@ -256,6 +256,9 @@ export default function FulFill({
   }
   return (
     <>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-semibold">Transfer USDC</h2>
+      </div>
       {fulfillmentResult?.success && (
         <FulfillmentResultComponent fulfillmentResult={fulfillmentResult} />
       )}
@@ -268,6 +271,8 @@ export default function FulFill({
                 Click &apos;Transfer USDC&apos;
               </h3>
               <p className="text-sm text-muted-foreground ml-6">
+                Proof generated successfully.
+                <br />
                 Transfer USDC to the recipient wallet.
               </p>
             </div>
@@ -330,7 +335,7 @@ export default function FulFill({
 
             <button
               onClick={handleFulfillIntent}
-              className="flex-1 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-8 py-3 rounded-full font-semibold transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-2"
+              className="flex-1 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-4 py-2 rounded-full font-semibold transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-2 text-sm"
               disabled={
                 isFulfillIntentLoading ||
                 !intentId ||

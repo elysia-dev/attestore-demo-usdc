@@ -30,7 +30,6 @@ export function WaitingForRelease({
 }: WaitingForReleaseProps) {
   const publicClient = usePublicClient()
   const [isChecking, setIsChecking] = useState(false)
-  const [elapsedTime, setElapsedTime] = useState(0)
 
   // Check for IntentReleased event
   useEffect(() => {
@@ -71,37 +70,11 @@ export function WaitingForRelease({
     return () => clearInterval(interval)
   }, [publicClient, intentId, onComplete])
 
-  // Update elapsed time every second based on intent creation time
-  useEffect(() => {
-    const updateElapsedTime = () => {
-      if (intentTimestamp) {
-        const now = Math.floor(Date.now() / 1000)
-        const elapsed = now - intentTimestamp
-        setElapsedTime(elapsed > 0 ? elapsed : 0)
-      }
-    }
-
-    // Update immediately
-    updateElapsedTime()
-
-    // Then update every second
-    const timer = setInterval(updateElapsedTime, 1000)
-
-    return () => clearInterval(timer)
-  }, [intentTimestamp])
-
-  const formatTime = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600)
-    const mins = Math.floor((seconds % 3600) / 60)
-    const secs = seconds % 60
-    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-  }
-
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
+    <div className="container mx-auto max-w-2xl">
       <Card className="border-0 shadow-xl bg-gradient-to-br from-background to-secondary/10">
         <CardHeader className="text-center space-y-2">
-          <div className="mx-auto w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4 animate-pulse">
+          <div className="mx-auto w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-2 animate-pulse">
             <Clock className="w-10 h-10 text-primary" />
           </div>
           <CardTitle className="text-2xl">Processing Your Transfer</CardTitle>
@@ -132,15 +105,6 @@ export function WaitingForRelease({
               {isChecking ? 'Checking status...' : ''}
             </span>
           </div>
-
-          {/* Elapsed time */}
-          <div className="text-center">
-            <p className="text-sm text-muted-foreground">Elapsed Time</p>
-            <p className="text-2xl font-mono font-semibold">
-              {formatTime(elapsedTime)}
-            </p>
-          </div>
-
           {/* Info box */}
           <div className="bg-secondary/50 rounded-lg p-4 space-y-2">
             <p className="text-sm">

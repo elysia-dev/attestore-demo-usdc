@@ -1,5 +1,9 @@
 import { extractErrorMessage } from '@/components/utils/extractErrorMessage'
-import { DEFAULT_DEPOSIT_ID, KRW_CURRENCY_CODE } from '@/constant'
+import {
+  DEFAULT_DEPOSIT_ID,
+  KRW_CURRENCY_CODE,
+  TOSS_ACCOUNT_NUMBER,
+} from '@/constant'
 import { ErrorContext } from '@/context/ErrorContext'
 import { ESCROW_ABI } from '@/lib/abi'
 import ADDRESSES from '@/lib/addresses'
@@ -13,17 +17,13 @@ import {
   parseUnits,
   toBytes,
 } from 'viem'
-import { SignalMode } from '.'
 import { useContractWrite } from '@/hooks/useContractWrite'
 import { useAccount, usePublicClient } from 'wagmi'
-import CreateDeposit from './CreateDeposit'
-import { DepositResult } from '@/components/Home'
 
 interface SwapInterfaceProps {
   amount: string
   setAmount: (amount: string) => void
   isOnramp: boolean
-  setMode: (mode: SignalMode) => void
   recipientAddress: string
   setRecipientAddress: (address: string) => void
   accountNumber: string
@@ -34,9 +34,6 @@ interface SwapInterfaceProps {
   setSearchIntentId: (searchIntentId: number) => void
   handleRefreshMyIntentId: () => void
 
-  setDepositResult: (depositResult: DepositResult) => void
-  setShowDepositWaiting: (show: boolean) => void
-  setDepositTimestamp: (timestamp: number) => void
   handleRefreshDepositDetails: (depositId: number) => Promise<void>
 }
 
@@ -44,7 +41,6 @@ export default function SwapInterface({
   amount,
   setAmount,
   isOnramp,
-  setMode,
   recipientAddress,
   setRecipientAddress,
   accountNumber,
@@ -55,9 +51,6 @@ export default function SwapInterface({
   setSearchIntentId,
   handleRefreshMyIntentId,
 
-  setDepositResult,
-  setShowDepositWaiting,
-  setDepositTimestamp,
   handleRefreshDepositDetails,
 }: SwapInterfaceProps) {
   const publicClient = usePublicClient()
@@ -148,12 +141,6 @@ export default function SwapInterface({
           }
 
           const depositIdNumber = Number(newDepositId)
-          // setDepositId(depositIdNumber)
-          setDepositResult({
-            success: true,
-            depositId: depositIdNumber,
-            txHash: receipt.transactionHash,
-          })
           handleRefreshDepositDetails(depositIdNumber)
         }
       } catch (error) {
@@ -355,8 +342,6 @@ export default function SwapInterface({
       }
 
       setProcessStep('Success! Deposit created.')
-      setDepositTimestamp(Math.floor(Date.now() / 1000))
-      setShowDepositWaiting(true)
     } catch (error: any) {
       const errorMessage = extractErrorMessage(error)
       console.error('CreateDeposit error:', error)
@@ -473,91 +458,20 @@ export default function SwapInterface({
         </div>
       </div>
 
-      {/* Recipient Address for buy mode, Bank Account for sell mode */}
-      {isOnramp ? (
-        <div className="space-y-2">
-          <label className="text-sm text-muted-foreground flex items-center justify-between">
-            <span>Recipient Address</span>
-            {address && (
-              <button
-                type="button"
-                onClick={() => setRecipientAddress(address)}
-                className="text-xs text-primary hover:text-primary/80 transition-colors">
-                Use my address
-              </button>
-            )}
-          </label>
-          <input
-            type="text"
-            value={recipientAddress}
-            onChange={(e) => setRecipientAddress(e.target.value)}
-            placeholder="0x..."
-            className="w-full bg-background/50 rounded-xl p-4 border border-border/30 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 placeholder:text-muted-foreground/50"
-          />
-        </div>
-      ) : (
-        <div className="space-y-2">
-          <label className="text-sm text-muted-foreground">
-            Bank Account Number
-          </label>
-          <input
-            type="text"
-            value={accountNumber}
-            onChange={(e) => setAccountNumber(e.target.value)}
-            placeholder="12345678"
-            className="w-full bg-background/50 rounded-xl p-4 border border-border/30 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 placeholder:text-muted-foreground/50"
-          />
-        </div>
-      )}
-
       {/* Paying using */}
-      <div className="space-y-2">
-        <label className="text-sm text-muted-foreground">Paying using</label>
-        <div className="bg-background/50 rounded-xl p-4 border border-border/30 opacity-60">
-          <div className="flex items-center justify-between">
-            <span className="font-medium">TossBank</span>
-            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-blue-500 flex items-center justify-center">
-              <span className="text-xs font-bold text-white">T</span>
+      {isOnramp && (
+        <div className="space-y-2">
+          <label className="text-sm text-muted-foreground">Paying using</label>
+          <div className="bg-background/50 rounded-xl p-4 border border-border/30 opacity-60">
+            <div className="flex items-center justify-between">
+              <span className="font-medium">TossBank</span>
+              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-blue-500 flex items-center justify-center">
+                <span className="text-xs font-bold text-white">T</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Swap Direction Button */}
-      <div className="flex justify-center py-2">
-        <button
-          onClick={() => {
-            // Calculate the converted amount before switching
-            const convertedAmount = calculateConvertedAmount(amount, isOnramp)
-            // Switch mode
-            setMode(isOnramp ? SignalMode.OFFRAMP : SignalMode.ONRAMP)
-            // Set the converted amount as the new input
-            setAmount(convertedAmount)
-          }}
-          className="p-3 rounded-full bg-secondary/50 hover:bg-secondary/70 transition-all duration-200 border border-border/30 hover:border-border/50">
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 20 20"
-            fill="none"
-            className="transform rotate-90">
-            <path
-              d="M7 4V16M7 16L3 12M7 16L11 12"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M13 16V4M13 4L9 8M13 4L17 8"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
-      </div>
+      )}
 
       {/* You receive */}
       <div className="space-y-2">
@@ -583,6 +497,43 @@ export default function SwapInterface({
         </div>
       </div>
 
+      {/* Recipient Address for buy mode, Bank Account for sell mode */}
+      {isOnramp ? (
+        <div className="space-y-2">
+          <label className="text-sm text-muted-foreground flex items-center justify-between">
+            <span>Recipient Address</span>
+            {address && (
+              <button
+                type="button"
+                onClick={() => setRecipientAddress(address)}
+                className="text-xs text-primary hover:text-primary/80 transition-colors">
+                Use my address
+              </button>
+            )}
+          </label>
+          <input
+            type="text"
+            value={recipientAddress}
+            onChange={(e) => setRecipientAddress(e.target.value)}
+            placeholder="0x..."
+            className="w-full bg-background/50 rounded-xl p-4 border border-border/30 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 placeholder:text-muted-foreground/50"
+          />
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <label className="text-sm text-muted-foreground">
+            Receiving Bank Account
+          </label>
+          <input
+            type="text"
+            value={accountNumber}
+            onChange={(e) => setAccountNumber(e.target.value)}
+            placeholder={`토스뱅크 ${TOSS_ACCOUNT_NUMBER}`}
+            className="w-full bg-background/50 rounded-xl p-4 border border-border/30 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 placeholder:text-muted-foreground/50"
+          />
+        </div>
+      )}
+
       {/* Exchange Rate Info */}
       {conversionRate && (
         <div className="text-center text-sm text-muted-foreground">
@@ -601,7 +552,7 @@ export default function SwapInterface({
           (isOnramp && !recipientAddress) ||
           (!isOnramp && !accountNumber)
         }
-        className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-8 py-4 rounded-full font-semibold transition-all duration-200 hover:shadow-lg">
+        className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-4 py-2 rounded-full font-semibold transition-all duration-200 hover:shadow-lg">
         {isSwapping || isSignalIntentLoading
           ? 'Processing...'
           : isOnramp

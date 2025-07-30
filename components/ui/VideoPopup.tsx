@@ -24,20 +24,22 @@ export function VideoPopup({
       />
 
       {/* Popup Content */}
-      <aside className="relative z-10 max-w-[640px] mx-auto w-[90%] bg-white rounded-[5px] overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4">
-          <h3 className="body font-bold">{title}</h3>
-          <button onClick={onClose}>
+      <aside className="relative z-10 max-w-[640px] mx-auto w-[90%]">
+        {/* Close button outside the video container */}
+        <div className="flex justify-end mb-2">
+          <button
+            onClick={onClose}
+            className="p-2 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-all duration-200 group">
             <svg
-              width="20"
-              height="20"
+              width="24"
+              height="24"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="currentColor"
+              stroke="white"
               strokeWidth="2"
               strokeLinecap="round"
-              strokeLinejoin="round">
+              strokeLinejoin="round"
+              className="group-hover:scale-110 transition-transform">
               <path d="M18 6 6 18" />
               <path d="m6 6 12 12" />
             </svg>
@@ -45,10 +47,10 @@ export function VideoPopup({
         </div>
 
         {/* Video Container */}
-        <div className="relative pb-4">
+        <div className="relative bg-black/95 rounded-2xl overflow-hidden shadow-2xl">
           <video
             controls
-            className="w-full h-auto max-h-[70vh] aspect-[720/1558]"
+            className="w-full h-auto max-h-[80vh] aspect-[720/1558]"
             poster={posterSrc}
             autoPlay={isOpen}>
             <source src={videoSrc} type="video/mp4" />

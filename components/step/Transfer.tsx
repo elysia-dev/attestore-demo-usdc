@@ -6,7 +6,7 @@ import { ErrorContext } from '@/context/ErrorContext'
 import QRCode from 'react-qr-code'
 
 import { VideoPopup } from '@/components/ui/VideoPopup'
-import { cn } from '@/lib/utils'
+import { cn, getKRWAmount } from '@/lib/utils'
 import { useTossLauncher } from '../../hooks/useTossLauncher'
 import ConfirmationModal from '../ui/ConfirmationModal'
 import { WorkflowStep } from '../StepIndicator'
@@ -16,14 +16,19 @@ export default function Transfer({
   intentDetails,
   setCurrentStep,
 }: {
-  intentId: number | null
-  intentDetails: IntentDetails | null
+  intentId: number
+  intentDetails: IntentDetails
   setCurrentStep: (step: WorkflowStep) => void
 }) {
   const { freeError } = useContext(ErrorContext)
   const [isVideoPopupOpen, setIsVideoPopupOpen] = useState(false)
   const [isCopied, setIsCopied] = useState(false)
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
+
+  const transferAmount = getKRWAmount(
+    intentDetails.amount,
+    intentDetails.conversionRate,
+  )
 
   const checkAndGoNext = () => {
     setCurrentStep(WorkflowStep.PROOF)
@@ -34,10 +39,8 @@ export default function Transfer({
   const handleConfirmTransfer = () => {
     setIsConfirmationModalOpen(true)
   }
-  console.log('intentDetails', intentDetails)
 
-  const amount = formatUnits(intentDetails?.amount ?? BigInt(0), 6)
-  const qrCodeUrl = `supertoss://send?amount=${amount}&bank=%ED%86%A0%EC%8A%A4%EB%B1%85%ED%81%AC&accountNo=${TOSS_ACCOUNT_NUMBER}&origin=qr`
+  const qrCodeUrl = `supertoss://send?amount=${transferAmount}&bank=%ED%86%A0%EC%8A%A4%EB%B1%85%ED%81%AC&accountNo=${TOSS_ACCOUNT_NUMBER}&origin=qr`
 
   const { launch, fallback, storeURL, reset } = useTossLauncher(qrCodeUrl)
 
@@ -57,7 +60,7 @@ export default function Transfer({
       <button
         onClick={handleCopyAccountNumber}
         className={cn(
-          'flex items-center gap-2 text-primary bg-primary/10 border border-primary/20 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:border-primary',
+          'flex items-center gap-2 text-primary bg-primary/10 border border-primary/20 rounded-full px-4 py-2 text-xs font-medium transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:border-primary',
           isCopied && 'bg-primary text-primary-foreground border-primary',
         )}
         title="Click to copy account number">
@@ -72,11 +75,13 @@ export default function Transfer({
       </button>
     )
   }
-
   return (
-    <section className="space-y-6">
+    <section className="space-y-2">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-semibold">Transfer</h2>
+      </div>
       {/* 토스 송금 데모 비디오 */}
-      <section className="bg-card/50 rounded-[24px] p-6 backdrop-blur-xl border border-border/50">
+      <section className="bg-card/50 rounded-[24px] p-6 backdrop-blur-xl border border-border/50 ">
         <button
           onClick={() => setIsVideoPopupOpen(true)}
           className="w-full px-4 py-2 rounded-full bg-primary/10 hover:bg-primary/20 transition-all duration-200 border border-primary/20 flex items-center justify-center gap-2 text-sm font-medium text-primary sm:hidden">
@@ -140,7 +145,7 @@ export default function Transfer({
           </div>
           <button
             onClick={launch}
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 rounded-full font-semibold transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-2 sm:hidden">
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-full font-semibold transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-2 sm:hidden">
             Send via Bank App
             <ExternalLinkIcon />
           </button>
@@ -160,8 +165,7 @@ export default function Transfer({
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">Recipient Name</p>
               <p className="text-sm font-medium">
-                이 현 민{' '}
-                <span className="text-muted-foreground">(Bank account)</span>
+                <span className="text-muted-foreground">이현민(모임통장)</span>
               </p>
             </div>
             <div className="flex items-center justify-between">
@@ -176,6 +180,12 @@ export default function Transfer({
               <p className="text-sm text-muted-foreground">Amount</p>
               <p className="text-sm font-medium">
                 {formatUnits(intentDetails?.amount, 6)} USDC
+              </p>
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">Transfer Amount</p>
+              <p className="text-sm font-medium">
+                {transferAmount.toLocaleString()} KRW
               </p>
             </div>
           </section>
@@ -209,7 +219,7 @@ export default function Transfer({
             handleConfirmTransfer()
           }}
           disabled={!intentId}
-          className="flex-1 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-8 py-3 rounded-full font-semibold transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-2">
+          className="flex-1 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-4 py-2 rounded-full font-semibold transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-2">
           Next
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path
@@ -229,7 +239,7 @@ export default function Transfer({
         onClose={() => setIsConfirmationModalOpen(false)}
         onConfirm={checkAndGoNext}
         name={`이현민(모임통장)`}
-        amount={amount}
+        transferAmount={transferAmount}
         memo={intentId ?? ''}
         address={`토스뱅크 ${TOSS_ACCOUNT_NUMBER}`}
       />
