@@ -267,9 +267,8 @@ export default function SwapInterface({
       setProcessStep('Creating deposit...')
       setProcessProgress({ current: 3, total: 3 })
 
-      // Set intent amount range (min: 100 USDC, max: deposit amount)
-      const minIntentAmount = parseUnits('100', 6)
-      const maxIntentAmount = depositAmount
+      const minIntentAmount = parseUnits('0.1', 6)
+      const maxIntentAmount = parseUnits('100', 6)
 
       // Prepare verifier data
       const verifierData = [
@@ -281,7 +280,11 @@ export default function SwapInterface({
 
       // Prepare currency data for TossBank verifier
       // The structure should match the contract's expectation: array of structs
-      const currencies = [
+      const currencies: {
+        code: `0x${string}`
+        conversionRate: bigint | null
+      }[][] = []
+      currencies[0] = [
         {
           code: KRW_CURRENCY_CODE, // bytes32 currency code
           conversionRate,
