@@ -364,9 +364,11 @@ export default function Home() {
             {view !== 'history' ? (
               <>
                 {/* Subtitle */}
-                <p className="text-center text-muted-foreground mb-8">
-                  Instant KRW to USDC swaps powered by zero-knowledge proofs
-                </p>
+                {currentStep === WorkflowStep.CONNECT && (
+                  <p className="text-center text-muted-foreground mb-8">
+                    Instant KRW to USDC swaps powered by zero-knowledge proofs
+                  </p>
+                )}
 
                 {/* Step Indicator */}
                 {isConnected && (
