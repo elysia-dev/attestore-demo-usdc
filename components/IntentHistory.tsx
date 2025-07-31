@@ -82,6 +82,8 @@ export function IntentHistory() {
   })
 
   const adminAddress = process.env.NEXT_PUBLIC_ADMIN_ADDRESS
+  console.log('address', address)
+  console.log('adminAddress', adminAddress)
   const isAdmin = address?.toLowerCase() === adminAddress?.toLowerCase()
 
   const fetchIntents = useCallback(async () => {
