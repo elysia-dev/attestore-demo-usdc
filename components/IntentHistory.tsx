@@ -56,20 +56,20 @@ enum Filter {
 }
 export function IntentHistory() {
   const { address, isConnected } = useAccount()
-  const [allIntents, setAllIntents] = useState<Intent[]>([])
+  const [allRequests, setAllRequests] = useState<Intent[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [filter, setFilter] = useState<Filter>(Filter.ALL)
   const [processingIntentId, setProcessingIntentId] = useState<string | null>(
     null,
   )
-  const myIntents = useMemo(() => {
+  const myRequests = useMemo(() => {
     if (filter === Filter.ALL) {
-      return allIntents
+      return allRequests
     }
-    return allIntents.filter(
+    return allRequests.filter(
       (intent) => intent.owner.toLowerCase() === address?.toLowerCase(),
     )
-  }, [allIntents, address, filter])
+  }, [allRequests, address, filter])
 
   const { releaseFunds, isLoading: isReleasing } = useReleaseFunds({
     onSuccess: () => {
@@ -94,7 +94,7 @@ export function IntentHistory() {
       const data = await response.json()
 
       if (response.ok) {
-        setAllIntents(data.intents || [])
+        setAllRequests(data.intents || [])
       } else {
         console.error('Failed to fetch intents:', data.error)
       }
@@ -130,7 +130,7 @@ export function IntentHistory() {
     )
   }
 
-  const intents = filter === Filter.MY ? myIntents : allIntents
+  const requests = filter === Filter.MY ? myRequests : allRequests
   return (
     <section className="space-y-4">
       <div className="bg-card/50 rounded-[24px] p-6 backdrop-blur-xl border border-border/50 space-y-4">
@@ -144,7 +144,7 @@ export function IntentHistory() {
                 ? 'bg-primary text-primary-foreground shadow-lg'
                 : 'text-muted-foreground hover:text-foreground',
             )}>
-            All Intents
+            All Requests
           </button>
           <button
             onClick={() => setFilter(Filter.MY)}
@@ -154,29 +154,29 @@ export function IntentHistory() {
                 ? 'bg-primary text-primary-foreground shadow-lg'
                 : 'text-muted-foreground hover:text-foreground',
             )}>
-            My Intents
+            My Requests
           </button>
         </div>
 
         {isAdmin && (
           <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
             <p className="text-sm text-yellow-800 dark:text-yellow-200">
-              🔑 Admin Mode: You can release funds for active intents
+              🔑 Admin Mode: You can release funds for active requests
             </p>
           </div>
         )}
 
         {isLoading ? (
           <div className="text-center py-8">
-            <p className="text-muted-foreground">Loading intents...</p>
+            <p className="text-muted-foreground">Loading requests...</p>
           </div>
-        ) : intents.length === 0 ? (
+        ) : requests.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-muted-foreground">No intents found</p>
+            <p className="text-muted-foreground">No requests found</p>
           </div>
         ) : (
           <div className="space-y-4">
-            {intents.map((intent) => (
+            {requests.map((intent) => (
               <div
                 key={intent.id}
                 className="bg-secondary/30 rounded-2xl p-4 border border-border/50 transition-all duration-300">
@@ -185,7 +185,7 @@ export function IntentHistory() {
                     <span className={getStatusColor(intent.status)}>
                       {getStatusIcon(intent.status)}
                     </span>
-                    Intent #{intent.id}
+                    Request #{intent.id}
                     <span
                       className={cn(
                         'px-2 py-1 rounded-full text-xs font-medium',
