@@ -70,7 +70,7 @@ export const getNetworkNameByEnv = () => {
   if (chainNetwork === NetworkName.LOCAL) {
     return 'anvil'
   } else if (chainNetwork === NetworkName.TEST) {
-    return 'base-sepolia'
+    return 'basesep'
   } else {
     return 'base'
   }
