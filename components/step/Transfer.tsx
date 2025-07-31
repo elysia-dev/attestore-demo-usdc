@@ -1,6 +1,6 @@
 import { formatUnits } from 'viem'
 import { IntentDetails } from '../Home'
-import { TOSS_ACCOUNT_NUMBER } from '@/constant'
+import { getTossBankQRCode, TOSS_ACCOUNT_NUMBER } from '@/constant'
 import { useContext, useState } from 'react'
 import { ErrorContext } from '@/context/ErrorContext'
 import QRCode from 'react-qr-code'
@@ -22,7 +22,6 @@ export default function Transfer({
 }) {
   const { freeError } = useContext(ErrorContext)
   const [isVideoPopupOpen, setIsVideoPopupOpen] = useState(false)
-  const [isCopied, setIsCopied] = useState(false)
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
 
   const transferAmount = getKRWAmount(
@@ -40,41 +39,9 @@ export default function Transfer({
     setIsConfirmationModalOpen(true)
   }
 
-  const qrCodeUrl = `supertoss://send?amount=${transferAmount}&bank=%ED%86%A0%EC%8A%A4%EB%B1%85%ED%81%AC&accountNo=${TOSS_ACCOUNT_NUMBER}&origin=qr`
-
+  const qrCodeUrl = getTossBankQRCode(transferAmount.toString())
   const { launch, fallback, storeURL, reset } = useTossLauncher(qrCodeUrl)
 
-  // 계좌번호 복사 함수
-  const handleCopyAccountNumber = async () => {
-    try {
-      await navigator.clipboard.writeText(TOSS_ACCOUNT_NUMBER)
-      setIsCopied(true)
-      setTimeout(() => setIsCopied(false), 2000)
-    } catch (err) {
-      console.error('Failed to copy account number:', err)
-    }
-  }
-
-  const BackAccountCopyButton = () => {
-    return (
-      <button
-        onClick={handleCopyAccountNumber}
-        className={cn(
-          'flex items-center gap-2 text-primary bg-primary/10 border border-primary/20 rounded-full px-4 py-2 text-xs font-medium transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:border-primary',
-          isCopied && 'bg-primary text-primary-foreground border-primary',
-        )}
-        title="Click to copy account number">
-        {isCopied ? (
-          <span>Copied!</span>
-        ) : (
-          <>
-            <span>토스뱅크 {TOSS_ACCOUNT_NUMBER}</span>
-            <CopyButtonIcon />
-          </>
-        )}
-      </button>
-    )
-  }
   return (
     <section className="space-y-2">
       <div className="flex items-center justify-between mb-6">
@@ -170,13 +137,19 @@ export default function Transfer({
             </div>
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">Bank Account</p>
-              <BackAccountCopyButton />
+              {/* <BackAccountCopyButton /> */}
+              <CopyTextButton
+                text={TOSS_ACCOUNT_NUMBER}
+                title={`토스뱅크 ${TOSS_ACCOUNT_NUMBER}`}
+              />
             </div>
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">Transfer Memo</p>
-              <p className="text-sm font-medium text-primary">
-                {getTransferMemo(intentId)}
-              </p>
+              {/* <TransferMemoCopyButton /> */}
+              <CopyTextButton
+                text={getTransferMemo(intentId)}
+                title={getTransferMemo(intentId)}
+              />
             </div>
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">Amount</p>
@@ -291,5 +264,39 @@ const ExternalLinkIcon = () => {
         strokeLinejoin="round"
       />
     </svg>
+  )
+}
+
+const CopyTextButton = ({ text, title }: { text: string; title: string }) => {
+  const [isCopied, setIsCopied] = useState(false)
+
+  // 복사 함수
+  const handleCopy = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setIsCopied(true)
+      setTimeout(() => setIsCopied(false), 2000)
+    } catch (err) {
+      console.error('Failed to copy account number:', err)
+    }
+  }
+
+  return (
+    <button
+      onClick={() => handleCopy(text)}
+      className={cn(
+        'flex items-center gap-2 text-primary bg-primary/10 border border-primary/20 rounded-full px-4 py-2 text-xs font-medium transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:border-primary',
+        isCopied && 'bg-primary text-primary-foreground border-primary',
+      )}
+      title="Click to copy">
+      {isCopied ? (
+        <span>Copied!</span>
+      ) : (
+        <>
+          <span>{title}</span>
+          <CopyButtonIcon />
+        </>
+      )}
+    </button>
   )
 }

@@ -215,15 +215,19 @@ export default function Proof({
     setCurrentStep(WorkflowStep.FULFILL)
     freeError()
   }
+  const handlePrevious = () => {
+    setCurrentStep(WorkflowStep.TRANSFER)
+    freeError()
+  }
 
   // If manual proof is not requested, show waiting screen
   if (!showManualProof && !proofResult) {
     return (
       <WaitingForRelease
         intentId={intentId?.toString() || ''}
-        intentTimestamp={intentDetails?.timestamp}
         onManualProof={() => setShowManualProof(true)}
         onComplete={() => setCurrentStep(WorkflowStep.FULFILL)}
+        handlePrevious={handlePrevious}
       />
     )
   }

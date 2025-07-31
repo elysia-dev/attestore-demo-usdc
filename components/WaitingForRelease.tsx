@@ -17,26 +17,24 @@ import ADDRESSES from '@/lib/addresses'
 
 interface WaitingForReleaseProps {
   intentId: string
-  intentTimestamp?: number
   onManualProof: () => void
   onComplete: () => void
+  handlePrevious: () => void
 }
 
 export function WaitingForRelease({
   intentId,
-  intentTimestamp,
   onManualProof,
   onComplete,
+  handlePrevious,
 }: WaitingForReleaseProps) {
   const publicClient = usePublicClient()
-  const [isChecking, setIsChecking] = useState(false)
 
   // Check for IntentReleased event
   useEffect(() => {
     if (!publicClient || !intentId) return
 
     const checkRelease = async () => {
-      setIsChecking(true)
       try {
         const logs = await publicClient.getLogs({
           address: ADDRESSES.ESCROW,
@@ -56,8 +54,6 @@ export function WaitingForRelease({
         }
       } catch (error) {
         console.error('Error checking release status:', error)
-      } finally {
-        setIsChecking(false)
       }
     }
 
@@ -101,9 +97,6 @@ export function WaitingForRelease({
                 style={{ animationDelay: '300ms' }}
               />
             </div>
-            <span className="text-sm text-muted-foreground">
-              {isChecking ? 'Checking status...' : ''}
-            </span>
           </div>
           {/* Info box */}
           <div className="bg-secondary/50 rounded-lg p-4 space-y-2">
@@ -113,6 +106,11 @@ export function WaitingForRelease({
             <p className="text-sm text-muted-foreground">
               The admin regularly checks payments and processes them
               automatically.
+            </p>
+
+            <p className="text-sm text-muted-foreground">
+              Once your payment has been authorized, you can view it in the
+              history tab.
             </p>
           </div>
 
@@ -132,9 +130,35 @@ export function WaitingForRelease({
         </CardContent>
 
         <CardFooter>
-          <Button variant="outline" className="w-full" onClick={onManualProof}>
+          <button
+            onClick={handlePrevious}
+            className="flex-1 px-2 py-2 rounded-full bg-secondary/50 hover:bg-secondary/70 transition-all duration-200 border border-border/50 flex items-center justify-center gap-2 text-sm font-medium">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path
+                d="M12.5 15L7.5 10L12.5 5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            Previous
+          </button>
+
+          <button
+            onClick={onManualProof}
+            className="flex-2 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-3 py-2 rounded-full font-semibold transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-1">
             Prove Transfer Manually
-          </Button>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path
+                d="M7.5 15L12.5 10L7.5 5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
         </CardFooter>
       </Card>
     </div>
