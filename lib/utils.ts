@@ -21,7 +21,7 @@ export function getExplorerUrl(address: string) {
   if (chainNetwork === NetworkName.LOCAL) {
     return `https://holesky.etherscan.io/address/${address}`
   } else if (chainNetwork === NetworkName.TEST) {
-    return `https://holesky.etherscan.io/address/${address}`
+    return `https://sepolia.basescan.org/address/${address}`
   } else {
     return `https://basescan.org/address/${address}`
   }
@@ -32,7 +32,7 @@ export function getTransactionExplorerUrl(txHash: string) {
   if (chainNetwork === NetworkName.LOCAL) {
     return `https://holesky.etherscan.io/tx/${txHash}`
   } else if (chainNetwork === NetworkName.TEST) {
-    return `https://holesky.etherscan.io/tx/${txHash}`
+    return `https://sepolia.basescan.org/tx/${txHash}`
   } else {
     return `https://basescan.org/tx/${txHash}`
   }
@@ -70,7 +70,7 @@ export const getNetworkNameByEnv = () => {
   if (chainNetwork === NetworkName.LOCAL) {
     return 'anvil'
   } else if (chainNetwork === NetworkName.TEST) {
-    return 'holesky'
+    return 'base-sepolia'
   } else {
     return 'base'
   }

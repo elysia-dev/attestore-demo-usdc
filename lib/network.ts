@@ -1,13 +1,3 @@
-export const holesky = {
-  id: 17000,
-  name: 'Holesky Test Network',
-  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-  rpcUrls: {
-    default: { http: ['https://ethereum-holesky.publicnode.com'] },
-  },
-  testnet: true,
-} as const
-
 export const anvil = {
   id: 31337,
   name: 'Anvil',
