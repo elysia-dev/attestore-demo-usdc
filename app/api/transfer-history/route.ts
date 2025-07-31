@@ -1,14 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import {
-  createPublicClient,
-  http,
-  defineChain,
-  parseAbiItem,
-  decodeEventLog,
-} from 'viem'
-import { holesky, anvil } from 'viem/chains'
+import { createPublicClient, http, parseAbiItem } from 'viem'
 import ADDRESSES from '@/lib/addresses'
-import { ESCROW_ABI } from '@/lib/abi'
 import { FROM_BLOCK, chain } from '@/constant'
 
 type IntentStatus = 'active' | 'fulfilled' | 'cancelled' | 'released'

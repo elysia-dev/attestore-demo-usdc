@@ -1,20 +1,19 @@
-import { holesky, base } from 'viem/chains'
+import { base, baseSepolia } from 'viem/chains'
 import { anvil } from '@/lib/network'
 import { keccak256, toBytes } from 'viem'
 
 export const BASE_URL = 'https://attestor-core-production-5795.up.railway.app'
 
-// export const faucetLink = "https://www.alchemy.com/faucets/ethereum-holesky";
-export const faucetLink =
-  'https://cloud.google.com/application/web3/faucet/ethereum/holesky'
-
 const TOSS_ACCOUNT_NUMBER_PROD = '100202642943' // production
-const TOSS_ACCOUNT_NUMBER_TEST = '100000021389' // test
+const TOSS_ACCOUNT_NUMBER_TEST = '100202642943' // test
+const TOSS_ACCOUNT_NUMBER_LOCAL = '100000021389' // local
 
 export const TOSS_ACCOUNT_NUMBER =
-  process.env.NODE_ENV === 'production'
+  process.env.NEXT_PUBLIC_CHAIN_NETWORK === 'production'
     ? TOSS_ACCOUNT_NUMBER_PROD
-    : TOSS_ACCOUNT_NUMBER_TEST
+    : process.env.NEXT_PUBLIC_CHAIN_NETWORK === 'test'
+      ? TOSS_ACCOUNT_NUMBER_TEST
+      : TOSS_ACCOUNT_NUMBER_LOCAL
 
 export const TOKEN_SYMBOL = 'KRW'
 export const USDC_SYMBOL = 'USDC'
@@ -30,12 +29,14 @@ export const TOSS_PLAY =
 export const TOSS_APPLE = 'https://apps.apple.com/kr/app/id839333328'
 
 const FROM_BLOCK_LOCAL = BigInt(0)
-const FROM_BLOCK_HOLESKY = BigInt(4097338) //https://holesky.etherscan.io/tx/0x8920cf17e74709867b1896283eda803f11fe1390f586dd1c4ad004c76720e219
+const FROM_BLOCK_BASE_SEPOLIA = BigInt(28962302)
 const FROM_BLOCK_BASE = BigInt(33575627)
 export const FROM_BLOCK =
   process.env.NEXT_PUBLIC_CHAIN_NETWORK === 'local'
     ? FROM_BLOCK_LOCAL
-    : FROM_BLOCK_BASE
+    : process.env.NEXT_PUBLIC_CHAIN_NETWORK === 'test'
+      ? FROM_BLOCK_BASE_SEPOLIA
+      : FROM_BLOCK_BASE
 
 export const isLocal = process.env.NEXT_PUBLIC_CHAIN_NETWORK === 'local'
 
@@ -44,7 +45,7 @@ export const chain = (function () {
   if (chainNetwork === 'local') {
     return anvil
   } else if (chainNetwork === 'test') {
-    return holesky
+    return baseSepolia
   } else {
     return base
   }
