@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from '@/lib/utils'
+import { cn, getNetworkNameByChainId } from '@/lib/utils'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useAccount, useChainId } from 'wagmi'
@@ -92,17 +92,7 @@ export default function NavigationBar({ className }: NavigationBarProps) {
             <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full">
               <div className="w-2 h-2 rounded-full bg-green-400" />
               <span className="text-sm text-white/80">
-                {chainId === 1
-                  ? 'Ethereum'
-                  : chainId === 84532
-                    ? 'Base Sepolia'
-                    : chainId === 11155111
-                      ? 'Sepolia'
-                      : chainId === 31337
-                        ? 'Anvil'
-                        : chainId === 17000
-                          ? 'Holesky'
-                          : `Chain ${chainId}`}
+                {getNetworkNameByChainId(chainId)}
               </span>
             </div>
           )}

@@ -35,16 +35,3 @@ export const FROM_BLOCK =
     : FROM_BLOCK_PROD
 
 export const isLocal = process.env.NEXT_PUBLIC_CHAIN_NETWORK === 'local'
-
-export enum NetworkName {
-  LOCAL = 'local',
-  TEST = 'holesky',
-  PRODUCTION = 'production',
-}
-
-export const networkName = (function () {
-  const chainNetwork = process.env.NEXT_PUBLIC_CHAIN_NETWORK
-  if (chainNetwork === 'local') return NetworkName.LOCAL
-  if (chainNetwork === 'test') return NetworkName.TEST
-  return NetworkName.PRODUCTION
-})()

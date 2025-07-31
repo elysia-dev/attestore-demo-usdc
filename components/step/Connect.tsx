@@ -5,9 +5,6 @@ export default function Connect() {
   return (
     <section className="space-y-6">
       <div className="text-center space-y-4">
-        <p className="text-sm text-muted-foreground">
-          Connect your wallet to get started
-        </p>
         <div className="flex justify-center">
           <CustomConnectButton />
         </div>
@@ -47,9 +44,10 @@ export default function Connect() {
         </div>
 
         <div className="p-4 rounded-lg bg-primary/10 border border-primary/20 transition-all duration-300 hover:bg-primary/20">
-          <p className="text-sm text-center">
+          <p className="text-sm text-left">
             <span className="text-primary font-semibold">How it works:</span>{' '}
-            Create intent → Transfer → Prove → Mint
+            <br />
+            Create Swap → Transfer KRW → Prove → Transfer USDC
           </p>
         </div>
       </div>

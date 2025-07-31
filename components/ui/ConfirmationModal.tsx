@@ -1,3 +1,4 @@
+import { getTransferMemo } from '@/lib/utils'
 import { Button } from './button'
 
 function ConfirmationModal({
@@ -14,7 +15,7 @@ function ConfirmationModal({
   onConfirm: () => void
   name: string
   transferAmount: number
-  memo: number | string
+  memo: string
   address: string
 }) {
   if (!isOpen) return null

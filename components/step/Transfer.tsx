@@ -6,7 +6,7 @@ import { ErrorContext } from '@/context/ErrorContext'
 import QRCode from 'react-qr-code'
 
 import { VideoPopup } from '@/components/ui/VideoPopup'
-import { cn, getKRWAmount } from '@/lib/utils'
+import { cn, getKRWAmount, getTransferMemo } from '@/lib/utils'
 import { useTossLauncher } from '../../hooks/useTossLauncher'
 import ConfirmationModal from '../ui/ConfirmationModal'
 import { WorkflowStep } from '../StepIndicator'
@@ -174,7 +174,9 @@ export default function Transfer({
             </div>
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">Transfer Memo</p>
-              <p className="text-sm font-medium text-primary">{intentId}</p>
+              <p className="text-sm font-medium text-primary">
+                {getTransferMemo(intentId)}
+              </p>
             </div>
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">Amount</p>
@@ -240,7 +242,7 @@ export default function Transfer({
         onConfirm={checkAndGoNext}
         name={`이현민(모임통장)`}
         transferAmount={transferAmount}
-        memo={intentId ?? ''}
+        memo={getTransferMemo(intentId)}
         address={`토스뱅크 ${TOSS_ACCOUNT_NUMBER}`}
       />
     </section>
