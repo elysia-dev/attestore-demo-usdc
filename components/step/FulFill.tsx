@@ -252,8 +252,6 @@ export default function FulFill({
             topics: intentFulfilledEvent.topics,
           })
 
-          console.log('Decoded log:', decodedLog)
-
           // The event signature looks different - it has intentId, depositId, verifier as indexed
           const { intentId, depositId, verifier, owner, to, amount } =
             decodedLog.args as {

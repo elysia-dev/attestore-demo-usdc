@@ -135,7 +135,6 @@ export default function Home() {
 
   const defaultValue = testData[0]
   const [issueDate, setIssueDate] = useState(defaultValue.issueDate)
-  console.log('issueDate in Home', issueDate)
   const [certificateNumber, setCertificateNumber] = useState(
     defaultValue.certificateNumber,
   )
