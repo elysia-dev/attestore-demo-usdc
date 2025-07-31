@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAccount } from 'wagmi'
 import { formatUnits } from 'viem'
 import { cn, getTransactionExplorerUrl, truncateAddress } from '@/lib/utils'
@@ -50,14 +50,26 @@ const getStatusIcon = (status: IntentStatus) => {
   }
 }
 
+enum Filter {
+  ALL = 'all',
+  MY = 'my',
+}
 export function IntentHistory() {
   const { address, isConnected } = useAccount()
-  const [intents, setIntents] = useState<Intent[]>([])
+  const [allIntents, setAllIntents] = useState<Intent[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [filter, setFilter] = useState<'all' | 'my'>('all')
+  const [filter, setFilter] = useState<Filter>(Filter.ALL)
   const [processingIntentId, setProcessingIntentId] = useState<string | null>(
     null,
   )
+  const myIntents = useMemo(() => {
+    if (filter === Filter.ALL) {
+      return allIntents
+    }
+    return allIntents.filter(
+      (intent) => intent.owner.toLowerCase() === address?.toLowerCase(),
+    )
+  }, [allIntents, address, filter])
 
   const { releaseFunds, isLoading: isReleasing } = useReleaseFunds({
     onSuccess: () => {
@@ -78,16 +90,11 @@ export function IntentHistory() {
     try {
       setIsLoading(true)
 
-      const params = new URLSearchParams({
-        address: address,
-        filter: filter,
-      })
-
-      const response = await fetch(`/api/transfer-history?${params}`)
+      const response = await fetch(`/api/transfer-history`)
       const data = await response.json()
 
       if (response.ok) {
-        setIntents(data.intents || [])
+        setAllIntents(data.intents || [])
       } else {
         console.error('Failed to fetch intents:', data.error)
       }
@@ -96,7 +103,7 @@ export function IntentHistory() {
     } finally {
       setIsLoading(false)
     }
-  }, [address, filter])
+  }, [address])
 
   useEffect(() => {
     if (isConnected && address) {
@@ -123,26 +130,27 @@ export function IntentHistory() {
     )
   }
 
+  const intents = filter === Filter.MY ? myIntents : allIntents
   return (
     <section className="space-y-4">
       <div className="bg-card/50 rounded-[24px] p-6 backdrop-blur-xl border border-border/50 space-y-4">
         {/* Filter tabs */}
         <div className="flex gap-2 p-1 bg-secondary/30 rounded-full">
           <button
-            onClick={() => setFilter('all')}
+            onClick={() => setFilter(Filter.ALL)}
             className={cn(
               'flex-1 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200',
-              filter === 'all'
+              filter === Filter.ALL
                 ? 'bg-primary text-primary-foreground shadow-lg'
                 : 'text-muted-foreground hover:text-foreground',
             )}>
             All Intents
           </button>
           <button
-            onClick={() => setFilter('my')}
+            onClick={() => setFilter(Filter.MY)}
             className={cn(
               'flex-1 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200',
-              filter === 'my'
+              filter === Filter.MY
                 ? 'bg-primary text-primary-foreground shadow-lg'
                 : 'text-muted-foreground hover:text-foreground',
             )}>

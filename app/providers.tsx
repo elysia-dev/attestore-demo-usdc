@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { WagmiProvider } from 'wagmi'
-import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
+import { RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit'
 import { ErrorProvider } from '@/context/ErrorContext'
 import { useSentryTracking } from '@/hooks/useSentryTracking'
 import { config } from '@/lib/wagmi'
@@ -31,7 +31,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <ErrorProvider>
       <WagmiProvider config={config}>
         <QueryClientProvider client={queryClient}>
-          <RainbowKitProvider>
+          <RainbowKitProvider
+            theme={darkTheme({
+              accentColor: '#ec4899',
+              accentColorForeground: 'white',
+              borderRadius: 'large',
+              fontStack: 'system',
+              overlayBlur: 'small',
+            })}>
             <ProvidersWithTracking>{children}</ProvidersWithTracking>
           </RainbowKitProvider>
         </QueryClientProvider>

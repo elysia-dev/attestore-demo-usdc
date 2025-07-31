@@ -6,8 +6,6 @@ import { useState, useEffect } from 'react'
 import { useAccount, useChainId } from 'wagmi'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import Image from 'next/image'
-import Link from 'next/link'
-import { Button } from './ui/button'
 
 interface NavigationBarProps {
   className?: string
@@ -23,6 +21,7 @@ export default function NavigationBar({ className }: NavigationBarProps) {
   const searchParams = useSearchParams()
   const view = searchParams.get('view')
   const [activeTab, setActiveTab] = useState<Tab>(Tab.SWAP)
+  const [showNetwork, setShowNetwork] = useState(false)
   const { isConnected } = useAccount()
   const chainId = useChainId()
 
@@ -34,30 +33,40 @@ export default function NavigationBar({ className }: NavigationBarProps) {
     }
   }, [view])
 
+  useEffect(() => {
+    if (showNetwork) {
+      const timer = setTimeout(() => setShowNetwork(false), 2000)
+      return () => clearTimeout(timer)
+    }
+  }, [showNetwork])
+
   return (
-    <nav className={cn('fixed top-0 left-0 right-0 z-50 px-6 py-4', className)}>
+    <nav
+      className={cn(
+        'fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 py-3 sm:py-4',
+        className,
+      )}>
       <div className="flex items-center justify-between">
         {/* Left side - Logo and main navigation */}
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" onClick={() => (window.location.href = '/')}>
-            <Image
-              src="/favicon-pink.svg"
-              alt="Zenie"
-              width={30}
-              height={30}
-              className="w-8 h-8"
-            />
-          </Button>
+        <div className="flex items-center gap-2 sm:gap-2">
+          <Image
+            src="/favicon-pink.svg"
+            alt="Zenie"
+            width={30}
+            height={30}
+            className="w-7 h-7 sm:w-8 sm:h-8 cursor-pointer"
+            onClick={() => (window.location.href = '/')}
+          />
 
-          {/* Main navigation tabs */}
-          <div className="flex items-center gap-4">
+          {/* Main navigation links - back to original style */}
+          <div className="flex items-center gap-3 sm:gap-4 ml-2">
             <button
               onClick={() => {
                 setActiveTab(Tab.SWAP)
                 router.push('/')
               }}
               className={cn(
-                'text-base font-medium transition-colors relative pb-1',
+                'text-sm sm:text-base font-medium transition-colors relative pb-1',
                 activeTab === 'swap'
                   ? 'text-white'
                   : 'text-white/60 hover:text-white/80',
@@ -73,7 +82,7 @@ export default function NavigationBar({ className }: NavigationBarProps) {
                 router.push('/?view=history')
               }}
               className={cn(
-                'text-base font-medium transition-colors relative pb-1',
+                'text-sm sm:text-base font-medium transition-colors relative pb-1',
                 activeTab === 'history'
                   ? 'text-white'
                   : 'text-white/60 hover:text-white/80',
@@ -87,10 +96,10 @@ export default function NavigationBar({ className }: NavigationBarProps) {
         </div>
 
         {/* Right side - Wallet and Network info */}
-        <div className="flex items-center gap-4 flex-shrink-0">
-          {/* Network Badge */}
+        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+          {/* Network Badge - simplified for mobile */}
           {isConnected && (
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full">
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full">
               <div className="w-2 h-2 rounded-full bg-green-400" />
               <span className="text-sm text-white/80">
                 {getNetworkNameByChainId(chainId)}
@@ -98,11 +107,29 @@ export default function NavigationBar({ className }: NavigationBarProps) {
             </div>
           )}
 
-          {/* Connect Button with custom styles to prevent truncation */}
+          {/* Mobile network indicator - clickable with tooltip */}
+          {isConnected && (
+            <div className="relative flex sm:hidden">
+              <button
+                onClick={() => setShowNetwork(!showNetwork)}
+                className="flex items-center justify-center w-8 h-8rounded-full transition-all hover:bg-white/20">
+                <div className="w-2 h-2 rounded-full bg-green-400" />
+              </button>
+              {showNetwork && (
+                <div className="absolute top-5 right-0 px-3 py-1.5 rounded-lg shadow-lg whitespace-nowrap bg-card/80 border border-border/50">
+                  <span className="text-xs text-white">
+                    {getNetworkNameByChainId(chainId)}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Connect Button with better mobile handling */}
           <div className="min-w-0">
             <ConnectButton
               showBalance={false}
-              chainStatus="icon"
+              chainStatus="none"
               accountStatus={{
                 smallScreen: 'avatar',
                 largeScreen: 'full',

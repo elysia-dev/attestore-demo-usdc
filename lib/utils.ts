@@ -46,7 +46,7 @@ export function getKRWAmount(usdcAmount: bigint, conversionRate: bigint) {
   return Math.ceil(Number(amount) * Number(rate))
 }
 
-export const getNetworkNameByChainId = (chainId: number) => {
+export const getNetworkNameByChainId = (chainId: number, short = false) => {
   switch (chainId) {
     case 1:
       return 'Ethereum'

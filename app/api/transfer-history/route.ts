@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createPublicClient, http, parseAbiItem } from 'viem'
+import { AbiEvent, createPublicClient, http, parseAbiItem } from 'viem'
 import ADDRESSES from '@/lib/addresses'
 import { FROM_BLOCK, chain } from '@/constant'
 
@@ -17,17 +17,55 @@ interface TransferHistoryItem {
 }
 
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams
-  const address = searchParams.get('address')
-  const filter = searchParams.get('filter') || 'all'
-
   try {
+    // Use a more reliable RPC endpoint for Base Sepolia
+    const rpcUrl =
+      chain.id === 84532
+        ? 'https://base-sepolia-rpc.publicnode.com'
+        : chain.rpcUrls.default.http[0]
+
     const publicClient = createPublicClient({
       chain,
-      transport: http(),
+      transport: http(rpcUrl),
     })
 
-    const fromBlock = FROM_BLOCK
+    // Fetch current block number
+    const currentBlock = await publicClient.getBlockNumber()
+    const fromBlock = BigInt(FROM_BLOCK)
+    const maxBlockRange = BigInt(10000) // Safe block range
+
+    // Helper function to fetch logs in chunks
+    const fetchLogsInChunks = async (eventAbi: string) => {
+      let allLogs: any[] = []
+      let startBlock = fromBlock
+
+      while (startBlock <= currentBlock) {
+        const endBlock =
+          startBlock + maxBlockRange > currentBlock
+            ? currentBlock
+            : startBlock + maxBlockRange
+
+        try {
+          const logs = await publicClient.getLogs({
+            address: ADDRESSES.ESCROW,
+            event: parseAbiItem(eventAbi) as AbiEvent,
+            fromBlock: startBlock,
+            toBlock: endBlock,
+          })
+          allLogs = allLogs.concat(logs)
+        } catch (error) {
+          console.warn(
+            `Failed to fetch logs from ${startBlock} to ${endBlock}:`,
+            error,
+          )
+          // Continue with next chunk even if one fails
+        }
+
+        startBlock = endBlock + BigInt(1)
+      }
+
+      return allLogs
+    }
 
     // Get all event logs in parallel
     const [
@@ -37,39 +75,19 @@ export async function GET(request: NextRequest) {
       intentReleasedLogs,
     ] = await Promise.all([
       // IntentSignaled events
-      publicClient.getLogs({
-        address: ADDRESSES.ESCROW,
-        event: parseAbiItem(
-          'event IntentSignaled(address to, address verifier, uint256 amount, uint256 intentId)',
-        ),
-        fromBlock,
-        toBlock: 'latest',
-      }),
+      fetchLogsInChunks(
+        'event IntentSignaled(address to, address verifier, uint256 amount, uint256 intentId)',
+      ),
       // IntentFulfilled events - updated signature
-      publicClient.getLogs({
-        address: ADDRESSES.ESCROW,
-        event: parseAbiItem(
-          'event IntentFulfilled(uint256 indexed intentId, uint256 indexed depositId, address indexed verifier, address owner, address to, uint256 amount)',
-        ),
-        fromBlock,
-        toBlock: 'latest',
-      }),
+      fetchLogsInChunks(
+        'event IntentFulfilled(uint256 indexed intentId, uint256 indexed depositId, address indexed verifier, address owner, address to, uint256 amount)',
+      ),
       // IntentCancelled events
-      publicClient.getLogs({
-        address: ADDRESSES.ESCROW,
-        event: parseAbiItem('event IntentCancelled(uint256 intentId)'),
-        fromBlock,
-        toBlock: 'latest',
-      }),
+      fetchLogsInChunks('event IntentCancelled(uint256 intentId)'),
       // IntentReleased events
-      publicClient.getLogs({
-        address: ADDRESSES.ESCROW,
-        event: parseAbiItem(
-          'event IntentReleased(uint256 indexed intentId, uint256 indexed depositId, address owner, address to, uint256 amount)',
-        ),
-        fromBlock,
-        toBlock: 'latest',
-      }),
+      fetchLogsInChunks(
+        'event IntentReleased(uint256 indexed intentId, uint256 indexed depositId, address owner, address to, uint256 amount)',
+      ),
     ])
 
     // Create status maps
@@ -134,20 +152,12 @@ export async function GET(request: NextRequest) {
       }),
     )
 
-    // Apply filter
-    const filteredIntents = allIntents.filter((intent) => {
-      if (filter === 'all') {
-        return true
-      }
-      return intent.owner.toLowerCase() === address?.toLowerCase()
-    })
-
     // Sort by timestamp (newest first)
-    filteredIntents.sort((a, b) => b.timestamp - a.timestamp)
+    allIntents.sort((a, b) => b.timestamp - a.timestamp)
 
     return NextResponse.json({
-      intents: filteredIntents,
-      totalCount: filteredIntents.length,
+      intents: allIntents,
+      totalCount: allIntents.length,
     })
   } catch (error) {
     console.error('Error fetching transfer history:', error)
