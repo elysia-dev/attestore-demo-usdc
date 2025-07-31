@@ -1,14 +1,12 @@
 import { formatUnits } from 'viem'
 import { FulfillmentResult } from './Home'
 import { USDC_SYMBOL } from '@/constant'
-import { cn } from '@/lib/utils'
 
 export default function FulfillmentResultComponent({
   fulfillmentResult,
 }: {
   fulfillmentResult: FulfillmentResult
 }) {
-  if (!fulfillmentResult?.success) return null
   return (
     <section className="space-y-6">
       <h2 className="text-2xl font-bold text-center text-gradient">
@@ -22,25 +20,12 @@ export default function FulfillmentResultComponent({
         <section className="bg-secondary/30 rounded-2xl p-4 border border-border/50">
           <div className="grid grid-cols-2 max-sm:grid-cols-1 gap-4">
             <div className="space-y-1">
-              <span className="text-sm text-muted-foreground">Intent Hash</span>
+              <span className="text-sm text-muted-foreground">Id</span>
               <p className="text-sm font-mono break-all">
-                {fulfillmentResult.intentHash}
+                {fulfillmentResult.intentId}
               </p>
             </div>
-            <div className="space-y-1">
-              <span className="text-sm text-muted-foreground">Verifier</span>
-              <p className="text-sm font-mono">
-                {fulfillmentResult.verifier?.slice(0, 6)}...
-                {fulfillmentResult.verifier?.slice(-4)}
-              </p>
-            </div>
-            <div className="space-y-1">
-              <span className="text-sm text-muted-foreground">Owner</span>
-              <p className="text-sm font-mono">
-                {fulfillmentResult.owner?.slice(0, 6)}...
-                {fulfillmentResult.owner?.slice(-4)}
-              </p>
-            </div>
+
             <div className="space-y-1">
               <span className="text-sm text-muted-foreground">Receiver</span>
               <p className="text-sm font-mono">

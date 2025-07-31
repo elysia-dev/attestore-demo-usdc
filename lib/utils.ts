@@ -27,6 +27,17 @@ export function getExplorerUrl(address: string) {
   }
 }
 
+export function getTransactionExplorerUrl(txHash: string) {
+  const chainNetwork = process.env.NEXT_PUBLIC_CHAIN_NETWORK
+  if (chainNetwork === NetworkName.LOCAL) {
+    return `https://holesky.etherscan.io/tx/${txHash}`
+  } else if (chainNetwork === NetworkName.TEST) {
+    return `https://holesky.etherscan.io/tx/${txHash}`
+  } else {
+    return `https://basescan.org/tx/${txHash}`
+  }
+}
+
 // usdcAmount: 100000n
 // conversionRate: 1380000000000000000000n
 export function getKRWAmount(usdcAmount: bigint, conversionRate: bigint) {

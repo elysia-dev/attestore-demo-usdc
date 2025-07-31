@@ -37,7 +37,7 @@ export const workflowStepToLabel = {
 
 export type FulfillmentResult = {
   success: boolean
-  intentHash?: string
+  intentId?: number
   verifier?: string
   owner?: string
   to?: string

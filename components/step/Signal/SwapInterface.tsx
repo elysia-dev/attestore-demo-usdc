@@ -108,11 +108,7 @@ export default function SwapInterface({
     total: number
   }>({ current: 0, total: 0 })
 
-  const { writeAndWait: approveWrite } = useContractWrite({
-    onSuccess: () => {
-      console.log('Approve transaction successful')
-    },
-  })
+  const { writeAndWait: approveWrite } = useContractWrite()
 
   const { writeAndWait: createDepositWrite } = useContractWrite({
     onSuccess: (receipt) => {
@@ -173,7 +169,6 @@ export default function SwapInterface({
     }
 
     try {
-      console.log('!!!!!!!!!!!!!!!!try!!!!!!!!!!!!!!!!!!')
       setIsProcessing(true)
       setProcessStep('Checking requirements...')
       setProcessProgress({ current: 1, total: 3 })
@@ -190,9 +185,7 @@ export default function SwapInterface({
         args: [address],
       })
 
-      console.log('balance', balance)
       const depositAmount = parseUnits(amount, 6) // USDC has 6 decimals
-      console.log('depositAmount', depositAmount.toString())
 
       if (!balance || balance < depositAmount) {
         setError(
@@ -215,13 +208,6 @@ export default function SwapInterface({
         setProcessStep('Approving tokens...')
         setProcessProgress({ current: 2, total: 3 })
 
-        console.log('Insufficient allowance, requesting approval...')
-        console.log('Approval params:', {
-          address: ADDRESSES.USDC,
-          escrow: ADDRESSES.ESCROW,
-          amount: depositAmount.toString(),
-        })
-
         // Ensure addresses are defined
         if (!ADDRESSES.USDC || !ADDRESSES.ESCROW) {
           throw new Error('Contract addresses not properly configured')
@@ -230,7 +216,6 @@ export default function SwapInterface({
         try {
           // Validate args before sending
           const approveArgs = [ADDRESSES.ESCROW, depositAmount]
-          console.log('Approve args before call:', approveArgs)
 
           if (!approveArgs[0] || approveArgs[1] === undefined) {
             throw new Error('Invalid approve arguments')
@@ -246,8 +231,6 @@ export default function SwapInterface({
           console.error('Approval error details:', approveError)
           throw approveError
         }
-
-        console.log('Approval successful')
       }
 
       // 5. Create deposit
@@ -278,36 +261,12 @@ export default function SwapInterface({
         },
       ]
 
-      console.log('Creating deposit with params:', {
-        escrowAddress: ADDRESSES.ESCROW,
-        token: ADDRESSES.USDC,
-        amount: depositAmount.toString(),
-        intentRange: {
-          min: minIntentAmount.toString(),
-          max: maxIntentAmount.toString(),
-        },
-        verifiers: [ADDRESSES.TOSS_BANK_VERIFIER],
-        verifierData,
-        currencies,
-      })
-
-      // Double check we're on the right network
-      const chainId = await publicClient?.getChainId()
-      console.log('Current chain ID:', chainId)
-
       // Check if contracts are deployed
       const escrowCode = await publicClient?.getBytecode({
         address: ADDRESSES.ESCROW,
       })
       const usdcCode = await publicClient?.getBytecode({
         address: ADDRESSES.USDC,
-      })
-
-      console.log('Contract deployment status:', {
-        escrowDeployed: !!escrowCode && escrowCode !== '0x',
-        usdcDeployed: !!usdcCode && usdcCode !== '0x',
-        escrowAddress: ADDRESSES.ESCROW,
-        usdcAddress: ADDRESSES.USDC,
       })
 
       if (!escrowCode || escrowCode === '0x') {

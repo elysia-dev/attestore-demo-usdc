@@ -7,6 +7,7 @@ import { useAccount, useChainId } from 'wagmi'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import Image from 'next/image'
 import Link from 'next/link'
+import { Button } from './ui/button'
 
 interface NavigationBarProps {
   className?: string
@@ -38,7 +39,7 @@ export default function NavigationBar({ className }: NavigationBarProps) {
       <div className="flex items-center justify-between">
         {/* Left side - Logo and main navigation */}
         <div className="flex items-center gap-2">
-          <Link href="/">
+          <Button variant="ghost" onClick={() => (window.location.href = '/')}>
             <Image
               src="/favicon-pink.svg"
               alt="Zenie"
@@ -46,7 +47,7 @@ export default function NavigationBar({ className }: NavigationBarProps) {
               height={30}
               className="w-8 h-8"
             />
-          </Link>
+          </Button>
 
           {/* Main navigation tabs */}
           <div className="flex items-center gap-4">

@@ -3,16 +3,128 @@ import { FulfillmentResult, ProofResult } from '../Home'
 import FulfillmentResultComponent from '../FulfillmentResult'
 import { decodeEventLog, encodeAbiParameters, keccak256, toBytes } from 'viem'
 import { useContractWrite } from '@/hooks/useContractWrite'
+import { usePublicClient } from 'wagmi'
 import ADDRESSES from '@/lib/addresses'
 import { ESCROW_ABI } from '@/lib/abi'
 import { ErrorType } from '@/lib/errors'
-import { useContext } from 'react'
+import { useContext, useState, useEffect, useRef } from 'react'
 import { ErrorContext } from '@/context/ErrorContext'
 import { extractErrorMessage } from '../utils/extractErrorMessage'
 import { trackUserAction } from '@/lib/sentry-utils'
 import * as Sentry from '@sentry/nextjs'
-import { cn } from '@/lib/utils'
+import { cn, getTransactionExplorerUrl } from '@/lib/utils'
 import { WorkflowStep } from '../StepIndicator'
+
+const formatProofForContract = (receiptData: any) => {
+  if (!receiptData) {
+    throw new Error('Invalid receipt data')
+  }
+
+  const receipt = receiptData.data.receipt
+  const claim = receipt.claim
+  const signatures = receipt.signatures
+
+  let claimSignatureHex = signatures.claimSignature
+  if (
+    signatures.claimSignature &&
+    typeof signatures.claimSignature === 'object'
+  ) {
+    claimSignatureHex =
+      '0x' + Buffer.from(signatures.claimSignature).toString('hex')
+  }
+
+  const proofObject = {
+    claimInfo: {
+      provider: claim.provider,
+      parameters: claim.parameters,
+      context: claim.context,
+    },
+    signedClaim: {
+      claim: {
+        identifier: claim.identifier,
+        owner: claim.owner,
+        timestampS: claim.timestampS,
+        epoch: claim.epoch,
+      },
+      signatures: [claimSignatureHex],
+    },
+    isAppclipProof: false,
+  }
+
+  return proofObject
+}
+
+// proof 객체를 바이트로 인코딩하는 함수 (ABI 인코딩 사용)
+const encodeProofToBytes = (proofObject: any) => {
+  try {
+    // ReclaimProof 구조체에 맞게 ABI 인코딩
+    const encodedProof = encodeAbiParameters(
+      [
+        {
+          type: 'tuple',
+          components: [
+            {
+              type: 'tuple',
+              name: 'claimInfo',
+              components: [
+                { type: 'string', name: 'provider' },
+                { type: 'string', name: 'parameters' },
+                { type: 'string', name: 'context' },
+              ],
+            },
+            {
+              type: 'tuple',
+              name: 'signedClaim',
+              components: [
+                {
+                  type: 'tuple',
+                  name: 'claim',
+                  components: [
+                    { type: 'bytes32', name: 'identifier' },
+                    { type: 'address', name: 'owner' },
+                    { type: 'uint32', name: 'timestampS' },
+                    { type: 'uint32', name: 'epoch' },
+                  ],
+                },
+                { type: 'bytes[]', name: 'signatures' },
+              ],
+            },
+            { type: 'bool', name: 'isAppclipProof' },
+          ],
+        },
+      ],
+      [
+        {
+          claimInfo: {
+            provider: proofObject.claimInfo.provider,
+            parameters: proofObject.claimInfo.parameters,
+            context: proofObject.claimInfo.context,
+          },
+          signedClaim: {
+            claim: {
+              identifier: proofObject.signedClaim.claim
+                .identifier as `0x${string}`,
+              owner: proofObject.signedClaim.claim.owner as `0x${string}`,
+              timestampS: proofObject.signedClaim.claim.timestampS,
+              epoch: proofObject.signedClaim.claim.epoch,
+            },
+            signatures: proofObject.signedClaim.signatures,
+          },
+          isAppclipProof: false,
+        },
+      ],
+    )
+
+    return encodedProof
+  } catch (error) {
+    console.error('ABI encoding error:', error)
+    throw new Error('Failed to ABI encode proof: ' + error)
+  }
+}
+
+const INTENT_FULFILLED_TOPIC = keccak256(
+  toBytes('IntentFulfilled(uint256,uint256,address,address,address,uint256)'),
+)
 
 export default function FulFill({
   issueDate,
@@ -32,19 +144,103 @@ export default function FulFill({
   setFulfillmentResult: (result: FulfillmentResult | null) => void
 }) {
   const { setError } = useContext(ErrorContext)
+  const [transactionHash, setTransactionHash] = useState<string | null>(null)
+  const [transactionStatus, setTransactionStatus] = useState<
+    'idle' | 'pending' | 'confirming' | 'success' | 'error'
+  >('idle')
+  const [elapsedTime, setElapsedTime] = useState(0)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const publicClient = usePublicClient()
+
+  // Manual check transaction status
+  const checkTransactionStatus = async () => {
+    if (!transactionHash || !publicClient) return
+
+    try {
+      const receipt = await publicClient.getTransactionReceipt({
+        hash: transactionHash as `0x${string}`,
+      })
+
+      if (receipt) {
+        if (receipt.status === 'success') {
+          // Process the receipt to get fulfillment details
+          const intentFulfilledEvent = receipt.logs.find((log: any) => {
+            return (
+              log.topics[0] === INTENT_FULFILLED_TOPIC &&
+              log.address.toLowerCase() === ADDRESSES.ESCROW.toLowerCase()
+            )
+          })
+
+          if (intentFulfilledEvent) {
+            const decodedLog = decodeEventLog({
+              abi: ESCROW_ABI,
+              data: intentFulfilledEvent.data,
+              topics: intentFulfilledEvent.topics,
+            })
+
+            const { intentId, depositId, verifier, owner, to, amount } =
+              decodedLog.args as {
+                intentId: bigint
+                depositId: bigint
+                verifier: string
+                owner: string
+                to: string
+                amount: bigint
+              }
+
+            setFulfillmentResult({
+              success: true,
+              intentId: Number(intentId),
+              verifier,
+              owner,
+              to,
+              amount,
+              txHash: receipt.transactionHash,
+            })
+            setTransactionStatus('success')
+          }
+        } else {
+          setTransactionStatus('error')
+          setError('Transaction failed')
+        }
+      }
+    } catch (error) {
+      console.error('Error checking transaction status:', error)
+    }
+  }
+
+  // Track elapsed time when transaction is confirming
+  useEffect(() => {
+    if (transactionStatus === 'confirming') {
+      intervalRef.current = setInterval(() => {
+        setElapsedTime((prev) => prev + 1)
+      }, 1000)
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+      if (transactionStatus === 'idle' || transactionStatus === 'error') {
+        setElapsedTime(0)
+      }
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+      }
+    }
+  }, [transactionStatus])
+
   const {
     writeAndWait: fulfillIntentWrite,
     isLoading: isFulfillIntentLoading,
   } = useContractWrite({
     onSuccess: (receipt) => {
-      // fulfillIntent 성공 시 처리
       try {
         const intentFulfilledEvent = receipt.logs.find((log: any) => {
-          const intentFulfilledTopic = keccak256(
-            toBytes('IntentFulfilled(bytes32,address,address,address,uint256)'),
-          )
           return (
-            log.topics[0] === intentFulfilledTopic &&
+            log.topics[0] === INTENT_FULFILLED_TOPIC &&
             log.address.toLowerCase() === ADDRESSES.ESCROW.toLowerCase()
           )
         })
@@ -56,9 +252,13 @@ export default function FulFill({
             topics: intentFulfilledEvent.topics,
           })
 
-          const { intentHash, verifier, owner, to, amount } =
+          console.log('Decoded log:', decodedLog)
+
+          // The event signature looks different - it has intentId, depositId, verifier as indexed
+          const { intentId, depositId, verifier, owner, to, amount } =
             decodedLog.args as {
-              intentHash: string
+              intentId: bigint
+              depositId: bigint
               verifier: string
               owner: string
               to: string
@@ -67,7 +267,8 @@ export default function FulFill({
 
           // 성공 추적
           trackUserAction('Token minting successful', {
-            intentHash,
+            intentId: Number(intentId),
+            depositId: Number(depositId),
             amount: amount.toString(),
             receiver: to,
             txHash: receipt.transactionHash,
@@ -75,128 +276,37 @@ export default function FulFill({
 
           setFulfillmentResult({
             success: true,
-            intentHash,
+            intentId: Number(intentId),
             verifier,
             owner,
             to,
             amount,
             txHash: receipt.transactionHash,
           })
+          setTransactionStatus('success')
+        } else {
+          setTransactionStatus('success')
+          setFulfillmentResult({
+            success: true,
+            intentId: intentId ?? undefined,
+            verifier: 'Unknown',
+            owner: 'Unknown',
+            to: 'Unknown',
+            amount: BigInt(0),
+            txHash: receipt.transactionHash,
+          })
         }
       } catch (error) {
         console.error('Failed to parse IntentFulfilled event:', error)
+        setTransactionStatus('success') // Still mark as success since transaction went through
       }
+    },
+    onError: (error) => {
+      setTransactionStatus('error')
+      setTransactionHash(null)
     },
   })
 
-  const formatProofForContract = (receiptData: any) => {
-    if (!receiptData) {
-      throw new Error('Invalid receipt data')
-    }
-
-    const receipt = receiptData.data.receipt
-    const claim = receipt.claim
-    const signatures = receipt.signatures
-
-    let claimSignatureHex = signatures.claimSignature
-    if (
-      signatures.claimSignature &&
-      typeof signatures.claimSignature === 'object'
-    ) {
-      claimSignatureHex =
-        '0x' + Buffer.from(signatures.claimSignature).toString('hex')
-    }
-
-    const proofObject = {
-      claimInfo: {
-        provider: claim.provider,
-        parameters: claim.parameters,
-        context: claim.context,
-      },
-      signedClaim: {
-        claim: {
-          identifier: claim.identifier,
-          owner: claim.owner,
-          timestampS: claim.timestampS,
-          epoch: claim.epoch,
-        },
-        signatures: [claimSignatureHex],
-      },
-      isAppclipProof: false,
-    }
-
-    return proofObject
-  }
-
-  // proof 객체를 바이트로 인코딩하는 함수 (ABI 인코딩 사용)
-  const encodeProofToBytes = (proofObject: any) => {
-    try {
-      // ReclaimProof 구조체에 맞게 ABI 인코딩
-      const encodedProof = encodeAbiParameters(
-        [
-          {
-            type: 'tuple',
-            components: [
-              {
-                type: 'tuple',
-                name: 'claimInfo',
-                components: [
-                  { type: 'string', name: 'provider' },
-                  { type: 'string', name: 'parameters' },
-                  { type: 'string', name: 'context' },
-                ],
-              },
-              {
-                type: 'tuple',
-                name: 'signedClaim',
-                components: [
-                  {
-                    type: 'tuple',
-                    name: 'claim',
-                    components: [
-                      { type: 'bytes32', name: 'identifier' },
-                      { type: 'address', name: 'owner' },
-                      { type: 'uint32', name: 'timestampS' },
-                      { type: 'uint32', name: 'epoch' },
-                    ],
-                  },
-                  { type: 'bytes[]', name: 'signatures' },
-                ],
-              },
-              { type: 'bool', name: 'isAppclipProof' },
-            ],
-          },
-        ],
-        [
-          {
-            claimInfo: {
-              provider: proofObject.claimInfo.provider,
-              parameters: proofObject.claimInfo.parameters,
-              context: proofObject.claimInfo.context,
-            },
-            signedClaim: {
-              claim: {
-                identifier: proofObject.signedClaim.claim
-                  .identifier as `0x${string}`,
-                owner: proofObject.signedClaim.claim.owner as `0x${string}`,
-                timestampS: proofObject.signedClaim.claim.timestampS,
-                epoch: proofObject.signedClaim.claim.epoch,
-              },
-              signatures: proofObject.signedClaim.signatures,
-            },
-            isAppclipProof: false,
-          },
-        ],
-      )
-
-      return encodedProof
-    } catch (error) {
-      console.error('ABI encoding error:', error)
-      throw new Error('Failed to ABI encode proof: ' + error)
-    }
-  }
-
-  // fulfillIntent 호출
   const handleFulfillIntent = async () => {
     if (!intentId || !proofResult) {
       console.error('Missing intentId or proofResult')
@@ -206,21 +316,20 @@ export default function FulFill({
 
     try {
       setFulfillmentResult(null) // 이전 결과 초기화
+      setTransactionStatus('pending')
+      setTransactionHash(null)
 
       // result 데이터를 컨트랙트가 요구하는 형태로 변환
       const formattedProof = formatProofForContract(proofResult)
-
       // proof 객체를 바이트로 인코딩
       const encodedProof = encodeProofToBytes(formattedProof)
-      // 사용자 액션 추적
+
       trackUserAction('Transfer USDC clicked', {
         intentId,
         encodedProof,
       })
-      console.log('encodedProof', encodedProof)
-      console.log('intentId', intentId)
 
-      await fulfillIntentWrite({
+      const result = await fulfillIntentWrite({
         address: ADDRESSES.ESCROW,
         abi: ESCROW_ABI,
         functionName: 'fulfillIntent',
@@ -229,9 +338,13 @@ export default function FulFill({
           BigInt(intentId), // intentId
         ],
       })
+
+      if (result?.hash) {
+        setTransactionHash(result.hash)
+        setTransactionStatus('confirming')
+      }
     } catch (error) {
       const errorMessage = extractErrorMessage(error)
-      console.error('Failed to fulfillIntent:', error)
 
       // 포맷팅/인코딩 에러 추적
       Sentry.captureException(error, {
@@ -252,6 +365,7 @@ export default function FulFill({
 
       setError(`USDC transfer failed: ${errorMessage}`)
       setFulfillmentResult({ success: false })
+      setTransactionStatus('error')
     }
   }
   return (
@@ -264,6 +378,111 @@ export default function FulFill({
       )}
       {!fulfillmentResult?.success && (
         <section className="space-y-6">
+          {/* Transaction Status */}
+          {transactionStatus !== 'idle' && (
+            <section className="bg-card/50 rounded-[24px] p-6 backdrop-blur-xl border border-border/50">
+              <div className="space-y-4">
+                {transactionStatus === 'pending' && (
+                  <>
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent" />
+                      Preparing Transaction...
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Please confirm the transaction in your wallet
+                    </p>
+                  </>
+                )}
+
+                {transactionStatus === 'confirming' && transactionHash && (
+                  <>
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <div className="animate-pulse rounded-full h-5 w-5 bg-yellow-500" />
+                      Transaction Submitted
+                    </h3>
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-muted-foreground">
+                        Waiting for blockchain confirmation...
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {Math.floor(elapsedTime / 60)}:
+                        {(elapsedTime % 60).toString().padStart(2, '0')}
+                      </p>
+                    </div>
+                    <div className="bg-secondary/30 rounded-xl p-3 space-y-2">
+                      <p className="text-xs text-muted-foreground">
+                        Transaction Hash:
+                      </p>
+                      <p className="text-xs font-mono break-all">
+                        {transactionHash}
+                      </p>
+                      <div className="flex items-center justify-between mt-2">
+                        <a
+                          href={getTransactionExplorerUrl(transactionHash)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
+                          View on Explorer
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 12 12"
+                            fill="none">
+                            <path
+                              d="M4.5 2.25H2.25V9.75H9.75V7.5M6 6L9.75 2.25M9.75 2.25H7.5M9.75 2.25V4.5"
+                              stroke="currentColor"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </a>
+                        {elapsedTime > 30 && (
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={checkTransactionStatus}
+                              className="text-xs text-primary hover:text-primary/80 transition-colors">
+                              Check status
+                            </button>
+                            <span className="text-xs text-muted-foreground">
+                              •
+                            </span>
+                            <button
+                              onClick={() => window.location.reload()}
+                              className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                              Refresh page
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    {elapsedTime > 60 && (
+                      <div className="bg-yellow-500/10 rounded-xl p-3 border border-yellow-500/20">
+                        <p className="text-xs text-yellow-600 dark:text-yellow-400">
+                          ⚠️ Transaction is taking longer than usual. This might
+                          be due to network congestion. Please check the
+                          transaction status on the block explorer.
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {transactionStatus === 'error' && (
+                  <>
+                    <h3 className="text-lg font-semibold flex items-center gap-2 text-destructive">
+                      <span className="text-xl">⚠️</span>
+                      Transaction Failed
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Please check the error message and try again
+                    </p>
+                  </>
+                )}
+              </div>
+            </section>
+          )}
+
           <section className="bg-card/50 rounded-[24px] p-6 backdrop-blur-xl border border-border/50">
             <div className="space-y-2">
               <h3 className="text-lg font-semibold flex items-center gap-2">
@@ -339,24 +558,32 @@ export default function FulFill({
               disabled={
                 isFulfillIntentLoading ||
                 !intentId ||
-                fulfillmentResult?.success
+                fulfillmentResult?.success ||
+                transactionStatus === 'pending' ||
+                transactionStatus === 'confirming'
               }>
-              {isFulfillIntentLoading
-                ? 'Transferring USDC...'
-                : fulfillmentResult?.success
-                  ? 'Transfer Complete'
-                  : 'Transfer USDC'}
-              {!isFulfillIntentLoading && !fulfillmentResult?.success && (
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path
-                    d="M7.5 15L12.5 10L7.5 5"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              )}
+              {transactionStatus === 'pending'
+                ? 'Confirm in Wallet...'
+                : transactionStatus === 'confirming'
+                  ? 'Confirming...'
+                  : isFulfillIntentLoading
+                    ? 'Transferring USDC...'
+                    : fulfillmentResult?.success
+                      ? 'Transfer Complete'
+                      : 'Transfer USDC'}
+              {!isFulfillIntentLoading &&
+                !fulfillmentResult?.success &&
+                transactionStatus === 'idle' && (
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path
+                      d="M7.5 15L12.5 10L7.5 5"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                )}
             </button>
           </div>
         </section>

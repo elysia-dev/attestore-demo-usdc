@@ -43,16 +43,6 @@ export function useContractWrite(options?: UseContractWriteOptions) {
           setIsLoading(true)
           setError(null)
 
-          console.log(`🚀 Calling ${functionName}...`)
-
-          // 1. 트랜잭션 전송
-          console.log('Contract write params:', {
-            address,
-            functionName,
-            hasArgs: !!args,
-            argsLength: args?.length,
-          })
-
           const hash = await writeContractAsync({
             address,
             abi,
@@ -60,7 +50,6 @@ export function useContractWrite(options?: UseContractWriteOptions) {
             args,
           })
 
-          console.log(`📝 Transaction submitted: ${hash}`)
           trackTransaction(hash, 'pending', { functionName, address })
 
           // 2. 트랜잭션 완료 대기
@@ -71,6 +60,7 @@ export function useContractWrite(options?: UseContractWriteOptions) {
           console.log(
             `✅ Transaction confirmed in block: ${receipt?.blockNumber}`,
           )
+          console.log('receipt', receipt)
 
           if (receipt?.status === 'success') {
             trackTransaction(hash, 'success', {

@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server'
 import { createPublicClient, http } from 'viem'
-import { holesky } from 'viem/chains'
 import ADDRESSES from '@/lib/addresses'
-import { FROM_BLOCK, isLocal } from '@/constant'
-import { anvil } from '@/lib/network'
+import { FROM_BLOCK, chain } from '@/constant'
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,10 +16,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const chain = isLocal ? anvil : holesky
-    const rpcUrl = isLocal
-      ? anvil.rpcUrls.default.http[0]
-      : `https://eth-holesky.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
+    const rpcUrl = chain.rpcUrls.default.http[0]
 
     const publicClient = createPublicClient({
       chain,

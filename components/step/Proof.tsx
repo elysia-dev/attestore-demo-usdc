@@ -105,8 +105,6 @@ export default function Proof({
   const [showTooltip, setShowTooltip] = useState(false)
   const [showGuide, setShowGuide] = useState(false)
   const [showManualProof, setShowManualProof] = useState(false)
-  console.log('issueDate', issueDate)
-  console.log('certificateNumber', certificateNumber)
 
   // Validation states
   const [validationErrors, setValidationErrors] = useState<{

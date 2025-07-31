@@ -1,95 +1,162 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createPublicClient, http, defineChain } from 'viem'
+import {
+  createPublicClient,
+  http,
+  defineChain,
+  parseAbiItem,
+  decodeEventLog,
+} from 'viem'
 import { holesky, anvil } from 'viem/chains'
 import ADDRESSES from '@/lib/addresses'
 import { ESCROW_ABI } from '@/lib/abi'
-import { FROM_BLOCK, isLocal } from '@/constant'
+import { FROM_BLOCK, chain } from '@/constant'
 
-// Define Anvil chain for local development
-// const anvil = defineChain({
-//   id: 31337,
-//   name: 'Anvil',
-//   network: 'anvil',
-//   nativeCurrency: {
-//     decimals: 18,
-//     name: 'Ether',
-//     symbol: 'ETH',
-//   },
-//   rpcUrls: {
-//     default: {
-//       http: ['http://127.0.0.1:8545'],
-//     },
-//     public: {
-//       http: ['http://127.0.0.1:8545'],
-//     },
-//   },
-// })
+type IntentStatus = 'active' | 'fulfilled' | 'cancelled' | 'released'
+
+interface TransferHistoryItem {
+  id: string
+  owner: string
+  to: string
+  amount: string
+  timestamp: number
+  status: IntentStatus
+  txHash: string
+  blockNumber: string
+}
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
   const address = searchParams.get('address')
+  const filter = searchParams.get('filter') || 'all'
 
   try {
     const publicClient = createPublicClient({
-      chain: isLocal ? anvil : holesky,
+      chain,
       transport: http(),
     })
 
-    // Get all IntentFulfilled events
-    const events = await publicClient.getLogs({
-      address: ADDRESSES.ESCROW,
-      event: {
-        type: 'event',
-        name: 'IntentFulfilled',
-        inputs: [
-          { name: 'intentHash', type: 'bytes32' },
-          { name: 'verifier', type: 'address' },
-          { name: 'owner', type: 'address' },
-          { name: 'to', type: 'address' },
-          { name: 'amount', type: 'uint256' },
-        ],
-      },
-      fromBlock: isLocal ? 0n : BigInt(FROM_BLOCK),
-      toBlock: 'latest',
-    })
-    console.log('events', events)
+    const fromBlock = FROM_BLOCK
 
-    // Get block timestamps
-    const blocksMap = new Map()
-    for (const event of events) {
-      if (!blocksMap.has(event.blockNumber)) {
-        const block = await publicClient.getBlock({
-          blockNumber: event.blockNumber,
-        })
-        blocksMap.set(event.blockNumber, block.timestamp)
+    // Get all event logs in parallel
+    const [
+      intentSignaledLogs,
+      intentFulfilledLogs,
+      intentCancelledLogs,
+      intentReleasedLogs,
+    ] = await Promise.all([
+      // IntentSignaled events
+      publicClient.getLogs({
+        address: ADDRESSES.ESCROW,
+        event: parseAbiItem(
+          'event IntentSignaled(address to, address verifier, uint256 amount, uint256 intentId)',
+        ),
+        fromBlock,
+        toBlock: 'latest',
+      }),
+      // IntentFulfilled events - updated signature
+      publicClient.getLogs({
+        address: ADDRESSES.ESCROW,
+        event: parseAbiItem(
+          'event IntentFulfilled(uint256 indexed intentId, uint256 indexed depositId, address indexed verifier, address owner, address to, uint256 amount)',
+        ),
+        fromBlock,
+        toBlock: 'latest',
+      }),
+      // IntentCancelled events
+      publicClient.getLogs({
+        address: ADDRESSES.ESCROW,
+        event: parseAbiItem('event IntentCancelled(uint256 intentId)'),
+        fromBlock,
+        toBlock: 'latest',
+      }),
+      // IntentReleased events
+      publicClient.getLogs({
+        address: ADDRESSES.ESCROW,
+        event: parseAbiItem(
+          'event IntentReleased(uint256 indexed intentId, uint256 indexed depositId, address owner, address to, uint256 amount)',
+        ),
+        fromBlock,
+        toBlock: 'latest',
+      }),
+    ])
+
+    // Create status maps
+    const fulfilledIntentIds = new Set<string>()
+    const cancelledIntentIds = new Set<string>()
+    const releasedIntentIds = new Set<string>()
+
+    // Mark fulfilled intents
+    intentFulfilledLogs.forEach((log) => {
+      if (log.args.intentId) {
+        fulfilledIntentIds.add(log.args.intentId.toString())
       }
-    }
+    })
 
-    const transferHistory = events
-      .filter((event) => {
-        // If address is provided, filter by owner or to address
-        if (address) {
-          const owner = event.args?.owner?.toLowerCase()
-          const to = event.args?.to?.toLowerCase()
-          const userAddress = address.toLowerCase()
-          return owner === userAddress || to === userAddress
+    // Mark released intents
+    intentReleasedLogs.forEach((log) => {
+      if (log.args.intentId) {
+        releasedIntentIds.add(log.args.intentId.toString())
+      }
+    })
+
+    // Mark cancelled intents
+    intentCancelledLogs.forEach((log) => {
+      if (log.args.intentId) {
+        cancelledIntentIds.add(log.args.intentId.toString())
+      }
+    })
+
+    // Create intent objects from signaled events
+    const allIntents: TransferHistoryItem[] = await Promise.all(
+      intentSignaledLogs.map(async (log) => {
+        const block = await publicClient.getBlock({
+          blockNumber: log.blockNumber,
+        })
+        const intentId = log.args.intentId!
+        const intentIdStr = intentId.toString()
+
+        let status: IntentStatus = 'active'
+        if (fulfilledIntentIds.has(intentIdStr)) {
+          status = 'fulfilled'
+        } else if (cancelledIntentIds.has(intentIdStr)) {
+          status = 'cancelled'
+        } else if (releasedIntentIds.has(intentIdStr)) {
+          status = 'released'
         }
-        // If no address, return all events
-        return true
-      })
-      .map((event) => ({
-        intentHash: event.args?.intentHash || '0x',
-        verifier: event.args?.verifier || '0x',
-        owner: event.args?.owner || '0x',
-        to: event.args?.to || '0x',
-        amount: event.args?.amount || 0n,
-        txHash: event.transactionHash,
-        blockNumber: event.blockNumber,
-        timestamp: Number(blocksMap.get(event.blockNumber) || 0),
-      }))
-      .reverse() // Most recent first
 
-    return NextResponse.json({ transferHistory })
+        // Get the transaction to find the 'from' address (owner)
+        const tx = await publicClient.getTransaction({
+          hash: log.transactionHash,
+        })
+
+        return {
+          id: intentIdStr,
+          owner: tx.from,
+          to: log.args.to!,
+          amount: log.args.amount!.toString(),
+          timestamp: Number(block.timestamp),
+          status,
+          txHash: log.transactionHash,
+          blockNumber: log.blockNumber.toString(),
+        }
+      }),
+    )
+
+    // Apply filter
+    const filteredIntents = allIntents.filter((intent) => {
+      if (filter === 'all') {
+        return true
+      }
+      return intent.owner.toLowerCase() === address?.toLowerCase()
+    })
+
+    // Sort by timestamp (newest first)
+    filteredIntents.sort((a, b) => b.timestamp - a.timestamp)
+
+    return NextResponse.json({
+      intents: filteredIntents,
+      totalCount: filteredIntents.length,
+    })
   } catch (error) {
     console.error('Error fetching transfer history:', error)
     return NextResponse.json(

@@ -26,7 +26,6 @@ const IntentManagement = ({
   setIntentId: (intentId: number) => void
   setSearchIntentId: (searchIntentId: number) => void
 }) => {
-  console.log('intentDetails', intentDetails)
   const publicClient = usePublicClient()
   const { setError } = useContext(ErrorContext)
 

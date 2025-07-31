@@ -15,7 +15,6 @@ export function useReleaseFunds(options?: UseReleaseFundsOptions) {
 
   const { writeAndWait, isLoading, error, clearError } = useContractWrite({
     onSuccess: (receipt) => {
-      console.log('✅ Funds released successfully', receipt)
       options?.onSuccess?.()
     },
     onError: (error) => {
@@ -58,8 +57,6 @@ export function useReleaseFunds(options?: UseReleaseFundsOptions) {
 
   const releaseFunds = async (intentIdToRelease?: string) => {
     const id = intentIdToRelease || intentId
-    console.log('Releasing funds for intent ID:', id)
-
     if (!id) {
       throw new Error('Intent ID is required')
     }

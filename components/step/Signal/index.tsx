@@ -7,7 +7,6 @@ import ADDRESSES from '@/lib/addresses'
 import { ESCROW_ABI } from '@/lib/abi'
 import SwapInterface from './SwapInterface'
 import { ErrorContext } from '@/context/ErrorContext'
-import TransferHistory from '@/components/TransferHistory'
 import { ArrowIcon } from '@/components/icons/ArrowIcon'
 import { DEFAULT_DEPOSIT_ID, KRW_CURRENCY_CODE } from '@/constant'
 import { WorkflowStep } from '@/components/StepIndicator'
@@ -45,7 +44,6 @@ export default function Signal({
   // Get data from Zustand store
   const { myDeposits, depositDetail, setDepositDetail } = useDepositStore()
 
-  console.log('myDeposits', myDeposits)
   const [mode, setMode] = useState<SignalMode>(SignalMode.ONRAMP)
   const [accountNumber, setAccountNumber] = useState('')
   const [amount, setAmount] = useState('138')
@@ -56,7 +54,6 @@ export default function Signal({
   const [depositDetails, setDepositDetails] = useState<DepositDetails | null>(
     depositDetail,
   )
-  console.log('depositDetails', depositDetails)
 
   // Update local state when store changes
   useEffect(() => {
@@ -188,10 +185,6 @@ export default function Signal({
       console.error('Error calculating converted amount:', error)
       return '0.00'
     }
-  }
-
-  if (view === 'history') {
-    return <TransferHistory showHistory={true} />
   }
 
   const renderSignal = () => {
