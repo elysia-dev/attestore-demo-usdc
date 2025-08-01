@@ -1,6 +1,6 @@
 'use client'
 
-import { cn, getNetworkNameByChainId } from '@/lib/utils'
+import { cn, getNetworkNameByChainId, truncateAddress } from '@/lib/utils'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useAccount, useChainId } from 'wagmi'
@@ -131,14 +131,80 @@ export default function NavigationBar({ className }: NavigationBarProps) {
 
           {/* Connect Button with better mobile handling */}
           <div className="min-w-0">
-            <ConnectButton
-              showBalance={false}
-              chainStatus="none"
-              accountStatus={{
-                smallScreen: 'avatar',
-                largeScreen: 'full',
+            <ConnectButton.Custom>
+              {({
+                account,
+                chain,
+                openAccountModal,
+                openChainModal,
+                openConnectModal,
+                authenticationStatus,
+                mounted,
+              }) => {
+                // Note: If your app doesn't use authentication, you
+                // can remove all 'authenticationStatus' checks
+                const ready = mounted && authenticationStatus !== 'loading'
+                const connected =
+                  ready &&
+                  account &&
+                  chain &&
+                  (!authenticationStatus ||
+                    authenticationStatus === 'authenticated')
+
+                return (
+                  <div
+                    {...(!ready && {
+                      'aria-hidden': true,
+                      style: {
+                        opacity: 0,
+                        pointerEvents: 'none',
+                        userSelect: 'none',
+                      },
+                    })}>
+                    {(() => {
+                      if (!connected) {
+                        return (
+                          <button
+                            onClick={openConnectModal}
+                            type="button"
+                            className="bg-primary text-primary-foreground px-4 py-2 rounded-full font-medium hover:bg-primary/90 transition-all">
+                            Connect Wallet
+                          </button>
+                        )
+                      }
+
+                      if (chain.unsupported) {
+                        return (
+                          <button
+                            onClick={openChainModal}
+                            type="button"
+                            className="bg-destructive text-destructive-foreground px-4 py-2 rounded-full font-medium">
+                            Wrong network
+                          </button>
+                        )
+                      }
+
+                      return (
+                        <button
+                          onClick={openAccountModal}
+                          type="button"
+                          className="bg-white/10 text-white px-3 sm:px-4 py-2 rounded-full font-medium hover:bg-white/20 transition-all flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-pink-400" />
+                          <span className="hidden sm:inline">
+                            {truncateAddress(account.address)}
+                          </span>
+
+                          {/* <span className="sm:hidden text-sm">
+                            {account.address.slice(0, 6)}...
+                            {account.address.slice(-4)}
+                          </span> */}
+                        </button>
+                      )
+                    })()}
+                  </div>
+                )
               }}
-            />
+            </ConnectButton.Custom>
           </div>
         </div>
       </div>

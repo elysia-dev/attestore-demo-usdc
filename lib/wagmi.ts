@@ -2,7 +2,7 @@
 'use client'
 
 import { getDefaultConfig } from '@rainbow-me/rainbowkit'
-import { rabbyWallet } from '@rainbow-me/rainbowkit/wallets'
+import { phantomWallet, rabbyWallet } from '@rainbow-me/rainbowkit/wallets'
 import { rainbowWallet } from '@rainbow-me/rainbowkit/wallets'
 import { metaMaskWallet } from '@rainbow-me/rainbowkit/wallets'
 import { anvil, base, baseSepolia } from 'viem/chains'
@@ -21,7 +21,7 @@ if (typeof window !== 'undefined') {
     wallets: [
       {
         groupName: 'Recommended',
-        wallets: [rabbyWallet, rainbowWallet, metaMaskWallet],
+        wallets: [rabbyWallet, rainbowWallet, metaMaskWallet, phantomWallet],
       },
     ],
     ssr: true,
