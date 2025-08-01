@@ -383,4 +383,169 @@
   ::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--primary) / 0.8);
   }
+
+  /* Glassmorphism effects for existing cards */
+  .bg-card\/80 {
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  .bg-card {
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .border-border\/50 {
+    border-color: rgba(255, 255, 255, 0.15) !important;
+  }
+
+  .shadow-2xl {
+    box-shadow: 
+      0 25px 50px -12px rgba(0, 0, 0, 0.25),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.1) !important;
+  }
+
+  /* Enhanced glow effect */
+  .glow {
+    box-shadow:
+      0 0 40px rgba(255, 0, 122, 0.25),
+      0 0 80px rgba(255, 0, 122, 0.15),
+      0 20px 60px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.1) !important;
+  }
+
+  /* Input glassmorphism */
+  input[type="text"], 
+  input[type="number"],
+  input:not([type="submit"]):not([type="button"]) {
+    background: rgba(255, 255, 255, 0.07) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  }
+
+  input[type="text"]:focus,
+  input[type="number"]:focus,
+  input:not([type="submit"]):not([type="button"]):focus {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 0, 122, 0.5) !important;
+  }
+
+  /* Button glassmorphism effects */
+  button {
+    position: relative;
+    overflow: hidden;
+  }
+
+  button:not(:disabled)::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  button:not(:disabled):hover::before {
+    opacity: 1;
+  }
+
+  /* Step indicator glassmorphism */
+  .bg-blue-primary {
+    background: rgba(120, 119, 255, 0.8) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  /* Panels and boxes glassmorphism */
+  .bg-gray-100 {
+    background: rgba(26, 26, 26, 0.7) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .bg-blue-200 {
+    background: rgba(26, 26, 58, 0.7) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .bg-red-100 {
+    background: rgba(58, 26, 26, 0.7) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  /* Enhanced gradient background with more depth */
+  .bg-gradient-radial {
+    background:
+      radial-gradient(
+        circle at 20% 50%,
+        rgba(255, 0, 122, 0.3) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        circle at 80% 80%,
+        rgba(120, 119, 255, 0.3) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        circle at 40% 20%,
+        rgba(255, 119, 225, 0.3) 0%,
+        transparent 50%
+      ) !important;
+  }
+
+  /* Modal and popup glassmorphism */
+  [role="dialog"] {
+    background: rgba(20, 20, 20, 0.85) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  /* Enhanced floating animations */
+  @keyframes float-enhanced {
+    0%, 100% {
+      transform: translateY(0px) scale(1);
+    }
+    50% {
+      transform: translateY(-20px) scale(1.05);
+    }
+  }
+
+  .animate-float {
+    animation: float-enhanced 4s ease-in-out infinite;
+  }
+
+  /* Loading states glassmorphism */
+  .animate-pulse {
+    background: rgba(255, 255, 255, 0.05) !important;
+  }
+
+  /* Notification glassmorphism */
+  .bg-green-50 {
+    background: rgba(34, 197, 94, 0.1) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .border-green-200 {
+    border-color: rgba(34, 197, 94, 0.3) !important;
+  }
+
+  /* Error message glassmorphism */
+  .bg-red-50 {
+    background: rgba(239, 68, 68, 0.1) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .border-red-200 {
+    border-color: rgba(239, 68, 68, 0.3) !important;
+  }
 }
