@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { useAccount, useChainId } from 'wagmi'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import Image from 'next/image'
+import { AddTokenButton } from './AddTokenButton'
 
 interface NavigationBarProps {
   className?: string
@@ -97,6 +98,9 @@ export default function NavigationBar({ className }: NavigationBarProps) {
 
         {/* Right side - Wallet and Network info */}
         <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+          {/* Add Token Button */}
+          {isConnected && <AddTokenButton />}
+
           {/* Network Badge - simplified for mobile */}
           {isConnected && (
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full">
@@ -112,11 +116,11 @@ export default function NavigationBar({ className }: NavigationBarProps) {
             <div className="relative flex sm:hidden">
               <button
                 onClick={() => setShowNetwork(!showNetwork)}
-                className="flex items-center justify-center w-8 h-8rounded-full transition-all hover:bg-white/20">
+                className="flex items-center justify-center w-8 h-8 bg-white/10 rounded-full transition-all hover:bg-white/20">
                 <div className="w-2 h-2 rounded-full bg-green-400" />
               </button>
               {showNetwork && (
-                <div className="absolute top-5 right-0 px-3 py-1.5 rounded-lg shadow-lg whitespace-nowrap bg-card/80 border border-border/50">
+                <div className="absolute top-10 right-0 px-3 py-1.5 rounded-lg shadow-lg whitespace-nowrap bg-card/80 border border-border/50">
                   <span className="text-xs text-white">
                     {getNetworkNameByChainId(chainId)}
                   </span>
