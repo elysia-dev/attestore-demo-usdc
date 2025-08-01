@@ -12,6 +12,7 @@ import { DEFAULT_DEPOSIT_ID, KRW_CURRENCY_CODE } from '@/constant'
 import { WorkflowStep } from '@/components/StepIndicator'
 import DepositManagement from './DepositManagement'
 import IntentManagement from './IntentManagement'
+import { calculateConvertedAmount } from '@/lib/tokenConversoin'
 
 export enum SignalMode {
   ONRAMP = 'onramp',
@@ -120,6 +121,7 @@ export default function Signal({
     },
     [publicClient, setError],
   )
+  // conversionRate of deposit 1
   const fetchConversionRate = useCallback(async () => {
     if (!publicClient) return
 
@@ -151,42 +153,6 @@ export default function Signal({
   }, [isConnected, fetchConversionRate])
 
   const isOnramp = mode === SignalMode.ONRAMP
-
-  // Calculate converted amount based on conversion rate
-  const calculateConvertedAmount = (
-    inputAmount: string,
-    isBuying: boolean,
-  ): string => {
-    if (!inputAmount || !conversionRate || parseFloat(inputAmount) === 0) {
-      return '0.00'
-    }
-
-    try {
-      const inputValue = parseFloat(inputAmount)
-
-      if (isBuying) {
-        // KRW -> USDC: multiply KRW amount by conversion rate
-        // conversionRate is in 18 decimals, represents KRW per 1USDC
-        // Example: 1380 * 1e18 = 1380 KRW per 1 USDC
-        const rateAsNumber = Number(conversionRate) / 1e18
-        const usdcAmount = inputValue / rateAsNumber
-
-        // Format with up to 3 decimal places for USDC
-        return usdcAmount.toFixed(3).replace(/\.?0+$/, '') || '0.00'
-      } else {
-        // USDC -> KRW: divide USDC amount by conversion rate
-        const rateAsNumber = Number(conversionRate) / 1e18
-        const krwAmount = inputValue * rateAsNumber
-
-        // Round to nearest integer for KRW
-        return Math.round(krwAmount).toString()
-      }
-    } catch (error) {
-      console.error('Error calculating converted amount:', error)
-      return '0.00'
-    }
-  }
-
   const renderSignal = () => {
     const showSwapInterface =
       (isOnramp && !intentId) || (!isOnramp && !depositId)
@@ -201,7 +167,6 @@ export default function Signal({
           accountNumber={accountNumber}
           setAccountNumber={setAccountNumber}
           conversionRate={conversionRate}
-          calculateConvertedAmount={calculateConvertedAmount}
           setIntentId={setIntentId}
           setSearchIntentId={setSearchIntentId}
           handleRefreshMyIntentId={handleRefreshMyIntentId}
@@ -248,7 +213,11 @@ export default function Signal({
           <button
             onClick={() => {
               // Calculate the converted amount before switching
-              const convertedAmount = calculateConvertedAmount(amount, isOnramp)
+              const convertedAmount = calculateConvertedAmount({
+                inputAmount: amount,
+                isBuying: isOnramp,
+                conversionRate,
+              })
               // Switch mode
               setMode(isOnramp ? SignalMode.OFFRAMP : SignalMode.ONRAMP)
               // Set the converted amount as the new input

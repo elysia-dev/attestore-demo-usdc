@@ -497,7 +497,7 @@ export default function FulFill({
 
           <section className="bg-secondary/30 rounded-2xl p-4 space-y-3 border border-border/50">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Intent ID</label>
+              <label className="text-sm font-medium">Swap ID</label>
               <input
                 id="intentId"
                 type="text"

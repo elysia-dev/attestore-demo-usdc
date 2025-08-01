@@ -19,6 +19,7 @@ import {
 } from 'viem'
 import { useContractWrite } from '@/hooks/useContractWrite'
 import { useAccount, usePublicClient } from 'wagmi'
+import { calculateConvertedAmount } from '@/lib/tokenConversoin'
 
 interface SwapInterfaceProps {
   amount: string
@@ -29,7 +30,6 @@ interface SwapInterfaceProps {
   accountNumber: string
   setAccountNumber: (accountNumber: string) => void
   conversionRate: bigint | null
-  calculateConvertedAmount: (amount: string, isBuying: boolean) => string
   setIntentId: (intentId: number) => void
   setSearchIntentId: (searchIntentId: number) => void
   handleRefreshMyIntentId: () => void
@@ -46,7 +46,6 @@ export default function SwapInterface({
   accountNumber,
   setAccountNumber,
   conversionRate,
-  calculateConvertedAmount,
   setIntentId,
   setSearchIntentId,
   handleRefreshMyIntentId,
@@ -261,22 +260,6 @@ export default function SwapInterface({
         },
       ]
 
-      // Check if contracts are deployed
-      const escrowCode = await publicClient?.getBytecode({
-        address: ADDRESSES.ESCROW,
-      })
-      const usdcCode = await publicClient?.getBytecode({
-        address: ADDRESSES.USDC,
-      })
-
-      if (!escrowCode || escrowCode === '0x') {
-        throw new Error('ESCROW contract not deployed at ' + ADDRESSES.ESCROW)
-      }
-
-      if (!usdcCode || usdcCode === '0x') {
-        throw new Error('USDC contract not deployed at ' + ADDRESSES.USDC)
-      }
-
       try {
         await createDepositWrite({
           address: ADDRESSES.ESCROW,
@@ -326,7 +309,11 @@ export default function SwapInterface({
       }
 
       // Calculate USDC amount from KRW input
-      const usdcAmount = calculateConvertedAmount(amount, true)
+      const usdcAmount = calculateConvertedAmount({
+        inputAmount: amount,
+        isBuying: true,
+        conversionRate,
+      })
 
       // Validate the calculated amount
       if (!usdcAmount || usdcAmount === '0' || usdcAmount === '0.00') {
@@ -397,13 +384,10 @@ export default function SwapInterface({
                   setAmount(value)
                 }
               } else {
-                // USDC input - up to 3 decimal places
-                if (value === '' || /^\d*\.?\d{0,3}$/.test(value)) {
-                  setAmount(value)
-                }
+                setAmount(value)
               }
             }}
-            placeholder={isOnramp ? '0' : '0.00'}
+            placeholder="0"
             className="bg-transparent text-2xl font-medium outline-none w-full"
           />
           <div className="flex items-center gap-2 min-w-fit">
@@ -439,7 +423,11 @@ export default function SwapInterface({
           <div className="flex items-center justify-between">
             <span className="text-2xl font-medium text-muted-foreground">
               {amount
-                ? calculateConvertedAmount(amount, isOnramp)
+                ? calculateConvertedAmount({
+                    inputAmount: amount,
+                    isBuying: isOnramp,
+                    conversionRate,
+                  })
                 : isOnramp
                   ? '0.00'
                   : '0'}

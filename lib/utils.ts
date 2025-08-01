@@ -38,11 +38,13 @@ export function getTransactionExplorerUrl(txHash: string) {
   }
 }
 
-// usdcAmount: 100000n
-// conversionRate: 1380000000000000000000n
+// usdcAmount: 100000n (6 decimals)
+// conversionRate: 1380000000000000000000n (18 decimals)
 export function getKRWAmount(usdcAmount: bigint, conversionRate: bigint) {
   const amount = formatUnits(usdcAmount, 6)
   const rate = formatUnits(conversionRate, 18)
+
+  // We need to ceil up to the nearest integer for KRW amount
   return Math.ceil(Number(amount) * Number(rate))
 }
 
