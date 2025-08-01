@@ -15,25 +15,32 @@ import { VideoPopup } from '../ui/VideoPopup'
 import { WorkflowStep } from '../StepIndicator'
 import { WaitingForRelease } from '../WaitingForRelease'
 
-// Certificate number formatting function
+// Certificate number formatting function - don't filter out Korean characters
 const formatCertificateNumber = (value: string): string => {
-  // Remove all non-alphanumeric characters and convert to uppercase
-  const cleanValue = value.replace(/[^A-Za-z0-9]/g, '').toUpperCase()
+  // Only remove dashes and spaces for formatting
+  const cleanValue = value.replace(/[-\s]/g, '')
 
-  // Format: XXXX-XXXX-XXXXXXXX (4-4-8 format)
-  if (cleanValue.length > 8) {
-    return (
-      cleanValue.slice(0, 4) +
-      '-' +
-      cleanValue.slice(4, 8) +
-      '-' +
-      cleanValue.slice(8, 16)
-    )
-  } else if (cleanValue.length > 4) {
-    return cleanValue.slice(0, 4) + '-' + cleanValue.slice(4, 8)
+  // Only apply formatting if the value contains only valid characters
+  if (/^[0-9A-Za-z]*$/.test(cleanValue)) {
+    const upperValue = cleanValue.toUpperCase()
+
+    // Format: XXXX-XXXX-XXXXXXXX (4-4-8 format)
+    if (upperValue.length > 8) {
+      return (
+        upperValue.slice(0, 4) +
+        '-' +
+        upperValue.slice(4, 8) +
+        '-' +
+        upperValue.slice(8, 16)
+      )
+    } else if (upperValue.length > 4) {
+      return upperValue.slice(0, 4) + '-' + upperValue.slice(4, 8)
+    }
+    return upperValue
   }
 
-  return cleanValue
+  // Return original value if it contains invalid characters (including Korean)
+  return value
 }
 
 // Validation functions
@@ -42,7 +49,7 @@ const validateIssueDate = (date: string): string | undefined => {
 
   // Check if it's exactly 8 digits (YYYYMMDD format)
   if (!/^\d{8}$/.test(date)) {
-    return 'Issue date must be in YYYYMMDD format (e.g., 20250626)'
+    return 'Issue date should be in format: YYYYMMDD (e.g., 20250626)'
   }
 
   const year = parseInt(date.substring(0, 4))
@@ -70,7 +77,7 @@ const validateCertificateNumber = (certNumber: string): string | undefined => {
 
   // Check if it matches the format: XXXX-XXXX-XXXXXXXX
   if (!/^\d{4}-[A-Z]{4}-[A-Z]{8}$/.test(certNumber)) {
-    return 'Certificate number must be in format: XXXX-XXXX-XXXXXXXX (e.g., 1234-ABCD-ABCDABCD)'
+    return 'Certifiacte number should be in format: 1234-ABCD-ABCDABCD'
   }
 
   return undefined
@@ -345,12 +352,12 @@ export default function Proof({
               )}
               maxLength={8}
             />
+            {validationErrors.issueDate && (
+              <p className="text-destructive text-xs mt-1">
+                {validationErrors.issueDate}
+              </p>
+            )}
           </div>
-          {validationErrors.issueDate && (
-            <p className="text-destructive text-sm -mt-1">
-              {validationErrors.issueDate}
-            </p>
-          )}
           <div className="space-y-2">
             <label htmlFor="certificateNumber" className="text-sm font-medium">
               Certificate Issue Number
@@ -371,6 +378,16 @@ export default function Proof({
                   }))
                 }
               }}
+              onBlur={() => {
+                // Validate on blur to show error when user leaves the field
+                const error = validateCertificateNumber(certificateNumber)
+                if (error) {
+                  setValidationErrors((prev) => ({
+                    ...prev,
+                    certificateNumber: error,
+                  }))
+                }
+              }}
               placeholder="Enter certificate number (e.g., 1234-ABCD-ABCDABCD)"
               className={cn(
                 'w-full h-10 rounded-lg border bg-background px-3 py-2 text-sm disabled:opacity-50',
@@ -380,12 +397,12 @@ export default function Proof({
               )}
               maxLength={18} // 4-4-8 format: 4+1+4+1+8 = 18
             />
+            {validationErrors.certificateNumber && (
+              <p className="text-destructive text-xs mt-1">
+                {validationErrors.certificateNumber}
+              </p>
+            )}
           </div>
-          {validationErrors.certificateNumber && (
-            <p className="text-destructive text-sm -mt-1">
-              {validationErrors.certificateNumber}
-            </p>
-          )}
         </section>
 
         {proofResult && (
