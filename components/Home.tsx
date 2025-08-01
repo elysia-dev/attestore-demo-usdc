@@ -133,7 +133,13 @@ export default function Home() {
   const [searchIntentId, setSearchIntentId] = useState<number | null>(null)
   const [intentDetails, setIntentDetails] = useState<IntentDetails | null>(null)
 
-  const defaultValue = testData[0]
+  const defaultValue =
+    process.env.NEXT_PUBLIC_CHAIN_NETWORK === 'local'
+      ? testData[0]
+      : {
+          issueDate: '',
+          certificateNumber: '',
+        }
   const [issueDate, setIssueDate] = useState(defaultValue.issueDate)
   const [certificateNumber, setCertificateNumber] = useState(
     defaultValue.certificateNumber,
