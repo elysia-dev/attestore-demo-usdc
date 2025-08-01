@@ -3,14 +3,14 @@
   "short_name": "Zenie-usdc",
   "icons": [
     {
-      "src": "/favicon-192x192.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "/apple-touch-icon.png",
+      "src": "/pink-icons-180x180.png",
       "type": "image/png",
       "sizes": "180x180"
+    },
+    {
+      "src": "/pink-icons-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
     }
   ],
   "start_url": "/",
