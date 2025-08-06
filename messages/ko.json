@@ -1,0 +1,33 @@
+{
+  "common": {
+    "loading": "로딩 중...",
+    "error": "오류",
+    "success": "성공",
+    "cancel": "취소",
+    "confirm": "확인",
+    "save": "저장",
+    "delete": "삭제",
+    "edit": "편집",
+    "close": "닫기",
+    "back": "뒤로",
+    "next": "다음",
+    "previous": "이전",
+    "submit": "제출",
+    "search": "검색",
+    "filter": "필터",
+    "sort": "정렬",
+    "refresh": "새로고침",
+    "download": "다운로드",
+    "upload": "업로드",
+    "share": "공유",
+    "copy": "복사",
+    "copied": "복사됨!",
+    "yes": "예",
+    "no": "아니오",
+    "youSend": "보내는 금액"
+  },
+  "landing": {
+    "title": "Zenie에 오신 것을 환영합니다",
+    "subtitle": "증명 데모"
+  }
+}

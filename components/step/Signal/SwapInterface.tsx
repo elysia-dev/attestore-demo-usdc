@@ -20,6 +20,7 @@ import {
 import { useContractWrite } from '@/hooks/useContractWrite'
 import { useAccount, usePublicClient } from 'wagmi'
 import { calculateConvertedAmount } from '@/lib/tokenConversoin'
+import { useTranslations } from 'next-intl'
 
 interface SwapInterfaceProps {
   amount: string
@@ -52,6 +53,7 @@ export default function SwapInterface({
 
   handleRefreshDepositDetails,
 }: SwapInterfaceProps) {
+  const t = useTranslations('common')
   const publicClient = usePublicClient()
   const [isSwapping, setIsSwapping] = useState(false)
   const { setError, freeError } = useContext(ErrorContext)
@@ -368,9 +370,8 @@ export default function SwapInterface({
 
   return (
     <div className="space-y-4">
-      {/* You send */}
       <div className="space-y-2">
-        <label className="text-sm text-muted-foreground">You send</label>
+        <label className="text-sm text-muted-foreground">{t('youSend')}</label>
         <div className="flex items-center justify-between bg-background/50 rounded-xl p-4 border border-border/30">
           <input
             type="text"

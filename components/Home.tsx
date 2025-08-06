@@ -26,6 +26,7 @@ import { StepIndicator, WorkflowStep } from './StepIndicator'
 import ErrorMessage from './ErrorMessage'
 import { testData } from '@/data'
 import { useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 
 export const workflowStepToLabel = {
   [WorkflowStep.CONNECT]: 'Connect Wallet',
