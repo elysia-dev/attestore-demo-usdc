@@ -67,8 +67,10 @@ export default async function LocaleLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${jakartaSans.variable} ${chivoMono.variable} antialiased`}>
         <Providers>
-          <NavigationBar />
-          <NextIntlClientProvider>{children}</NextIntlClientProvider>
+          <NextIntlClientProvider>
+            <NavigationBar />
+            <main className="min-h-screen pb-20">{children}</main>
+          </NextIntlClientProvider>
         </Providers>
       </body>
     </html>

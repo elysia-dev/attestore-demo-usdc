@@ -54,6 +54,7 @@ export default function SwapInterface({
   handleRefreshDepositDetails,
 }: SwapInterfaceProps) {
   const t = useTranslations('common')
+  const tSwap = useTranslations('swap')
   const publicClient = usePublicClient()
   const [isSwapping, setIsSwapping] = useState(false)
   const { setError, freeError } = useContext(ErrorContext)
@@ -171,7 +172,7 @@ export default function SwapInterface({
 
     try {
       setIsProcessing(true)
-      setProcessStep('Checking requirements...')
+      setProcessStep(tSwap('checkingRequirements'))
       setProcessProgress({ current: 1, total: 3 })
 
       // 1. Skip checking for existing deposits due to contract interface mismatch
@@ -190,7 +191,10 @@ export default function SwapInterface({
 
       if (!balance || balance < depositAmount) {
         setError(
-          `Insufficient USDC balance. You have ${balance ? formatUnits(balance, 6) : '0'} USDC but need ${amount} USDC`,
+          tSwap('insufficientBalance', {
+            balance: balance ? formatUnits(balance, 6) : '0',
+            amount,
+          }),
         )
         return
       }
@@ -202,11 +206,11 @@ export default function SwapInterface({
       }
 
       // 4. Check and handle token approval
-      setProcessStep('Checking token approval...')
+      setProcessStep(tSwap('checkingTokenApproval'))
       const hasAllowance = await checkAllowance(depositAmount)
 
       if (!hasAllowance) {
-        setProcessStep('Approving tokens...')
+        setProcessStep(tSwap('approvingTokens'))
         setProcessProgress({ current: 2, total: 3 })
 
         // Ensure addresses are defined
@@ -235,7 +239,7 @@ export default function SwapInterface({
       }
 
       // 5. Create deposit
-      setProcessStep('Creating deposit...')
+      setProcessStep(tSwap('creatingDeposit'))
       setProcessProgress({ current: 3, total: 3 })
 
       const minIntentAmount = parseUnits('0.1', 6)
@@ -285,7 +289,7 @@ export default function SwapInterface({
         throw createError
       }
 
-      setProcessStep('Success! Deposit created.')
+      setProcessStep(tSwap('successDepositCreated'))
     } catch (error: any) {
       const errorMessage = extractErrorMessage(error)
       console.error('CreateDeposit error:', error)
@@ -294,7 +298,7 @@ export default function SwapInterface({
         code: error?.code,
         cause: error?.cause,
       })
-      setError(`Deposit creation failed: ${errorMessage}`)
+      setError(tSwap('depositCreationFailed', { error: errorMessage }))
     } finally {
       setIsProcessing(false)
       setProcessStep('')
@@ -319,7 +323,7 @@ export default function SwapInterface({
 
       // Validate the calculated amount
       if (!usdcAmount || usdcAmount === '0' || usdcAmount === '0.00') {
-        setError('Invalid amount')
+        setError(tSwap('invalidAmount'))
         return
       }
 
@@ -345,9 +349,7 @@ export default function SwapInterface({
 
         // More specific error handling
         if (error?.message?.includes('gasLimit')) {
-          setError(
-            'Transaction failed: Unable to estimate gas. Please check your wallet balance and try again.',
-          )
+          setError(tSwap('transactionFailed'))
         } else {
           setError(ErrorType.INTENT_SIGNAL_FAILED, {
             error: errorMessage,
@@ -405,7 +407,9 @@ export default function SwapInterface({
       {/* Paying using */}
       {isOnramp && (
         <div className="space-y-2">
-          <label className="text-sm text-muted-foreground">Paying using</label>
+          <label className="text-sm text-muted-foreground">
+            {tSwap('payingUsing')}
+          </label>
           <div className="bg-background/50 rounded-xl p-4 border border-border/30 opacity-60">
             <div className="flex items-center justify-between">
               <span className="font-medium">TossBank</span>
@@ -419,7 +423,9 @@ export default function SwapInterface({
 
       {/* You receive */}
       <div className="space-y-2">
-        <label className="text-sm text-muted-foreground">You receive</label>
+        <label className="text-sm text-muted-foreground">
+          {tSwap('youReceive')}
+        </label>
         <div className="bg-background/50 rounded-xl p-4 border border-border/30">
           <div className="flex items-center justify-between">
             <span className="text-2xl font-medium text-muted-foreground">
@@ -449,13 +455,13 @@ export default function SwapInterface({
       {isOnramp ? (
         <div className="space-y-2">
           <label className="text-sm text-muted-foreground flex items-center justify-between">
-            <span>Recipient Address</span>
+            <span>{tSwap('recipientAddress')}</span>
             {address && (
               <button
                 type="button"
                 onClick={() => setRecipientAddress(address)}
                 className="text-xs text-primary hover:text-primary/80 transition-colors">
-                Use my address
+                {tSwap('useMyAddress')}
               </button>
             )}
           </label>
@@ -470,7 +476,7 @@ export default function SwapInterface({
       ) : (
         <div className="space-y-2">
           <label className="text-sm text-muted-foreground">
-            Receiving Bank Account
+            {tSwap('receivingBankAccount')}
           </label>
           <input
             type="text"
@@ -502,10 +508,10 @@ export default function SwapInterface({
         }
         className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-4 py-2 rounded-full font-semibold transition-all duration-200 hover:shadow-lg">
         {isSwapping || isSignalIntentLoading
-          ? 'Processing...'
+          ? t('processing')
           : isOnramp
-            ? 'Buy USDC'
-            : 'Sell USDC'}
+            ? tSwap('buyUSDC')
+            : tSwap('sellUSDC')}
       </button>
     </div>
   )

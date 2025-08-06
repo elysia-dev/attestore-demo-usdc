@@ -10,6 +10,7 @@ import { cn, getExplorerUrl, truncateAddress } from '@/lib/utils'
 import { erc20Abi, formatUnits } from 'viem'
 import { usePublicClient } from 'wagmi'
 import { ErrorContext } from '@/context/ErrorContext'
+import { useTranslations, useLocale } from 'next-intl'
 
 const IntentManagement = ({
   intentId,
@@ -28,6 +29,8 @@ const IntentManagement = ({
 }) => {
   const publicClient = usePublicClient()
   const { setError } = useContext(ErrorContext)
+  const t = useTranslations('intent')
+  const locale = useLocale()
 
   const [receiverTokenBalance, setReceiverTokenBalance] = useState<
     bigint | undefined
@@ -70,7 +73,7 @@ const IntentManagement = ({
       await cancelIntentWrite({
         address: ADDRESSES.ESCROW,
         abi: ESCROW_ABI,
-        functionName: 'cancelIntent',
+        functionName: 'cancelSwap',
         args: [BigInt(intentId)],
       })
     } catch (error) {
@@ -91,18 +94,22 @@ const IntentManagement = ({
         <div className="bg-card/50 backdrop-blur-sm rounded-3xl border border-border/50 overflow-hidden">
           {/* Pending Swap Section */}
           <div className="p-6 pb-4">
-            <h3 className="text-lg font-semibold mb-5">Pending Swap</h3>
+            <h3 className="text-lg font-semibold mb-5">{t('pendingSwap')}</h3>
 
             {/* Compact Info Grid */}
             <div className="space-y-4">
               {/* ID and Receiver Row */}
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Id</p>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    {t('id')}
+                  </p>
                   <p className="font-mono font-medium text-lg">{intentId}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-muted-foreground mb-1">Receiver</p>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    {t('receiver')}
+                  </p>
                   <p className="font-mono">
                     {intentDetails.to.slice(0, 6)}...
                     {intentDetails.to.slice(-4)}
@@ -113,25 +120,27 @@ const IntentManagement = ({
               {/* Amount and Created Time Row */}
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Amount</p>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    {t('amount')}
+                  </p>
                   <p className="font-mono font-medium text-lg text-primary">
                     {formatUnits(intentDetails.amount, 6)} USDC
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-muted-foreground mb-1">
-                    Created Time
+                    {t('createdTime')}
                   </p>
                   <p className="text-sm">
                     {new Date(
                       intentDetails.timestamp * 1000,
-                    ).toLocaleDateString('ko-KR', {
+                    ).toLocaleDateString(locale, {
                       month: 'numeric',
                       day: 'numeric',
                     })}{' '}
                     {new Date(
                       intentDetails.timestamp * 1000,
-                    ).toLocaleTimeString('ko-KR', {
+                    ).toLocaleTimeString(locale, {
                       hour: '2-digit',
                       minute: '2-digit',
                     })}
@@ -143,13 +152,17 @@ const IntentManagement = ({
 
           {/* Receiver Info Section - Inside the same card */}
           <div className="p-6 border-t border-border/30">
-            <h4 className="text-base font-semibold mb-3">Receiver Info</h4>
+            <h4 className="text-base font-semibold mb-3">
+              {t('receiverInfo')}
+            </h4>
 
             <div className="space-y-3">
               {/* Balance and Address in one row */}
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Balance</p>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    {t('balance')}
+                  </p>
                   <p className="font-mono font-medium text-lg">
                     {receiverTokenBalance
                       ? formatUnits(receiverTokenBalance, 6)
@@ -158,7 +171,9 @@ const IntentManagement = ({
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-muted-foreground mb-1">Address</p>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    {t('address')}
+                  </p>
                   <button
                     className="font-mono text-sm hover:text-primary transition-colors"
                     onClick={() => {
@@ -197,10 +212,10 @@ const IntentManagement = ({
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     />
                   </svg>
-                  Cancelling...
+                  {t('cancelling')}
                 </span>
               ) : (
-                'Cancel Intent'
+                t('cancelSwap')
               )}
             </button>
           </div>

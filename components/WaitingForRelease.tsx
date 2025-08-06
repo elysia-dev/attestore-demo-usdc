@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/card'
 import { parseAbiItem } from 'viem'
 import ADDRESSES from '@/lib/addresses'
+import { useTranslations } from 'next-intl'
 
 interface WaitingForReleaseProps {
   intentId: string
@@ -29,6 +30,8 @@ export function WaitingForRelease({
   handlePrevious,
 }: WaitingForReleaseProps) {
   const publicClient = usePublicClient()
+  const t = useTranslations('waitingForRelease')
+  const tCommon = useTranslations('common')
 
   // Check for IntentReleased event
   useEffect(() => {
@@ -73,10 +76,9 @@ export function WaitingForRelease({
           <div className="mx-auto w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-2 animate-pulse">
             <Clock className="w-10 h-10 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Processing Your Transfer</CardTitle>
+          <CardTitle className="text-2xl">{t('processingTransfer')}</CardTitle>
           <CardDescription className="text-base">
-            Please wait while the admin verifies your off-chain payment and
-            releases USDC
+            {t('waitingDescription')}
           </CardDescription>
         </CardHeader>
 
@@ -101,16 +103,15 @@ export function WaitingForRelease({
           {/* Info box */}
           <div className="bg-secondary/50 rounded-lg p-4 space-y-2">
             <p className="text-sm">
-              <strong>Typical processing time:</strong> 1-5 minutes
+              <strong>{t('typicalProcessingTime')}:</strong>{' '}
+              {t('processingTimeValue')}
             </p>
             <p className="text-sm text-muted-foreground">
-              The admin regularly checks payments and processes them
-              automatically.
+              {t('processingDescription')}
             </p>
 
             <p className="text-sm text-muted-foreground">
-              Once your payment has been authorized, you can view it in the
-              history tab.
+              {t('authorizationNote')}
             </p>
           </div>
 
@@ -119,10 +120,9 @@ export function WaitingForRelease({
             <div className="flex items-start space-x-3">
               <FileCheck className="w-5 h-5 text-muted-foreground mt-0.5" />
               <div className="flex-1 space-y-2">
-                <p className="text-sm font-medium">Don&apos;t want to wait?</p>
+                <p className="text-sm font-medium">{t('dontWantToWait')}</p>
                 <p className="text-sm text-muted-foreground">
-                  You can generate a payment proof manually to receive USDC
-                  instantly.
+                  {t('manualProofDescription')}
                 </p>
               </div>
             </div>
@@ -142,13 +142,13 @@ export function WaitingForRelease({
                 strokeLinejoin="round"
               />
             </svg>
-            Previous
+            {tCommon('previous')}
           </button>
 
           <button
             onClick={onManualProof}
             className="flex-2 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-3 py-2 rounded-full font-semibold transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-1">
-            Prove Transfer Manually
+            {t('proveTransferManually')}
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path
                 d="M7.5 15L12.5 10L7.5 5"

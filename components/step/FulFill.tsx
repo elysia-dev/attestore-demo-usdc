@@ -14,6 +14,7 @@ import { trackUserAction } from '@/lib/sentry-utils'
 import * as Sentry from '@sentry/nextjs'
 import { cn, getTransactionExplorerUrl } from '@/lib/utils'
 import { WorkflowStep } from '../StepIndicator'
+import { useTranslations } from 'next-intl'
 
 const formatProofForContract = (receiptData: any) => {
   if (!receiptData) {
@@ -143,6 +144,8 @@ export default function FulFill({
   proofResult: ProofResult | null
   setFulfillmentResult: (result: FulfillmentResult | null) => void
 }) {
+  const t = useTranslations('fulfill')
+  const tCommon = useTranslations('common')
   const { setError } = useContext(ErrorContext)
   const [transactionHash, setTransactionHash] = useState<string | null>(null)
   const [transactionStatus, setTransactionStatus] = useState<
@@ -366,13 +369,61 @@ export default function FulFill({
       setTransactionStatus('error')
     }
   }
+
+  const renderButtonText = () => {
+    const buttonText =
+      transactionStatus === 'pending'
+        ? t('confirmInWallet')
+        : transactionStatus === 'confirming'
+          ? t('confirming')
+          : isFulfillIntentLoading
+            ? t('transferringUSDC')
+            : fulfillmentResult?.success
+              ? t('transferComplete')
+              : t('transferUSDC')
+
+    if (
+      !isFulfillIntentLoading &&
+      !fulfillmentResult?.success &&
+      transactionStatus === 'idle'
+    ) {
+      return (
+        <>
+          {buttonText}
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path
+              d="M7.5 15L12.5 10L7.5 5"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </>
+      )
+    }
+    return buttonText
+  }
+
+  const testFulfillmentResult = {
+    success: true,
+    intentId: 1,
+    verifier: '0x123',
+    owner: '0x123',
+    to: '0x123',
+  }
+
   return (
     <>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold">Transfer USDC</h2>
+        <h2 className="text-xl font-semibold">{t('title')}</h2>
       </div>
       {fulfillmentResult?.success && (
         <FulfillmentResultComponent fulfillmentResult={fulfillmentResult} />
+      )}
+
+      {testFulfillmentResult?.success && (
+        <FulfillmentResultComponent fulfillmentResult={testFulfillmentResult} />
       )}
       {!fulfillmentResult?.success && (
         <section className="space-y-6">
@@ -384,10 +435,10 @@ export default function FulFill({
                   <>
                     <h3 className="text-lg font-semibold flex items-center gap-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent" />
-                      Preparing Transaction...
+                      {t('preparingTransaction')}
                     </h3>
                     <p className="text-sm text-muted-foreground">
-                      Please confirm the transaction in your wallet
+                      {t('confirmTransactionWallet')}
                     </p>
                   </>
                 )}
@@ -396,11 +447,11 @@ export default function FulFill({
                   <>
                     <h3 className="text-lg font-semibold flex items-center gap-2">
                       <div className="animate-pulse rounded-full h-5 w-5 bg-yellow-500" />
-                      Transaction Submitted
+                      {t('transactionSubmitted')}
                     </h3>
                     <div className="flex items-center justify-between">
                       <p className="text-sm text-muted-foreground">
-                        Waiting for blockchain confirmation...
+                        {t('waitingConfirmation')}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {Math.floor(elapsedTime / 60)}:
@@ -409,7 +460,7 @@ export default function FulFill({
                     </div>
                     <div className="bg-secondary/30 rounded-xl p-3 space-y-2">
                       <p className="text-xs text-muted-foreground">
-                        Transaction Hash:
+                        {t('transactionHash')}
                       </p>
                       <p className="text-xs font-mono break-all">
                         {transactionHash}
@@ -420,7 +471,7 @@ export default function FulFill({
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
-                          View on Explorer
+                          {t('viewOnExplorer')}
                           <svg
                             width="12"
                             height="12"
@@ -440,7 +491,7 @@ export default function FulFill({
                             <button
                               onClick={checkTransactionStatus}
                               className="text-xs text-primary hover:text-primary/80 transition-colors">
-                              Check status
+                              {t('checkStatus')}
                             </button>
                             <span className="text-xs text-muted-foreground">
                               •
@@ -448,7 +499,7 @@ export default function FulFill({
                             <button
                               onClick={() => window.location.reload()}
                               className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                              Refresh page
+                              {t('refreshPage')}
                             </button>
                           </div>
                         )}
@@ -457,9 +508,7 @@ export default function FulFill({
                     {elapsedTime > 60 && (
                       <div className="bg-yellow-500/10 rounded-xl p-3 border border-yellow-500/20">
                         <p className="text-xs text-yellow-600 dark:text-yellow-400">
-                          ⚠️ Transaction is taking longer than usual. This might
-                          be due to network congestion. Please check the
-                          transaction status on the block explorer.
+                          {t('transactionDelayWarning')}
                         </p>
                       </div>
                     )}
@@ -470,10 +519,10 @@ export default function FulFill({
                   <>
                     <h3 className="text-lg font-semibold flex items-center gap-2 text-destructive">
                       <span className="text-xl">⚠️</span>
-                      Transaction Failed
+                      {t('transactionFailed')}
                     </h3>
                     <p className="text-sm text-muted-foreground">
-                      Please check the error message and try again
+                      {t('checkErrorMessage')}
                     </p>
                   </>
                 )}
@@ -485,19 +534,19 @@ export default function FulFill({
             <div className="space-y-2">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <span className="text-primary">◆</span>
-                Click &apos;Transfer USDC&apos;
+                {t('clickTransferTitle')}
               </h3>
               <p className="text-sm text-muted-foreground ml-6">
-                Proof generated successfully.
+                {t('proofGeneratedSuccess')}
                 <br />
-                Transfer USDC to the recipient wallet.
+                {t('transferUSDCDescription')}
               </p>
             </div>
           </section>
 
           <section className="bg-secondary/30 rounded-2xl p-4 space-y-3 border border-border/50">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Swap ID</label>
+              <label className="text-sm font-medium">{t('swapId')}</label>
               <input
                 id="intentId"
                 type="text"
@@ -508,7 +557,7 @@ export default function FulFill({
             </div>
             <div className="space-y-2">
               <label htmlFor="issueDate" className="text-sm font-medium">
-                Issue Date
+                {t('issueDate')}
               </label>
               <input
                 id="issueDate"
@@ -522,7 +571,7 @@ export default function FulFill({
               <label
                 htmlFor="certificateNumber"
                 className="text-sm font-medium">
-                Certificate Issue Number
+                {t('certificateIssueNumber')}
               </label>
               <input
                 id="certificateNumber"
@@ -547,7 +596,7 @@ export default function FulFill({
                   strokeLinejoin="round"
                 />
               </svg>
-              Previous
+              {tCommon('previous')}
             </button>
 
             <button
@@ -560,28 +609,7 @@ export default function FulFill({
                 transactionStatus === 'pending' ||
                 transactionStatus === 'confirming'
               }>
-              {transactionStatus === 'pending'
-                ? 'Confirm in Wallet...'
-                : transactionStatus === 'confirming'
-                  ? 'Confirming...'
-                  : isFulfillIntentLoading
-                    ? 'Transferring USDC...'
-                    : fulfillmentResult?.success
-                      ? 'Transfer Complete'
-                      : 'Transfer USDC'}
-              {!isFulfillIntentLoading &&
-                !fulfillmentResult?.success &&
-                transactionStatus === 'idle' && (
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path
-                      d="M7.5 15L12.5 10L7.5 5"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                )}
+              {renderButtonText()}
             </button>
           </div>
         </section>

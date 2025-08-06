@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils'
 import { VideoPopup } from '../ui/VideoPopup'
 import { WorkflowStep } from '../StepIndicator'
 import { WaitingForRelease } from '../WaitingForRelease'
+import { useTranslations } from 'next-intl'
 
 // Certificate number formatting function - don't filter out Korean characters
 const formatCertificateNumber = (value: string): string => {
@@ -44,12 +45,12 @@ const formatCertificateNumber = (value: string): string => {
 }
 
 // Validation functions
-const validateIssueDate = (date: string): string | undefined => {
-  if (!date) return 'Issue date is required'
+const validateIssueDate = (date: string, t: any): string | undefined => {
+  if (!date) return t('issueDateRequired')
 
   // Check if it's exactly 8 digits (YYYYMMDD format)
   if (!/^\d{8}$/.test(date)) {
-    return 'Issue date should be in format: YYYYMMDD (e.g., 20250626)'
+    return t('issueDateFormat')
   }
 
   const year = parseInt(date.substring(0, 4))
@@ -58,26 +59,29 @@ const validateIssueDate = (date: string): string | undefined => {
 
   // Basic date validation
   if (year !== 2025) {
-    return 'Year must be 2025'
+    return t('yearMust2025')
   }
 
   if (month < 1 || month > 12) {
-    return 'Month must be between 01 and 12'
+    return t('monthRange')
   }
 
   if (day < 1 || day > 31) {
-    return 'Day must be between 01 and 31'
+    return t('dayRange')
   }
 
   return undefined
 }
 
-const validateCertificateNumber = (certNumber: string): string | undefined => {
-  if (!certNumber) return 'Certificate number is required'
+const validateCertificateNumber = (
+  certNumber: string,
+  t: any,
+): string | undefined => {
+  if (!certNumber) return t('certificateNumberRequired')
 
   // Check if it matches the format: XXXX-XXXX-XXXXXXXX
   if (!/^\d{4}-[A-Z]{4}-[A-Z]{8}$/.test(certNumber)) {
-    return 'Certifiacte number should be in format: 1234-ABCD-ABCDABCD'
+    return t('certificateNumberFormat')
   }
 
   return undefined
@@ -108,6 +112,8 @@ export default function Proof({
   setProofResult: (proofResult: ProofResult) => void
   proofResult: ProofResult | null
 }) {
+  const t = useTranslations('proof')
+  const tCommon = useTranslations('common')
   const { setError, freeError } = useContext(ErrorContext)
   const [showTooltip, setShowTooltip] = useState(false)
   const [showGuide, setShowGuide] = useState(false)
@@ -122,10 +128,13 @@ export default function Proof({
   const validateForm = (): boolean => {
     const errors: { issueDate?: string; certificateNumber?: string } = {}
 
-    const issueDateError = validateIssueDate(issueDate)
+    const issueDateError = validateIssueDate(issueDate, t)
     if (issueDateError) errors.issueDate = issueDateError
 
-    const certificateNumberError = validateCertificateNumber(certificateNumber)
+    const certificateNumberError = validateCertificateNumber(
+      certificateNumber,
+      t,
+    )
     if (certificateNumberError)
       errors.certificateNumber = certificateNumberError
 
@@ -242,13 +251,13 @@ export default function Proof({
   return (
     <section className="space-y-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold">Proof</h2>
+        <h2 className="text-xl font-semibold">{t('title')}</h2>
       </div>
       <section className="bg-card/50 rounded-[24px] p-6 backdrop-blur-xl border border-border/50">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <span className="text-primary">◆</span>
-            Click &apos;Generate Transfer Proof&apos;
+            {t('generateProofTitle')}
           </h3>
           <div className="relative inline-block">
             {/* <button
@@ -284,8 +293,8 @@ export default function Proof({
           </div>
         </div>
         <div className="space-y-2 text-sm text-muted-foreground ml-6 mt-4">
-          <p>1. Generate ZK Proof of your transfer.</p>
-          <p>2. Using this proof, you can receive USDC instantly.</p>
+          <p>{t('generateProofDescription1')}</p>
+          <p>{t('generateProofDescription2')}</p>
         </div>
         <button
           onClick={() => setShowGuide(true)}
@@ -301,7 +310,7 @@ export default function Proof({
             strokeLinejoin="round">
             <polygon points="5,3 19,12 5,21" />
           </svg>
-          Show Guide
+          {t('showGuide')}
         </button>
       </section>
       {/* 토스 송금 데모 비디오 */}
@@ -309,13 +318,13 @@ export default function Proof({
         isOpen={showGuide}
         onClose={() => setShowGuide(false)}
         videoSrc="/tossbank_certificate.mp4"
-        title="Bank Transfer Demo"
+        title={t('showGuide')}
       />
       <form onSubmit={handleGenerateProof} className="space-y-6">
         <section className="bg-secondary/30 rounded-2xl p-4 space-y-3 border border-border/50">
           {/* intentId */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Swap Id</label>
+            <label className="text-sm font-medium">{t('swapId')}</label>
             <input
               id="intentId"
               type="text"
@@ -326,7 +335,7 @@ export default function Proof({
           </div>
           <div className="space-y-2">
             <label htmlFor="issueDate" className="text-sm font-medium">
-              Issue Date
+              {t('issueDate')}
             </label>
             <input
               id="issueDate"
@@ -343,7 +352,7 @@ export default function Proof({
                   }))
                 }
               }}
-              placeholder="Enter certificate issue date (e.g., 20250618)"
+              placeholder={t('issueDatePlaceholder')}
               className={cn(
                 'w-full h-10 rounded-lg border bg-background px-3 py-2 text-sm disabled:opacity-50',
                 validationErrors.issueDate
@@ -360,7 +369,7 @@ export default function Proof({
           </div>
           <div className="space-y-2">
             <label htmlFor="certificateNumber" className="text-sm font-medium">
-              Certificate Issue Number
+              {t('certificateIssueNumber')}
             </label>
             <input
               id="certificateNumber"
@@ -380,7 +389,7 @@ export default function Proof({
               }}
               onBlur={() => {
                 // Validate on blur to show error when user leaves the field
-                const error = validateCertificateNumber(certificateNumber)
+                const error = validateCertificateNumber(certificateNumber, t)
                 if (error) {
                   setValidationErrors((prev) => ({
                     ...prev,
@@ -388,7 +397,7 @@ export default function Proof({
                   }))
                 }
               }}
-              placeholder="Enter certificate number (e.g., 1234-ABCD-ABCDABCD)"
+              placeholder={t('certificateNumberPlaceholder')}
               className={cn(
                 'w-full h-10 rounded-lg border bg-background px-3 py-2 text-sm disabled:opacity-50',
                 validationErrors.certificateNumber
@@ -425,7 +434,7 @@ export default function Proof({
                 strokeLinejoin="round"
               />
             </svg>
-            Previous
+            {tCommon('previous')}
           </button>
 
           {proofResult ? (
@@ -433,7 +442,7 @@ export default function Proof({
               type="button"
               onClick={handleNext}
               className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-full font-medium  transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-2">
-              Next
+              {tCommon('next')}
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path
                   d="M7.5 15L12.5 10L7.5 5"
@@ -449,7 +458,7 @@ export default function Proof({
               type="submit"
               className="flex-1 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-4 py-2 rounded-full font-medium text-sm transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-2"
               disabled={!issueDate || !certificateNumber || isLoading}>
-              Generate Proof
+              {t('generateProof')}
               <svg
                 width="20"
                 height="20"

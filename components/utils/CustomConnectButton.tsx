@@ -2,8 +2,11 @@ import { ConnectButton } from '@rainbow-me/rainbowkit'
 import Image from 'next/image'
 import { emojiAvatarForAddress } from '@/lib/emojiAvatarForAddress'
 import { Button } from '../ui/button'
+import { useTranslations } from 'next-intl'
 
 const CustomConnectButton = () => {
+  const t = useTranslations('connectButton')
+
   return (
     <ConnectButton.Custom>
       {({ account, chain, openAccountModal, mounted, openConnectModal }) => {
@@ -13,7 +16,7 @@ const CustomConnectButton = () => {
             <button
               onClick={openConnectModal}
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 rounded-full font-semibold transition-all duration-200 hover:shadow-[0_0_30px_rgba(255,0,122,0.4)] shadow-[0_0_20px_rgba(255,0,122,0.3)] w-full">
-              Connect Wallet
+              {t('connectWallet')}
             </button>
           )
         }

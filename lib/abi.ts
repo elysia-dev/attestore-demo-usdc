@@ -46,7 +46,7 @@ export const ESCROW_ABI = [
   {
     type: 'function',
     inputs: [{ name: '_intentId', internalType: 'uint256', type: 'uint256' }],
-    name: 'cancelIntent',
+    name: 'cancelSwap',
     outputs: [],
     stateMutability: 'nonpayable',
   },

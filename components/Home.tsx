@@ -28,14 +28,6 @@ import { testData } from '@/data'
 import { useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 
-export const workflowStepToLabel = {
-  [WorkflowStep.CONNECT]: 'Connect Wallet',
-  [WorkflowStep.SIGNAL]: 'Swap',
-  [WorkflowStep.TRANSFER]: 'Transfer KRW',
-  [WorkflowStep.PROOF]: 'Wait / Proof',
-  [WorkflowStep.FULFILL]: 'Transfer USDC',
-}
-
 export type FulfillmentResult = {
   success: boolean
   intentId?: number
@@ -117,6 +109,8 @@ export default function Home() {
   const errorRef = useRef<HTMLDivElement>(null)
   const searchParams = useSearchParams()
   const view = searchParams.get('view')
+  const t = useTranslations('home')
+  const tNav = useTranslations('navigation')
 
   useEffect(() => {
     handleRefreshMyIntentId()
@@ -401,7 +395,7 @@ export default function Home() {
                 {/* Footer text */}
                 <div className="hidden sm:flex justify-center mt-4">
                   <p className="text-center text-muted-foreground text-sm">
-                    Secured by ZK Proofs • Instant Settlement
+                    {t('securedByZK')}
                   </p>
                 </div>
               </>

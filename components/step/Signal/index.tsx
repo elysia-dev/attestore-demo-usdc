@@ -2,7 +2,6 @@ import { IntentDetails, DepositDetails } from '@/components/Home'
 import { useContext, useEffect, useState, useCallback } from 'react'
 import { useAccount, usePublicClient } from 'wagmi'
 import useDepositStore from '@/stores/useDepositStore'
-import { useSearchParams } from 'next/navigation'
 import ADDRESSES from '@/lib/addresses'
 import { ESCROW_ABI } from '@/lib/abi'
 import SwapInterface from './SwapInterface'
@@ -13,6 +12,7 @@ import { WorkflowStep } from '@/components/StepIndicator'
 import DepositManagement from './DepositManagement'
 import IntentManagement from './IntentManagement'
 import { calculateConvertedAmount } from '@/lib/tokenConversoin'
+import { useTranslations } from 'next-intl'
 
 export enum SignalMode {
   ONRAMP = 'onramp',
@@ -47,9 +47,10 @@ export default function Signal({
 
   const [mode, setMode] = useState<SignalMode>(SignalMode.ONRAMP)
   const [accountNumber, setAccountNumber] = useState('')
-  const [amount, setAmount] = useState('138')
+  const [amount, setAmount] = useState('140')
   const [conversionRate, setConversionRate] = useState<bigint | null>(null)
   const [recipientAddress, setRecipientAddress] = useState('')
+  const tCommon = useTranslations('common')
 
   // Use depositDetail from store as the default depositDetails
   const [depositDetails, setDepositDetails] = useState<DepositDetails | null>(
@@ -62,8 +63,6 @@ export default function Signal({
   }, [depositDetail])
 
   const { address } = useAccount()
-  const searchParams = useSearchParams()
-  const view = searchParams.get('view')
 
   const depositId = depositDetail?.id || myDeposits[myDeposits.length - 1]?.id
 
@@ -202,7 +201,11 @@ export default function Signal({
   }
 
   const disableNextStep = !intentId || !intentDetails?.amount
-  const swapText = isOnramp ? 'Swap(KRW->USDC)' : 'Swap(USDC->KRW)'
+  const tSwap = useTranslations('swap')
+
+  const swapText = isOnramp
+    ? `${tSwap('swap')}(KRW->USDC)`
+    : `${tSwap('swap')}(USDC->KRW)`
   return (
     <>
       <div className="flex items-center justify-between mb-6">
@@ -262,7 +265,7 @@ export default function Signal({
             }}
             disabled={disableNextStep}
             className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-4 py-2 rounded-full font-semibold transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-2">
-            Next
+            {tCommon('next')}
             <ArrowIcon />
           </button>
         </div>

@@ -10,6 +10,7 @@ import { cn, getKRWAmount, getTransferMemo } from '@/lib/utils'
 import { useTossLauncher } from '../../hooks/useTossLauncher'
 import ConfirmationModal from '../ui/ConfirmationModal'
 import { WorkflowStep } from '../StepIndicator'
+import { useTranslations } from 'next-intl'
 
 export default function Transfer({
   intentId,
@@ -20,6 +21,8 @@ export default function Transfer({
   intentDetails: IntentDetails
   setCurrentStep: (step: WorkflowStep) => void
 }) {
+  const t = useTranslations('transfer')
+  const tCommon = useTranslations('common')
   const { freeError } = useContext(ErrorContext)
   const [isVideoPopupOpen, setIsVideoPopupOpen] = useState(false)
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
@@ -45,7 +48,7 @@ export default function Transfer({
   return (
     <section className="space-y-2">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold">Transfer</h2>
+        <h2 className="text-xl font-semibold">{t('title')}</h2>
       </div>
       {/* 토스 송금 데모 비디오 */}
       <section className="bg-card/50 rounded-[24px] p-6 backdrop-blur-xl border border-border/50 ">
@@ -63,13 +66,13 @@ export default function Transfer({
             strokeLinejoin="round">
             <polygon points="5,3 19,12 5,21" />
           </svg>
-          Play Tutorial Video
+          {t('playTutorialVideo')}
         </button>
 
         <div className="flex justify-center items-center rounded-2xl border border-border/50 overflow-hidden max-sm:hidden bg-secondary/30">
           <video controls className="w-full rounded-lg h-[640px]">
             <source src="/tossbank_transfer.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
+            {t('browserNotSupported')}
           </video>
         </div>
       </section>
@@ -79,7 +82,7 @@ export default function Transfer({
         isOpen={isVideoPopupOpen}
         onClose={() => setIsVideoPopupOpen(false)}
         videoSrc="/tossbank_transfer.mp4"
-        title="Bank Transfer Demo"
+        title={t('bankTransferDemo')}
       />
 
       {/* 토스 송금 안내 - Intent ID가 있을 때만 표시 */}
@@ -88,20 +91,16 @@ export default function Transfer({
           <div className="space-y-2">
             <h3 className="text-lg font-semibold flex items-center gap-2">
               <span className="text-primary">◆</span>
-              Send money via Bank app
+              {t('sendMoneyTitle')}
             </h3>
             <div className="space-y-2 text-sm text-muted-foreground ml-6">
               <p>
-                1. Send KRW WON to the recipient via{' '}
-                <span className="text-foreground font-medium">Bank app.</span>
-              </p>
-              <p>
-                2. You{' '}
+                {t('sendMoneyDescription1')}{' '}
                 <span className="text-foreground font-medium">
-                  must use Toss (In this version)
-                </span>{' '}
-                as the sending bank.
+                  {t('bankApp')}
+                </span>
               </p>
+              <p>{t('sendMoneyDescription2')}</p>
             </div>
           </div>
           {/* QR Code for Toss payment */}
@@ -113,7 +112,7 @@ export default function Transfer({
           <button
             onClick={launch}
             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-full font-semibold transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-2 sm:hidden">
-            Send via Bank App
+            {t('sendViaBankApp')}
             <ExternalLinkIcon />
           </button>
           {fallback && (
@@ -123,20 +122,24 @@ export default function Transfer({
                 reset()
               }}
               className="w-full px-4 py-2 rounded-full bg-secondary/50 hover:bg-secondary/70 transition-all duration-200 border border-border/50 flex items-center justify-center gap-2 text-sm font-medium sm:hidden mt-2">
-              Install Bank App
+              {t('installBankApp')}
               <ExternalLinkIcon />
             </button>
           )}
 
           <section className="bg-secondary/30 rounded-2xl p-4 space-y-3 border border-border/50">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">Recipient Name</p>
+              <p className="text-sm text-muted-foreground">
+                {t('recipientName')}
+              </p>
               <p className="text-sm font-medium">
                 <span className="text-muted-foreground">이현민(모임통장)</span>
               </p>
             </div>
             <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">Bank Account</p>
+              <p className="text-sm text-muted-foreground">
+                {t('bankAccount')}
+              </p>
               {/* <BackAccountCopyButton /> */}
               <CopyTextButton
                 text={TOSS_ACCOUNT_NUMBER}
@@ -144,7 +147,9 @@ export default function Transfer({
               />
             </div>
             <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">Transfer Memo</p>
+              <p className="text-sm text-muted-foreground">
+                {t('transferMemo')}
+              </p>
               {/* <TransferMemoCopyButton /> */}
               <CopyTextButton
                 text={getTransferMemo(intentId)}
@@ -152,13 +157,17 @@ export default function Transfer({
               />
             </div>
             <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">Amount</p>
+              <p className="text-sm text-muted-foreground">
+                {tCommon('amount')}
+              </p>
               <p className="text-sm font-medium">
                 {formatUnits(intentDetails?.amount, 6)} USDC
               </p>
             </div>
             <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">Transfer Amount</p>
+              <p className="text-sm text-muted-foreground">
+                {t('transferAmount')}
+              </p>
               <p className="text-sm font-medium">
                 {transferAmount.toLocaleString()} KRW
               </p>
@@ -169,7 +178,7 @@ export default function Transfer({
 
       {!intentId && (
         <p className="text-center text-sm text-muted-foreground">
-          Please lookup Intent ID first. (click previous)
+          {t('lookupIntentFirst')}
         </p>
       )}
 
@@ -186,7 +195,7 @@ export default function Transfer({
               strokeLinejoin="round"
             />
           </svg>
-          Previous
+          {tCommon('previous')}
         </button>
 
         <button
@@ -195,7 +204,7 @@ export default function Transfer({
           }}
           disabled={!intentId}
           className="flex-1 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-4 py-2 rounded-full font-semibold transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-2">
-          Next
+          {tCommon('next')}
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path
               d="M7.5 15L12.5 10L7.5 5"
@@ -268,6 +277,8 @@ const ExternalLinkIcon = () => {
 }
 
 const CopyTextButton = ({ text, title }: { text: string; title: string }) => {
+  const t = useTranslations('transfer')
+  const tCommon = useTranslations('common')
   const [isCopied, setIsCopied] = useState(false)
 
   // 복사 함수
@@ -288,9 +299,9 @@ const CopyTextButton = ({ text, title }: { text: string; title: string }) => {
         'flex items-center gap-2 text-primary bg-primary/10 border border-primary/20 rounded-full px-4 py-2 text-xs font-medium transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:border-primary',
         isCopied && 'bg-primary text-primary-foreground border-primary',
       )}
-      title="Click to copy">
+      title={t('clickToCopy')}>
       {isCopied ? (
-        <span>Copied!</span>
+        <span>{tCommon('copied')}</span>
       ) : (
         <>
           <span>{title}</span>

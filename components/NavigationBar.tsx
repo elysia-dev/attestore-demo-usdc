@@ -7,6 +7,7 @@ import { useAccount, useChainId } from 'wagmi'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import Image from 'next/image'
 import { AddTokenButton } from './AddTokenButton'
+import { useTranslations } from 'next-intl'
 
 interface NavigationBarProps {
   className?: string
@@ -25,6 +26,7 @@ export default function NavigationBar({ className }: NavigationBarProps) {
   const [showNetwork, setShowNetwork] = useState(false)
   const { isConnected } = useAccount()
   const chainId = useChainId()
+  const t = useTranslations('navigation')
 
   useEffect(() => {
     if (view === 'history') {
@@ -72,7 +74,7 @@ export default function NavigationBar({ className }: NavigationBarProps) {
                   ? 'text-white'
                   : 'text-white/60 hover:text-white/80',
               )}>
-              Swap
+              {t('swap')}
               {activeTab === 'swap' && (
                 <div className="absolute -bottom-0.5 left-0 right-0 h-0.5 bg-white" />
               )}
@@ -88,7 +90,7 @@ export default function NavigationBar({ className }: NavigationBarProps) {
                   ? 'text-white'
                   : 'text-white/60 hover:text-white/80',
               )}>
-              History
+              {t('history')}
               {activeTab === Tab.HISTORY && (
                 <div className="absolute -bottom-0.5 left-0 right-0 h-0.5 bg-white" />
               )}
@@ -168,7 +170,7 @@ export default function NavigationBar({ className }: NavigationBarProps) {
                             onClick={openConnectModal}
                             type="button"
                             className="bg-primary text-primary-foreground px-4 py-2 rounded-full font-medium hover:bg-primary/90 transition-all">
-                            Connect Wallet
+                            {t('connectWallet')}
                           </button>
                         )
                       }
@@ -179,7 +181,7 @@ export default function NavigationBar({ className }: NavigationBarProps) {
                             onClick={openChainModal}
                             type="button"
                             className="bg-destructive text-destructive-foreground px-4 py-2 rounded-full font-medium">
-                            Wrong network
+                            {t('wrongNetwork')}
                           </button>
                         )
                       }

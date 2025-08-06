@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { workflowStepToLabel } from './Home'
+import { useStepLabels } from '@/hooks/useStepLabels'
 
 interface StepInfo {
   step: WorkflowStep
@@ -29,6 +29,7 @@ interface StepIndicatorProps {
 
 export function StepIndicator({ currentStep, className }: StepIndicatorProps) {
   const currentStepIndex = steps.findIndex((s) => s.step === currentStep)
+  const { getStepLabel } = useStepLabels()
 
   return (
     <div className={cn('w-full', className)}>
@@ -39,7 +40,7 @@ export function StepIndicator({ currentStep, className }: StepIndicatorProps) {
             const isCompleted = index < currentStepIndex
             const isCurrent = index === currentStepIndex
             const isUpcoming = index > currentStepIndex
-            const stepLabel = workflowStepToLabel[step.step] || 'Unknown Step'
+            const stepLabel = getStepLabel(step.step)
 
             return (
               <div key={step.step} className="relative">

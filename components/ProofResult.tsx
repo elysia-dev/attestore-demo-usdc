@@ -1,5 +1,6 @@
 // import { useState } from "react";
 // import { Button } from "@/components/ui/button";
+import { useTranslations } from 'next-intl'
 import { ProofResult } from './Home'
 
 export default function ProofResultComponent({
@@ -8,6 +9,7 @@ export default function ProofResultComponent({
   proofResult: ProofResult | null
 }) {
   // const [showAPIResponse, setShowAPIResponse] = useState(false);
+  const t = useTranslations('proof')
   if (!proofResult) return null
   if (proofResult.error) return null
 
@@ -17,7 +19,7 @@ export default function ProofResultComponent({
         <div className="p-4 rounded-lg">
           <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
             <span className="text-green-500">✅</span>
-            Proof Generated
+            {t('generated')}
           </h3>
           <div className="mt-3">
             <pre className="bg-secondary/50 p-3 rounded-lg text-xs overflow-auto max-h-96 border border-border/50 text-muted-foreground font-mono">

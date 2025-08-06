@@ -15,6 +15,7 @@ import {
 import { parseAbiItem } from 'viem'
 import ADDRESSES from '@/lib/addresses'
 import { ESCROW_ABI } from '@/lib/abi'
+import { useTranslations } from 'next-intl'
 
 interface WaitingForDepositFulfillmentProps {
   depositId: string
@@ -33,6 +34,8 @@ export function WaitingForDepositFulfillment({
   onComplete,
   onCancel,
 }: WaitingForDepositFulfillmentProps) {
+  const t = useTranslations('waitingForDeposit')
+  const tCommon = useTranslations('common')
   const publicClient = usePublicClient()
   const [isChecking, setIsChecking] = useState(false)
   const [elapsedTime, setElapsedTime] = useState(0)
@@ -123,9 +126,9 @@ export function WaitingForDepositFulfillment({
           <div className="mx-auto w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4 animate-pulse">
             <BanknoteIcon className="w-10 h-10 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Processing Your Deposit</CardTitle>
+          <CardTitle className="text-2xl">{t('title')}</CardTitle>
           <CardDescription className="text-base">
-            The admin is processing KRW transfers for your deposit
+            {t('description')}
           </CardDescription>
         </CardHeader>
 
@@ -147,13 +150,13 @@ export function WaitingForDepositFulfillment({
               />
             </div>
             <span className="text-sm text-muted-foreground">
-              {isChecking ? 'Checking status...' : ''}
+              {isChecking ? t('checkingStatus') : ''}
             </span>
           </div>
 
           {/* Elapsed time */}
           <div className="text-center">
-            <p className="text-sm text-muted-foreground">Elapsed Time</p>
+            <p className="text-sm text-muted-foreground">{t('elapsedTime')}</p>
             <p className="text-2xl font-mono font-semibold">
               {formatTime(elapsedTime)}
             </p>
@@ -162,19 +165,23 @@ export function WaitingForDepositFulfillment({
           {/* Deposit details */}
           <div className="bg-secondary/50 rounded-lg p-4 space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Amount</span>
+              <span className="text-sm text-muted-foreground">
+                {tCommon('amount')}
+              </span>
               <span className="text-sm font-medium">{amount} USDC</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">
-                Bank Account
+                {t('bankAccount')}
               </span>
               <span className="text-sm font-medium font-mono">
                 {accountNumber}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Deposit ID</span>
+              <span className="text-sm text-muted-foreground">
+                {t('depositId')}
+              </span>
               <span className="text-sm font-medium">#{depositId}</span>
             </div>
           </div>
@@ -182,19 +189,17 @@ export function WaitingForDepositFulfillment({
           {/* Info box */}
           <div className="bg-secondary/50 rounded-lg p-4 space-y-2">
             <p className="text-sm">
-              <strong>How it works:</strong>
+              <strong>{t('howItWorksTitle')}</strong>
             </p>
             <p className="text-sm text-muted-foreground">
-              The admin monitors your deposit and sends KRW to your bank account
-              as users create intents. Your deposit will be marked as complete
-              once all funds have been processed.
+              {t('howItWorksDescription')}
             </p>
           </div>
         </CardContent>
 
         <CardFooter>
           <Button variant="outline" className="w-full" onClick={onCancel}>
-            Cancel Waiting
+            {t('cancelWaiting')}
           </Button>
         </CardFooter>
       </Card>

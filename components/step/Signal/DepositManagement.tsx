@@ -10,6 +10,7 @@ import { ErrorType } from '@/lib/errors'
 import { ErrorContext } from '@/context/ErrorContext'
 import { extractErrorMessage } from '@/components/utils/extractErrorMessage'
 import { cn } from '@/lib/utils'
+import { useTranslations } from 'next-intl'
 
 const DepositManagement = ({
   depositId,
@@ -20,6 +21,8 @@ const DepositManagement = ({
   depositDetails: DepositDetails | null
   setDepositDetails: Dispatch<SetStateAction<DepositDetails | null>>
 }) => {
+  const t = useTranslations('depositManagement')
+  const tCommon = useTranslations('common')
   const { setError } = useContext(ErrorContext)
 
   const {
@@ -56,7 +59,7 @@ const DepositManagement = ({
           {/* Deposit Details Section */}
           <div className="p-6 pb-4">
             <div className="flex items-center justify-between mb-5">
-              <h3 className="text-lg font-semibold">Deposit Details</h3>
+              <h3 className="text-lg font-semibold">{t('title')}</h3>
               <span
                 className={cn(
                   'px-3 py-1 rounded-full text-xs font-medium',
@@ -64,7 +67,7 @@ const DepositManagement = ({
                     ? 'bg-green-500/10 text-green-500'
                     : 'bg-gray-500/10 text-gray-500',
                 )}>
-                {depositDetails.acceptingIntents ? 'Active' : 'Inactive'}
+                {depositDetails.acceptingIntents ? t('active') : t('inactive')}
               </span>
             </div>
 
@@ -74,12 +77,14 @@ const DepositManagement = ({
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">
-                    Deposit ID
+                    {t('depositId')}
                   </p>
                   <p className="font-mono font-medium text-lg">#{depositId}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-muted-foreground mb-1">Amount</p>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    {tCommon('amount')}
+                  </p>
                   <p className="font-mono font-medium text-lg">
                     {formatUnits(depositDetails.amount, 6)} USDC
                   </p>
@@ -87,49 +92,25 @@ const DepositManagement = ({
               </div>
 
               {/* Remaining and Outstanding Intents Row */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">
-                    Remaining
-                  </p>
-                  <p className="font-mono font-medium text-lg">
-                    {formatUnits(depositDetails.remainingDeposits, 6)} USDC
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-muted-foreground mb-1">
-                    Outstanding Intents
-                  </p>
-                  <p className="font-mono font-medium text-lg">
-                    {formatUnits(depositDetails.outstandingIntentAmount, 6)}{' '}
-                    USDC
-                  </p>
-                </div>
-              </div>
 
-              {/* Intent Range and Usage Row */}
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">
-                    Intent Range
+                    {t('intentRange')}
                   </p>
                   <p className="text-sm">
                     {formatUnits(depositDetails.intentAmountRange.min, 6)} -{' '}
                     {formatUnits(depositDetails.intentAmountRange.max, 6)} USDC
                   </p>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm text-muted-foreground mb-1">Usage</p>
-                  <p className="font-medium text-lg">
-                    {Math.round(
-                      (Number(
-                        depositDetails.amount -
-                          depositDetails.remainingDeposits,
-                      ) /
-                        Number(depositDetails.amount)) *
-                        100,
-                    )}
-                    %
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    {t('remaining')}
+                  </p>
+                  <p className="font-mono font-medium text-lg">
+                    {formatUnits(depositDetails.remainingDeposits, 6)} USDC
                   </p>
                 </div>
               </div>
@@ -172,10 +153,10 @@ const DepositManagement = ({
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     />
                   </svg>
-                  Withdrawing...
+                  {t('withdrawing')}
                 </span>
               ) : (
-                'Withdraw Deposit'
+                t('withdrawDeposit')
               )}
             </button>
           </div>

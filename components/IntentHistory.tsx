@@ -12,6 +12,7 @@ import {
 import { Button } from './ui/button'
 import { useReleaseFunds } from '@/hooks/useReleaseFunds'
 import { DECIMALS_CONVERSION_RATE, DECIMALS_USDC } from '@/constant'
+import { useTranslations } from 'next-intl'
 
 type IntentStatus = 'active' | 'fulfilled' | 'cancelled' | 'released'
 
@@ -62,6 +63,8 @@ enum Filter {
   MY = 'my',
 }
 export function IntentHistory() {
+  const t = useTranslations('intentHistory')
+  const tCommon = useTranslations('common')
   const { address, isConnected } = useAccount()
   const [allRequests, setAllRequests] = useState<Intent[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -130,9 +133,7 @@ export function IntentHistory() {
   if (!isConnected) {
     return (
       <div className="bg-card/50 rounded-[24px] p-8 backdrop-blur-xl border border-border/50 text-center">
-        <p className="text-muted-foreground">
-          Please connect your wallet to view intent history
-        </p>
+        <p className="text-muted-foreground">{t('connectWalletMessage')}</p>
       </div>
     )
   }
@@ -151,7 +152,7 @@ export function IntentHistory() {
                 ? 'bg-primary text-primary-foreground shadow-lg'
                 : 'text-muted-foreground hover:text-foreground',
             )}>
-            All Requests
+            {t('allRequests')}
           </button>
           <button
             onClick={() => setFilter(Filter.MY)}
@@ -161,25 +162,25 @@ export function IntentHistory() {
                 ? 'bg-primary text-primary-foreground shadow-lg'
                 : 'text-muted-foreground hover:text-foreground',
             )}>
-            My Requests
+            {t('myRequests')}
           </button>
         </div>
 
         {isAdmin && (
           <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
             <p className="text-sm text-yellow-800 dark:text-yellow-200">
-              🔑 Admin Mode: You can release funds for active requests
+              {t('adminModeMessage')}
             </p>
           </div>
         )}
 
         {isLoading ? (
           <div className="text-center py-8">
-            <p className="text-muted-foreground">Loading requests...</p>
+            <p className="text-muted-foreground">{t('loadingRequests')}</p>
           </div>
         ) : requests.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-muted-foreground">No requests found</p>
+            <p className="text-muted-foreground">{t('noRequestsFound')}</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -192,7 +193,8 @@ export function IntentHistory() {
                     <span className={getStatusColor(intent.status)}>
                       {getStatusIcon(intent.status)}
                     </span>
-                    Request #{intent.id}
+                    {t('requestId')}
+                    {intent.id}
                     <span
                       className={cn(
                         'px-2 py-1 rounded-full text-xs font-medium',
@@ -216,7 +218,7 @@ export function IntentHistory() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <span className="text-xs text-muted-foreground">
-                      Amount
+                      {tCommon('amount')}
                     </span>
                     <p className="text-sm font-mono font-medium text-primary">
                       {formatUnits(BigInt(intent.amount), 6)} USDC
@@ -224,7 +226,7 @@ export function IntentHistory() {
                   </div>
                   <div className="space-y-1">
                     <span className="text-xs text-muted-foreground">
-                      KRW Amount
+                      {t('krwAmount')}
                     </span>
                     <p className="text-sm font-mono font-medium text-primary">
                       {getKRWAmount({
@@ -236,14 +238,18 @@ export function IntentHistory() {
                   </div>
 
                   <div className="space-y-1">
-                    <span className="text-xs text-muted-foreground">From</span>
+                    <span className="text-xs text-muted-foreground">
+                      {t('from')}
+                    </span>
                     <p className="text-sm font-mono">
                       {truncateAddress(intent.owner)}
                     </p>
                   </div>
 
                   <div className="space-y-1">
-                    <span className="text-xs text-muted-foreground">To</span>
+                    <span className="text-xs text-muted-foreground">
+                      {t('to')}
+                    </span>
                     <p className="text-sm font-mono">
                       {truncateAddress(intent.to)}
                     </p>
@@ -257,7 +263,7 @@ export function IntentHistory() {
                       )
                     }}>
                     <span className="text-xs text-muted-foreground">
-                      Transaction
+                      {t('transaction')}
                     </span>
                     <p
                       className="text-sm font-mono"
@@ -281,8 +287,8 @@ export function IntentHistory() {
                       disabled={isReleasing || processingIntentId === intent.id}
                       className="w-full sm:w-auto">
                       {processingIntentId === intent.id
-                        ? 'Processing...'
-                        : 'Release Funds'}
+                        ? t('processing')
+                        : t('releaseFunds')}
                     </Button>
                   </div>
                 )}
