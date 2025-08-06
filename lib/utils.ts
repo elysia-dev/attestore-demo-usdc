@@ -40,7 +40,13 @@ export function getTransactionExplorerUrl(txHash: string) {
 
 // usdcAmount: 100000n (6 decimals)
 // conversionRate: 1380000000000000000000n (18 decimals)
-export function getKRWAmount(usdcAmount: bigint, conversionRate: bigint) {
+export function getKRWAmount({
+  usdcAmount,
+  conversionRate,
+}: {
+  usdcAmount: bigint
+  conversionRate: bigint
+}) {
   const amount = formatUnits(usdcAmount, 6)
   const rate = formatUnits(conversionRate, 18)
 

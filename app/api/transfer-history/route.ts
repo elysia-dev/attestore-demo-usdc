@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
     ] = await Promise.all([
       // IntentSignaled events
       fetchLogsInChunks(
-        'event IntentSignaled(address to, address verifier, uint256 amount, uint256 intentId)',
+        'event IntentSignaled(address to, address verifier, uint256 amount, uint256 intentId, uint256 conversionRate)',
       ),
       // IntentFulfilled events - updated signature
       fetchLogsInChunks(
@@ -148,6 +148,7 @@ export async function GET(request: NextRequest) {
           status,
           txHash: log.transactionHash,
           blockNumber: log.blockNumber.toString(),
+          conversionRate: log.args.conversionRate.toString(),
         }
       }),
     )

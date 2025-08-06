@@ -24,10 +24,10 @@ export default function Transfer({
   const [isVideoPopupOpen, setIsVideoPopupOpen] = useState(false)
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
 
-  const transferAmount = getKRWAmount(
-    intentDetails.amount,
-    intentDetails.conversionRate,
-  )
+  const transferAmount = getKRWAmount({
+    usdcAmount: intentDetails.amount,
+    conversionRate: intentDetails.conversionRate,
+  })
 
   const checkAndGoNext = () => {
     setCurrentStep(WorkflowStep.PROOF)

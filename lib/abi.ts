@@ -685,6 +685,12 @@ export const ESCROW_ABI = [
         type: 'uint256',
         indexed: false,
       },
+      {
+        name: 'conversionRate',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: false,
+      },
     ],
     name: 'IntentSignaled',
   },

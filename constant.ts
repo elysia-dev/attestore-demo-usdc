@@ -53,3 +53,6 @@ export const chain = (function () {
 
 export const getTossBankQRCode = (transferAmount: string) =>
   `supertoss://send?amount=${transferAmount}&bank=%ED%86%A0%EC%8A%A4%EB%B1%85%ED%81%AC&accountNo=${TOSS_ACCOUNT_NUMBER}&origin=qr`
+
+export const DECIMALS_CONVERSION_RATE = 18
+export const DECIMALS_USDC = 6

@@ -18,6 +18,7 @@ type Intent = {
   status: IntentStatus
   txHash: string
   blockNumber: string
+  conversionRate: string
 }
 
 const getStatusColor = (status: IntentStatus) => {
@@ -217,19 +218,17 @@ export function IntentHistory() {
                   </div>
                   <div className="space-y-1">
                     <span className="text-xs text-muted-foreground">
-                      Transaction
+                      KRW Amount
                     </span>
-                    <p
-                      className="text-sm font-mono"
-                      onClick={() => {
-                        window.open(
-                          getTransactionExplorerUrl(intent.txHash),
-                          '_blank',
-                        )
-                      }}>
-                      {truncateAddress(intent.txHash)}
+                    <p className="text-sm font-mono font-medium text-primary">
+                      {getKRWAmount({
+                        usdcAmount: BigInt(intent.amount),
+                        conversionRate: BigInt(intent.conversionRate),
+                      })}
+                      KRW
                     </p>
                   </div>
+
                   <div className="space-y-1">
                     <span className="text-xs text-muted-foreground">From</span>
                     <p className="text-sm font-mono">
