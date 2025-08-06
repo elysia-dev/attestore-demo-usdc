@@ -368,7 +368,9 @@ export default function Home() {
         {/* Main content */}
         <div className="flex flex-col items-center justify-center px-4">
           <div className="w-full max-w-md">
-            {view !== 'history' ? (
+            {view === 'history' ? (
+              <IntentHistory />
+            ) : (
               <>
                 {/* Subtitle */}
                 {currentStep === WorkflowStep.CONNECT && (
@@ -402,8 +404,6 @@ export default function Home() {
                   </p>
                 </div>
               </>
-            ) : (
-              <IntentHistory />
             )}
           </div>
         </div>

@@ -3,9 +3,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAccount } from 'wagmi'
 import { formatUnits } from 'viem'
-import { cn, getTransactionExplorerUrl, truncateAddress } from '@/lib/utils'
+import {
+  cn,
+  getKRWAmount,
+  getTransactionExplorerUrl,
+  truncateAddress,
+} from '@/lib/utils'
 import { Button } from './ui/button'
 import { useReleaseFunds } from '@/hooks/useReleaseFunds'
+import { DECIMALS_CONVERSION_RATE, DECIMALS_USDC } from '@/constant'
 
 type IntentStatus = 'active' | 'fulfilled' | 'cancelled' | 'released'
 
@@ -240,6 +246,28 @@ export function IntentHistory() {
                     <span className="text-xs text-muted-foreground">To</span>
                     <p className="text-sm font-mono">
                       {truncateAddress(intent.to)}
+                    </p>
+                  </div>
+                  <div
+                    className="space-y-1 cursor-pointer"
+                    onClick={() => {
+                      window.open(
+                        getTransactionExplorerUrl(intent.txHash),
+                        '_blank',
+                      )
+                    }}>
+                    <span className="text-xs text-muted-foreground">
+                      Transaction
+                    </span>
+                    <p
+                      className="text-sm font-mono"
+                      onClick={() => {
+                        window.open(
+                          getTransactionExplorerUrl(intent.txHash),
+                          '_blank',
+                        )
+                      }}>
+                      {truncateAddress(intent.txHash)}
                     </p>
                   </div>
                 </div>
