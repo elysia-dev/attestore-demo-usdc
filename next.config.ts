@@ -1,5 +1,6 @@
 import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
+import createNextIntlPlugin from 'next-intl/plugin'
 
 const nextConfig: NextConfig = {
   webpack: (config) => {
@@ -9,12 +10,14 @@ const nextConfig: NextConfig = {
   },
 }
 
+const withNextIntl = createNextIntlPlugin()
+
 const project =
   process.env.NODE_ENV === 'production'
     ? 'zenie-web-frontend'
     : 'zenie-web-frontend-lc'
 
-export default withSentryConfig(nextConfig, {
+export default withSentryConfig(withNextIntl(nextConfig), {
   // For all available options, see:
   // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 

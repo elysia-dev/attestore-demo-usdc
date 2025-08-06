@@ -29,6 +29,7 @@
     "lint-staged": "^16.1.2",
     "lucide-react": "^0.522.0",
     "next": "15.2.4",
+    "next-intl": "^4.3.4",
     "prettier": "^3.6.2",
     "qrcode": "^1.5.4",
     "react": "^19.0.0",
