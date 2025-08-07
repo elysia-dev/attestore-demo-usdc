@@ -68,7 +68,7 @@ export default function Transfer({
 
         <div className="flex justify-center items-center rounded-2xl border border-border/50 overflow-hidden max-sm:hidden bg-secondary/30">
           <video controls className="w-full rounded-lg h-[640px]">
-            <source src="/tossbank_transfer_korean_.mp4" type="video/mp4" />
+            <source src="/tossbank_transfer.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
         </div>
@@ -78,7 +78,7 @@ export default function Transfer({
       <VideoPopup
         isOpen={isVideoPopupOpen}
         onClose={() => setIsVideoPopupOpen(false)}
-        videoSrc="/tossbank_transfer_korean_.mp4"
+        videoSrc="/tossbank_transfer.mp4"
         title="Bank Transfer Demo"
       />
 

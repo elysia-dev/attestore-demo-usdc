@@ -308,7 +308,7 @@ export default function Proof({
       <VideoPopup
         isOpen={showGuide}
         onClose={() => setShowGuide(false)}
-        videoSrc="/tossbank_transfer_korean_.mp4"
+        videoSrc="/tossbank_certificate.mp4"
         title="Bank Transfer Demo"
       />
       <form onSubmit={handleGenerateProof} className="space-y-6">
