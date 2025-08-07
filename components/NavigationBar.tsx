@@ -8,6 +8,7 @@ import { ConnectButton } from '@rainbow-me/rainbowkit'
 import Image from 'next/image'
 import { AddTokenButton } from './AddTokenButton'
 import { useTranslations } from 'next-intl'
+import LanguageToggle from './LanguageToggle'
 
 interface NavigationBarProps {
   className?: string
@@ -100,6 +101,9 @@ export default function NavigationBar({ className }: NavigationBarProps) {
 
         {/* Right side - Wallet and Network info */}
         <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+          {/* Language Toggle - Only on desktop */}
+          <LanguageToggle />
+
           {/* Add Token Button */}
           {isConnected && <AddTokenButton />}
 
