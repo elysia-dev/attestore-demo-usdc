@@ -103,6 +103,7 @@ export type ProofResult = {
 }
 
 export default function Home() {
+  console.log('!!!!!!!!!!!!!!!!Home!!!!!!!!!!!!!!!!!!')
   const { address, isConnected } = useAccount()
   const chainId = useChainId()
   const publicClient = usePublicClient()
