@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
-// Extend window object for Ethereum provider
 declare global {
   interface Window {
     ethereum?: any
@@ -10,7 +9,7 @@ declare global {
 
 import React, { useEffect, useState, useRef, useContext } from 'react'
 
-import { useAccount, useChainId, useDisconnect, usePublicClient } from 'wagmi'
+import { useAccount, useChainId, usePublicClient } from 'wagmi'
 import useDepositStore from '@/stores/useDepositStore'
 import ADDRESSES from '@/lib/addresses'
 import { ESCROW_ABI } from '@/lib/abi'
@@ -103,7 +102,6 @@ export type ProofResult = {
 }
 
 export default function Home() {
-  console.log('!!!!!!!!!!!!!!!!Home!!!!!!!!!!!!!!!!!!')
   const { address, isConnected } = useAccount()
   const chainId = useChainId()
   const publicClient = usePublicClient()
@@ -111,7 +109,6 @@ export default function Home() {
   const searchParams = useSearchParams()
   const view = searchParams.get('view')
   const t = useTranslations('home')
-  const tNav = useTranslations('navigation')
 
   useEffect(() => {
     handleRefreshMyIntentId()
@@ -149,15 +146,8 @@ export default function Home() {
 
   const [proofResult, setProofResult] = useState<ProofResult | null>(null)
 
-  // Zustand store
-  const {
-    myDeposits: deposits,
-    isLoadingDeposits,
-    setCurrentAddress,
-    fetchAndFilterDeposits,
-  } = useDepositStore()
+  const { setCurrentAddress, fetchAndFilterDeposits } = useDepositStore()
 
-  // 에러가 생성되면 에러 메세지창으로 포커싱
   useEffect(() => {
     if (error && errorRef.current) {
       errorRef.current.scrollIntoView({
@@ -212,13 +202,6 @@ export default function Home() {
     }
   }
 
-  // This function can be removed as it's now in the store
-  // Keep for backward compatibility with Signal component for now
-  const fetchAllDeposits = () => {
-    fetchAndFilterDeposits(publicClient)
-  }
-
-  // 임의의 Intent ID로 상세 정보 조회
   const handleSearchIntentDetails = async (targetIntentId: number) => {
     if (!targetIntentId) return
 
