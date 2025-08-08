@@ -6,9 +6,9 @@ const LOCALNET_ADDRESSES = {
   TOSS_BANK_VERIFIER: '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9',
 } as const
 
-// https://github.com/ModoriLabs/zk-escrow/tree/ZEN-28/impl-escrow-deposit?tab=readme-ov-file#base_sepolia-test
+// https://github.com/ModoriLabs/zk-escrow/tree/ZEN-037/escrow-upgradeable?tab=readme-ov-file#base_sepolia-test
 const TESTNET_ADDRESSES = {
-  ESCROW: '0xaE167DB70D0c5eA5a266eaA779d339f60268c42a',
+  ESCROW: '0x1F0FB0a9DB55D3015C03D00fb9B09390FAc038A9',
   USDC: '0x72f91969485c7efa53990fb0763ffa57ba73f3be',
   NULLIFIER_REGISTRY: '0xfE9a7603641e5Ac1cc155C62bAA7242dABf93B5a',
   TOSS_BANK_VERIFIER: '0x08A773D828Ae1195FE7355e8885bD47456815da1',
