@@ -56,3 +56,7 @@ export const getTossBankQRCode = (transferAmount: string) =>
 
 export const DECIMALS_CONVERSION_RATE = 18
 export const DECIMALS_USDC = 6
+
+export const INTENT_SIGNAL_TOPIC = keccak256(
+  toBytes('IntentSignaled(address,address,uint256,uint256,uint256)'),
+)

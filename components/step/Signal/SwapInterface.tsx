@@ -1,6 +1,7 @@
 import { extractErrorMessage } from '@/components/utils/extractErrorMessage'
 import {
   DEFAULT_DEPOSIT_ID,
+  INTENT_SIGNAL_TOPIC,
   KRW_CURRENCY_CODE,
   TOSS_ACCOUNT_NUMBER,
 } from '@/constant'
@@ -66,11 +67,8 @@ export default function SwapInterface({
         // signalIntent 성공 시 intentId 추출
         try {
           const intentSignaledEvent = receipt.logs.find((log: any) => {
-            const intentSignaledTopic = keccak256(
-              toBytes('IntentSignaled(address,address,uint256,uint256)'),
-            )
             return (
-              log.topics[0] === intentSignaledTopic &&
+              log.topics[0] === INTENT_SIGNAL_TOPIC &&
               log.address.toLowerCase() === ADDRESSES.ESCROW.toLowerCase()
             )
           })
