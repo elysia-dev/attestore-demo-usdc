@@ -1,7 +1,11 @@
-import { cn } from '@/lib/utils'
+'use client'
+
+import { useTranslations } from 'next-intl'
 import CustomConnectButton from '../utils/CustomConnectButton'
 
 export default function Connect() {
+  const t = useTranslations('connect')
+
   return (
     <section className="space-y-6">
       <div className="text-center space-y-4">
@@ -15,39 +19,43 @@ export default function Connect() {
         <div className="grid grid-cols-2 gap-3">
           <div className="p-4 rounded-lg bg-secondary/50 space-y-1 transition-all duration-300 hover:bg-secondary/70 hover:scale-105 cursor-default">
             <h4 className="text-sm font-semibold text-primary">
-              Privacy First
+              {t('privacyFirst')}
             </h4>
             <p className="text-xs text-muted-foreground">
-              Zero-knowledge proofs protect your data
+              {t('privacyFirstDesc')}
             </p>
           </div>
           <div className="p-4 rounded-lg bg-secondary/50 space-y-1 transition-all duration-300 hover:bg-secondary/70 hover:scale-105 cursor-default">
             <h4 className="text-sm font-semibold text-primary">
-              Instant Bridge
+              {t('instantBridge')}
             </h4>
             <p className="text-xs text-muted-foreground">
-              Bank to blockchain in seconds
+              {t('instantBridgeDesc')}
             </p>
           </div>
           <div className="p-4 rounded-lg bg-secondary/50 space-y-1 transition-all duration-300 hover:bg-secondary/70 hover:scale-105 cursor-default">
-            <h4 className="text-sm font-semibold text-primary">Verified</h4>
-            <p className="text-xs text-muted-foreground">
-              TLS attestation ensures authenticity
-            </p>
+            <h4 className="text-sm font-semibold text-primary">
+              {t('verified')}
+            </h4>
+            <p className="text-xs text-muted-foreground">{t('verifiedDesc')}</p>
           </div>
           <div className="p-4 rounded-lg bg-secondary/50 space-y-1 transition-all duration-300 hover:bg-secondary/70 hover:scale-105 cursor-default">
-            <h4 className="text-sm font-semibold text-primary">Cross-Chain</h4>
+            <h4 className="text-sm font-semibold text-primary">
+              {t('crossChain')}
+            </h4>
             <p className="text-xs text-muted-foreground">
-              Works across multiple networks
+              {t('crossChainDesc')}
             </p>
           </div>
         </div>
 
         <div className="p-4 rounded-lg bg-primary/10 border border-primary/20 transition-all duration-300 hover:bg-primary/20">
           <p className="text-sm text-left">
-            <span className="text-primary font-semibold">How it works:</span>{' '}
+            <span className="text-primary font-semibold">
+              {t('howItWorks')}
+            </span>{' '}
             <br />
-            Create Swap → Transfer KRW → Prove → Transfer USDC
+            {t('howItWorksSteps')}
           </p>
         </div>
       </div>

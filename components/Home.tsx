@@ -367,12 +367,6 @@ export default function Home() {
 
                 {/* Card */}
                 <div className="bg-card/80 rounded-[32px] p-6 backdrop-blur-xl border border-border/50 shadow-2xl glow">
-                  {/* <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-semibold">
-                      {workflowStepToLabel[currentStep]}
-                    </h2>
-                  </div> */}
-
                   {renderStepContent()}
                 </div>
 

@@ -53,7 +53,7 @@
   },
   "navigation": {
     "swap": "스왑",
-    "history": "기록",
+    "history": "히스토리",
     "connectWallet": "지갑 연결",
     "wrongNetwork": "잘못된 네트워크"
   },
@@ -207,6 +207,18 @@
     "transferKRW": "KRW 송금",
     "waitProof": "대기 / 증명",
     "transferUSDC": "USDC 송금"
+  },
+  "connect": {
+    "privacyFirst": "개인정보 보호 우선",
+    "privacyFirstDesc": "영지식 증명으로 데이터를 보호합니다",
+    "instantBridge": "즉시 브릿지",
+    "instantBridgeDesc": "몇 초 만에 은행에서 블록체인으로",
+    "verified": "ZK 보안",
+    "verifiedDesc": "영지식 증명으로 진위성을 보장합니다",
+    "crossChain": "크로스체인",
+    "crossChainDesc": "여러 네트워크에서 작동합니다",
+    "howItWorks": "작동 방식:",
+    "howItWorksSteps": "스왑 생성 → KRW 송금 → 증명 → USDC 송금"
   },
   "fulfillmentResult": {
     "transferCompleted": "송금 완료",

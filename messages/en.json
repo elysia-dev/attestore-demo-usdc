@@ -208,6 +208,18 @@
     "waitProof": "Wait / Proof",
     "transferUSDC": "Transfer USDC"
   },
+  "connect": {
+    "privacyFirst": "Privacy First",
+    "privacyFirstDesc": "Zero-knowledge proofs protect your data",
+    "instantBridge": "Instant Bridge",
+    "instantBridgeDesc": "Bank to blockchain in seconds",
+    "verified": "Verified",
+    "verifiedDesc": "TLS attestation ensures authenticity",
+    "crossChain": "Cross-Chain",
+    "crossChainDesc": "Works across multiple networks",
+    "howItWorks": "How it works:",
+    "howItWorksSteps": "Create Swap → Transfer KRW → Prove → Transfer USDC"
+  },
   "fulfillmentResult": {
     "transferCompleted": "Transfer Completed",
     "transferInfo": "Transfer Info",
