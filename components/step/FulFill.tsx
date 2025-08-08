@@ -405,14 +405,6 @@ export default function FulFill({
     return buttonText
   }
 
-  const testFulfillmentResult = {
-    success: true,
-    intentId: 1,
-    verifier: '0x123',
-    owner: '0x123',
-    to: '0x123',
-  }
-
   return (
     <>
       <div className="flex items-center justify-between mb-6">
@@ -422,9 +414,6 @@ export default function FulFill({
         <FulfillmentResultComponent fulfillmentResult={fulfillmentResult} />
       )}
 
-      {testFulfillmentResult?.success && (
-        <FulfillmentResultComponent fulfillmentResult={testFulfillmentResult} />
-      )}
       {!fulfillmentResult?.success && (
         <section className="space-y-6">
           {/* Transaction Status */}
