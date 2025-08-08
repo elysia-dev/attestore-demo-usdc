@@ -73,7 +73,7 @@ const IntentManagement = ({
       await cancelIntentWrite({
         address: ADDRESSES.ESCROW,
         abi: ESCROW_ABI,
-        functionName: 'cancelSwap',
+        functionName: 'cancelIntent',
         args: [BigInt(intentId)],
       })
     } catch (error) {
