@@ -571,6 +571,12 @@ export const ESCROW_ABI = [
     anonymous: false,
     inputs: [
       {
+        name: 'owner',
+        internalType: 'address',
+        type: 'address',
+        indexed: false,
+      },
+      {
         name: 'intentId',
         internalType: 'uint256',
         type: 'uint256',
@@ -666,6 +672,12 @@ export const ESCROW_ABI = [
     type: 'event',
     anonymous: false,
     inputs: [
+      {
+        name: 'owner',
+        internalType: 'address',
+        type: 'address',
+        indexed: false,
+      },
       { name: 'to', internalType: 'address', type: 'address', indexed: false },
       {
         name: 'verifier',
