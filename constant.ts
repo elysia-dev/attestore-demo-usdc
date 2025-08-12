@@ -39,6 +39,8 @@ export const FROM_BLOCK =
       : FROM_BLOCK_BASE
 
 export const isLocal = process.env.NEXT_PUBLIC_CHAIN_NETWORK === 'local'
+export const isProduction =
+  process.env.NEXT_PUBLIC_CHAIN_NETWORK === 'production'
 
 export const chain = (function () {
   const chainNetwork = process.env.NEXT_PUBLIC_CHAIN_NETWORK

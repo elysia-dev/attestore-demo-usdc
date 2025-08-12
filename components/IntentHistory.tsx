@@ -11,50 +11,53 @@ import {
 } from '@/lib/utils'
 import { Button } from './ui/button'
 import { useReleaseFunds } from '@/hooks/useReleaseFunds'
-import { DECIMALS_CONVERSION_RATE, DECIMALS_USDC } from '@/constant'
 import { useTranslations } from 'next-intl'
+import {
+  GraphQLResponse,
+  IntentStatus,
+  IntentWithStatus,
+} from '@/types/transfer-history'
 
-type IntentStatus = 'active' | 'fulfilled' | 'cancelled' | 'released'
-
-type Intent = {
-  id: string
-  owner: string
-  to: string
-  amount: string
-  timestamp: number
-  status: IntentStatus
-  txHash: string
-  blockNumber: string
-  conversionRate: string
-}
-
-const getStatusColor = (status: IntentStatus) => {
-  switch (status) {
-    case 'active':
+const getStatusColor = (type: IntentStatus) => {
+  switch (type) {
+    case IntentStatus.SIGNALED:
       return 'text-yellow-500'
-    case 'fulfilled':
+    case IntentStatus.FULFILLED:
       return 'text-green-500'
-    case 'cancelled':
+    case IntentStatus.CANCELLED:
       return 'text-red-500'
-    case 'released':
+    case IntentStatus.RELEASED:
       return 'text-blue-500'
     default:
       return 'text-gray-500'
   }
 }
 
-const getStatusIcon = (status: IntentStatus) => {
-  switch (status) {
-    case 'active':
+const getStatusIcon = (type: IntentStatus) => {
+  switch (type) {
+    case IntentStatus.SIGNALED:
       return '⏳'
-    case 'fulfilled':
+    case IntentStatus.FULFILLED:
       return '✅'
-    case 'released':
+    case IntentStatus.RELEASED:
       return '✅'
-    case 'cancelled':
+    case IntentStatus.CANCELLED:
       return '❌'
     default:
       return '❓'
+  }
+}
+
+const getIntentTypeString = (type: IntentStatus) => {
+  switch (type) {
+    case IntentStatus.SIGNALED:
+      return 'Signaled'
+    case IntentStatus.FULFILLED:
+      return 'Fulfilled'
+    case IntentStatus.RELEASED:
+      return 'Released'
+    case IntentStatus.CANCELLED:
+      return 'Cancelled'
   }
 }
 
@@ -62,24 +65,25 @@ enum Filter {
   ALL = 'all',
   MY = 'my',
 }
+
 export function IntentHistory() {
   const t = useTranslations('intentHistory')
   const tCommon = useTranslations('common')
   const { address, isConnected } = useAccount()
-  const [allRequests, setAllRequests] = useState<Intent[]>([])
+  const [allIntents, setAllIntents] = useState<IntentWithStatus[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [filter, setFilter] = useState<Filter>(Filter.ALL)
   const [processingIntentId, setProcessingIntentId] = useState<string | null>(
     null,
   )
-  const myRequests = useMemo(() => {
+  const myIntents = useMemo(() => {
     if (filter === Filter.ALL) {
-      return allRequests
+      return allIntents
     }
-    return allRequests.filter(
+    return allIntents.filter(
       (intent) => intent.owner.toLowerCase() === address?.toLowerCase(),
     )
-  }, [allRequests, address, filter])
+  }, [allIntents, address, filter])
 
   const { releaseFunds, isLoading: isReleasing } = useReleaseFunds({
     onSuccess: () => {
@@ -101,12 +105,33 @@ export function IntentHistory() {
       setIsLoading(true)
 
       const response = await fetch(`/api/transfer-history`)
-      const data = await response.json()
+      const result: GraphQLResponse = await response.json()
 
-      if (response.ok) {
-        setAllRequests(data.intents || [])
+      if (response.ok && result.data) {
+        const {
+          intentSignaleds,
+          intentFulfilleds,
+          intentReleaseds,
+          intentCancelleds,
+        } = result.data
+
+        const allIntents: IntentWithStatus[] = []
+        intentSignaleds.items.forEach((intent) => {
+          allIntents.push({ ...intent, status: IntentStatus.SIGNALED })
+        })
+        intentFulfilleds.items.forEach((intent) => {
+          allIntents.push({ ...intent, status: IntentStatus.FULFILLED })
+        })
+        intentReleaseds.items.forEach((intent) => {
+          allIntents.push({ ...intent, status: IntentStatus.RELEASED })
+        })
+        intentCancelleds.items.forEach((intent) => {
+          allIntents.push({ ...intent, status: IntentStatus.CANCELLED })
+        })
+        allIntents.sort((a, b) => b.blockNumber - a.blockNumber)
+        setAllIntents(allIntents)
       } else {
-        console.error('Failed to fetch intents:', data.error)
+        console.error('Failed to fetch intents:', result)
       }
     } catch (error) {
       console.error('Failed to fetch intents:', error)
@@ -138,7 +163,7 @@ export function IntentHistory() {
     )
   }
 
-  const requests = filter === Filter.MY ? myRequests : allRequests
+  const intents = filter === Filter.MY ? myIntents : allIntents
   return (
     <section className="space-y-4">
       <div className="bg-card/50 rounded-[24px] p-6 backdrop-blur-xl border border-border/50 space-y-4">
@@ -178,15 +203,15 @@ export function IntentHistory() {
           <div className="text-center py-8">
             <p className="text-muted-foreground">{t('loadingRequests')}</p>
           </div>
-        ) : requests.length === 0 ? (
+        ) : intents.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-muted-foreground">{t('noRequestsFound')}</p>
           </div>
         ) : (
           <div className="space-y-4">
-            {requests.map((intent) => (
+            {intents.map((intent: IntentWithStatus) => (
               <div
-                key={intent.id}
+                key={intent.intentId}
                 className="bg-secondary/30 rounded-2xl p-4 border border-border/50 transition-all duration-300">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-semibold flex items-center gap-2">
@@ -194,24 +219,24 @@ export function IntentHistory() {
                       {getStatusIcon(intent.status)}
                     </span>
                     {t('requestId')}
-                    {intent.id}
+                    {intent.intentId}
                     <span
                       className={cn(
                         'px-2 py-1 rounded-full text-xs font-medium',
-                        intent.status === 'active' &&
+                        intent.status === IntentStatus.SIGNALED &&
                           'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200',
-                        intent.status === 'fulfilled' &&
+                        intent.status === IntentStatus.FULFILLED &&
                           'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200',
-                        intent.status === 'released' &&
+                        intent.status === IntentStatus.RELEASED &&
                           'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200',
-                        intent.status === 'cancelled' &&
+                        intent.status === IntentStatus.CANCELLED &&
                           'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200',
                       )}>
-                      {intent.status.toUpperCase()}
+                      {getIntentTypeString(intent.status)}
                     </span>
                   </h3>
                   <span className="text-xs text-muted-foreground">
-                    {new Date(intent.timestamp * 1000).toLocaleDateString()}
+                    {new Date(intent.blockNumber * 1000).toLocaleDateString()}
                   </span>
                 </div>
 
@@ -220,21 +245,25 @@ export function IntentHistory() {
                     <span className="text-xs text-muted-foreground">
                       {tCommon('amount')}
                     </span>
-                    <p className="text-sm font-mono font-medium text-primary">
-                      {formatUnits(BigInt(intent.amount), 6)} USDC
-                    </p>
+                    {intent.status !== IntentStatus.CANCELLED && (
+                      <p className="text-sm font-mono font-medium text-primary">
+                        {formatUnits(BigInt(intent.amount), 6)} USDC
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-1">
                     <span className="text-xs text-muted-foreground">
                       {t('krwAmount')}
                     </span>
-                    <p className="text-sm font-mono font-medium text-primary">
-                      {getKRWAmount({
-                        usdcAmount: BigInt(intent.amount),
-                        conversionRate: BigInt(intent.conversionRate),
-                      })}
-                      KRW
-                    </p>
+                    {intent.status === IntentStatus.SIGNALED && (
+                      <p className="text-sm font-mono font-medium text-primary">
+                        {getKRWAmount({
+                          usdcAmount: BigInt(intent.amount),
+                          conversionRate: BigInt(intent.conversionRate),
+                        })}
+                        KRW
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-1">
@@ -246,14 +275,16 @@ export function IntentHistory() {
                     </p>
                   </div>
 
-                  <div className="space-y-1">
-                    <span className="text-xs text-muted-foreground">
-                      {t('to')}
-                    </span>
-                    <p className="text-sm font-mono">
-                      {truncateAddress(intent.to)}
-                    </p>
-                  </div>
+                  {intent.status !== IntentStatus.CANCELLED && (
+                    <div className="space-y-1">
+                      <span className="text-xs text-muted-foreground">
+                        {t('to')}
+                      </span>
+                      <p className="text-sm font-mono">
+                        {truncateAddress(intent.to)}
+                      </p>
+                    </div>
+                  )}
                   <div
                     className="space-y-1 cursor-pointer"
                     onClick={() => {
@@ -279,14 +310,16 @@ export function IntentHistory() {
                 </div>
 
                 {/* Admin actions */}
-                {isAdmin && intent.status === 'active' && (
+                {isAdmin && intent.status === IntentStatus.SIGNALED && (
                   <div className="mt-4 pt-4 border-t border-border/50">
                     <Button
                       size="sm"
-                      onClick={() => handleReleaseFunds(intent.id)}
-                      disabled={isReleasing || processingIntentId === intent.id}
+                      onClick={() => handleReleaseFunds(intent.intentId)}
+                      disabled={
+                        isReleasing || processingIntentId === intent.intentId
+                      }
                       className="w-full sm:w-auto">
-                      {processingIntentId === intent.id
+                      {processingIntentId === intent.intentId
                         ? t('processing')
                         : t('releaseFunds')}
                     </Button>
