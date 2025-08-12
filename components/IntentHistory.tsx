@@ -17,6 +17,8 @@ import {
   IntentStatus,
   IntentWithStatus,
 } from '@/types/transfer-history'
+import { graphQLResponseSchema } from '@/lib/schemas'
+import { validateApiResponse } from '@/lib/validation'
 
 const getStatusColor = (type: IntentStatus) => {
   switch (type) {
@@ -105,9 +107,25 @@ export function IntentHistory() {
       setIsLoading(true)
 
       const response = await fetch(`/api/transfer-history`)
-      const result: GraphQLResponse = await response.json()
 
-      if (response.ok && result.data) {
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status} ${response.statusText}`)
+      }
+
+      const rawData = await response.json()
+      const validationResult = validateApiResponse(
+        rawData,
+        graphQLResponseSchema,
+      )
+
+      if (!validationResult.success) {
+        console.error('API response validation failed:', validationResult.error)
+        throw new Error('Invalid API response format')
+      }
+
+      const result: GraphQLResponse = validationResult.data
+
+      if (result.data) {
         const {
           intentSignaleds,
           intentFulfilleds,

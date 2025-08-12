@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isProduction } from '@/constant'
-import { GraphQLResponse } from '@/types/transfer-history'
 
 const HISTORY_API_URL = isProduction
   ? process.env.HISTORY_API_URL_PROD
@@ -69,6 +68,6 @@ export async function GET(request: NextRequest) {
 }`,
     }),
   })
-  const data: GraphQLResponse = await result.json()
-  return NextResponse.json(data)
+  const rawData = await result.json()
+  return NextResponse.json(rawData)
 }
