@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
       conversionRate
       blockNumber
       txHash
+      timestamp
     }
     totalCount
   }
@@ -44,6 +45,7 @@ export async function GET(request: NextRequest) {
       txHash
       to
       verifier
+      timestamp
     }
   }
   intentReleaseds {
@@ -55,6 +57,7 @@ export async function GET(request: NextRequest) {
       depositId
       blockNumber
       amount
+      timestamp
     }
   }
   intentCancelleds {
@@ -63,6 +66,7 @@ export async function GET(request: NextRequest) {
       owner
       txHash
       blockNumber
+      timestamp
     }
   }
 }`,

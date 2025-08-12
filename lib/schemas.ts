@@ -5,6 +5,7 @@ export const addressSchema = z.string()
 export const txHashSchema = z.string()
 export const blockNumberSchema = z.number().int().positive()
 export const amountSchema = z.string()
+export const timestampSchema = z.number().int().positive()
 
 // Intent schemas
 export const intentSignaledSchema = z.object({
@@ -16,6 +17,7 @@ export const intentSignaledSchema = z.object({
   conversionRate: z.string(),
   blockNumber: blockNumberSchema,
   txHash: txHashSchema,
+  timestamp: timestampSchema,
 })
 
 export const intentFulfilledSchema = z.object({
@@ -27,6 +29,7 @@ export const intentFulfilledSchema = z.object({
   depositId: z.string(),
   txHash: txHashSchema,
   blockNumber: blockNumberSchema,
+  timestamp: timestampSchema,
 })
 
 export const intentReleasedSchema = z.object({
@@ -37,6 +40,7 @@ export const intentReleasedSchema = z.object({
   depositId: z.string(),
   txHash: txHashSchema,
   blockNumber: blockNumberSchema,
+  timestamp: timestampSchema,
 })
 
 export const intentCancelledSchema = z.object({
@@ -44,6 +48,7 @@ export const intentCancelledSchema = z.object({
   owner: addressSchema,
   txHash: txHashSchema,
   blockNumber: blockNumberSchema,
+  timestamp: timestampSchema,
 })
 
 // GraphQL response schemas

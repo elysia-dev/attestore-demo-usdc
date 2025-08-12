@@ -182,6 +182,24 @@ export function IntentHistory() {
   }
 
   const intents = filter === Filter.MY ? myIntents : allIntents
+
+  const isReleaseable = (intent: IntentWithStatus) => {
+    if (!isAdmin) {
+      return false
+    }
+    if (intent.status !== IntentStatus.SIGNALED) {
+      return false
+    }
+
+    const hasCanceled = allIntents.some(
+      (i) =>
+        i.intentId === intent.intentId && i.status === IntentStatus.CANCELLED,
+    )
+    if (hasCanceled) {
+      return false
+    }
+    return true
+  }
   return (
     <section className="space-y-4">
       <div className="bg-card/50 rounded-[24px] p-6 backdrop-blur-xl border border-border/50 space-y-4">
@@ -229,7 +247,7 @@ export function IntentHistory() {
           <div className="space-y-4">
             {intents.map((intent: IntentWithStatus) => (
               <div
-                key={intent.intentId}
+                key={`${intent.intentId}-${intent.status}`}
                 className="bg-secondary/30 rounded-2xl p-4 border border-border/50 transition-all duration-300">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-semibold flex items-center gap-2">
@@ -254,7 +272,15 @@ export function IntentHistory() {
                     </span>
                   </h3>
                   <span className="text-xs text-muted-foreground">
-                    {new Date(intent.blockNumber * 1000).toLocaleDateString()}
+                    {new Date(intent.timestamp * 1000).toLocaleTimeString(
+                      'en-US',
+                      {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        day: '2-digit',
+                        month: '2-digit',
+                      },
+                    )}
                   </span>
                 </div>
 
@@ -328,7 +354,7 @@ export function IntentHistory() {
                 </div>
 
                 {/* Admin actions */}
-                {isAdmin && intent.status === IntentStatus.SIGNALED && (
+                {isReleaseable(intent) && (
                   <div className="mt-4 pt-4 border-t border-border/50">
                     <Button
                       size="sm"
