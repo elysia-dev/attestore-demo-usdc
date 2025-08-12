@@ -64,7 +64,6 @@ export default function SwapInterface({
   const { writeAndWait: signalIntentWrite, isLoading: isSignalIntentLoading } =
     useContractWrite({
       onSuccess: (receipt) => {
-        // signalIntent 성공 시 intentId 추출
         try {
           const intentSignaledEvent = receipt.logs.find((log: any) => {
             return (
