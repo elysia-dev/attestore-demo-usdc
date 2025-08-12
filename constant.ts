@@ -1,6 +1,7 @@
 import { base, baseSepolia } from 'viem/chains'
 import { anvil } from '@/lib/network'
 import { keccak256, toBytes } from 'viem'
+import { ESCROW_ABI } from '@/lib/abi'
 
 export const BASE_URL = 'https://attestor-core-production-5795.up.railway.app'
 
@@ -59,6 +60,15 @@ export const getTossBankQRCode = (transferAmount: string) =>
 export const DECIMALS_CONVERSION_RATE = 18
 export const DECIMALS_USDC = 6
 
-export const INTENT_SIGNAL_TOPIC = keccak256(
-  toBytes('IntentSignaled(address,address,uint256,uint256,uint256)'),
-)
+// const INTENT_SIGNAL_TOPIC = keccak256(
+//   toBytes('IntentSignaled(address,address,address,uint256,uint256,uint256)'),
+// )
+export const INTENT_SIGNAL_TOPIC = (function () {
+  const intentSignaled = ESCROW_ABI.find(
+    (abi) => abi.type === 'event' && abi.name === 'IntentSignaled',
+  )
+  const name = intentSignaled?.name
+  const inputs = intentSignaled?.inputs
+  const typesString = inputs?.map((input) => `${input.type}`).join(',')
+  return keccak256(toBytes(`${name}(${typesString})`))
+})()
