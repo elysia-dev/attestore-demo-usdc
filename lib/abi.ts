@@ -571,15 +571,15 @@ export const ESCROW_ABI = [
     anonymous: false,
     inputs: [
       {
-        name: 'owner',
-        internalType: 'address',
-        type: 'address',
-        indexed: false,
-      },
-      {
         name: 'intentId',
         internalType: 'uint256',
         type: 'uint256',
+        indexed: false,
+      },
+      {
+        name: 'owner',
+        internalType: 'address',
+        type: 'address',
         indexed: false,
       },
     ],
