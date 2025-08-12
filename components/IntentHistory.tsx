@@ -12,12 +12,14 @@ import {
 import { Button } from './ui/button'
 import { useReleaseFunds } from '@/hooks/useReleaseFunds'
 import { useTranslations } from 'next-intl'
+import { GraphQLResponse, IntentStatus } from '@/types/transfer-history'
 import {
-  GraphQLResponse,
-  IntentStatus,
-  IntentWithStatus,
-} from '@/types/transfer-history'
-import { graphQLResponseSchema } from '@/lib/schemas'
+  graphQLResponseSchema,
+  IntentCancelled,
+  IntentFulfilled,
+  IntentReleased,
+  IntentSignaled,
+} from '@/lib/schemas'
 import { validateApiResponse } from '@/lib/validation'
 
 const getStatusColor = (type: IntentStatus) => {
@@ -63,6 +65,69 @@ const getIntentTypeString = (type: IntentStatus) => {
   }
 }
 
+type Intent = {
+  intentId: string
+  owner: string
+  amount: string
+  to: string
+  verifier: string
+  conversionRate: string
+  blockNumber: number
+  txHash: string
+  timestamp: number
+  depositId?: string
+  status: IntentStatus
+}
+
+// make current intents using events history
+const generateIntentsByHistory = ({
+  intentSignaleds,
+  intentFulfilleds,
+  intentReleaseds,
+  intentCancelleds,
+}: {
+  intentSignaleds: IntentSignaled[]
+  intentFulfilleds: IntentFulfilled[]
+  intentReleaseds: IntentReleased[]
+  intentCancelleds: IntentCancelled[]
+}) => {
+  // intents can be changed from signaled to (fulfilled or released or cancelled)
+  const intents: Intent[] = intentSignaleds.map((signaled) => ({
+    ...signaled,
+    status: IntentStatus.SIGNALED,
+  }))
+
+  intentFulfilleds.forEach((fulfilled) => {
+    const intent = intents.find(
+      (intent) => intent.intentId === fulfilled.intentId,
+    )
+    if (intent) {
+      intent.status = IntentStatus.FULFILLED
+    }
+  })
+
+  intentReleaseds.forEach((released) => {
+    const intent = intents.find(
+      (intent) => intent.intentId === released.intentId,
+    )
+    if (intent) {
+      intent.status = IntentStatus.RELEASED
+    }
+  })
+
+  intentCancelleds.forEach((cancelled) => {
+    const intent = intents.find(
+      (intent) => intent.intentId === cancelled.intentId,
+    )
+    if (intent) {
+      intent.status = IntentStatus.CANCELLED
+    }
+  })
+
+  const sortedIntents = intents.sort((a, b) => b.blockNumber - a.blockNumber)
+  return sortedIntents
+}
+
 enum Filter {
   ALL = 'all',
   MY = 'my',
@@ -72,7 +137,7 @@ export function IntentHistory() {
   const t = useTranslations('intentHistory')
   const tCommon = useTranslations('common')
   const { address, isConnected } = useAccount()
-  const [allIntents, setAllIntents] = useState<IntentWithStatus[]>([])
+  const [allIntents, setAllIntents] = useState<Intent[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [filter, setFilter] = useState<Filter>(Filter.ALL)
   const [processingIntentId, setProcessingIntentId] = useState<string | null>(
@@ -133,20 +198,14 @@ export function IntentHistory() {
           intentCancelleds,
         } = result.data
 
-        const allIntents: IntentWithStatus[] = []
-        intentSignaleds.items.forEach((intent) => {
-          allIntents.push({ ...intent, status: IntentStatus.SIGNALED })
+        // TODO: implement this logic in server-side
+        const allIntents = generateIntentsByHistory({
+          intentSignaleds: intentSignaleds.items,
+          intentFulfilleds: intentFulfilleds.items,
+          intentReleaseds: intentReleaseds.items,
+          intentCancelleds: intentCancelleds.items,
         })
-        intentFulfilleds.items.forEach((intent) => {
-          allIntents.push({ ...intent, status: IntentStatus.FULFILLED })
-        })
-        intentReleaseds.items.forEach((intent) => {
-          allIntents.push({ ...intent, status: IntentStatus.RELEASED })
-        })
-        intentCancelleds.items.forEach((intent) => {
-          allIntents.push({ ...intent, status: IntentStatus.CANCELLED })
-        })
-        allIntents.sort((a, b) => b.blockNumber - a.blockNumber)
+
         setAllIntents(allIntents)
       } else {
         console.error('Failed to fetch intents:', result)
@@ -183,7 +242,7 @@ export function IntentHistory() {
 
   const intents = filter === Filter.MY ? myIntents : allIntents
 
-  const isReleaseable = (intent: IntentWithStatus) => {
+  const isReleaseable = (intent: Intent) => {
     if (!isAdmin) {
       return false
     }
@@ -245,7 +304,7 @@ export function IntentHistory() {
           </div>
         ) : (
           <div className="space-y-4">
-            {intents.map((intent: IntentWithStatus) => (
+            {intents.map((intent: Intent) => (
               <div
                 key={`${intent.intentId}-${intent.status}`}
                 className="bg-secondary/30 rounded-2xl p-4 border border-border/50 transition-all duration-300">

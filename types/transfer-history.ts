@@ -21,13 +21,6 @@ import type {
   IntentReleased,
   IntentCancelled,
 } from '@/lib/schemas'
-
-export type IntentWithStatus =
-  | (IntentSignaled & { status: IntentStatus.SIGNALED })
-  | (IntentFulfilled & { status: IntentStatus.FULFILLED })
-  | (IntentReleased & { status: IntentStatus.RELEASED })
-  | (IntentCancelled & { status: IntentStatus.CANCELLED })
-
 export interface GraphQLItemsResponse<T> {
   items: T[]
   totalCount?: number
