@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAccount } from 'wagmi'
-import { formatUnits } from 'viem'
+import { formatUnits, ToFunctionHashErrorType } from 'viem'
 import {
   cn,
   getKRWAmount,
@@ -49,19 +49,6 @@ const getStatusIcon = (type: IntentStatus) => {
       return '❌'
     default:
       return '❓'
-  }
-}
-
-const getIntentTypeString = (type: IntentStatus) => {
-  switch (type) {
-    case IntentStatus.SIGNALED:
-      return 'Signaled'
-    case IntentStatus.FULFILLED:
-      return 'Fulfilled'
-    case IntentStatus.RELEASED:
-      return 'Released'
-    case IntentStatus.CANCELLED:
-      return 'Cancelled'
   }
 }
 
@@ -136,13 +123,18 @@ enum Filter {
 export function IntentHistory() {
   const t = useTranslations('intentHistory')
   const tCommon = useTranslations('common')
+  const tIntentStatus = useTranslations('intentStatus')
+
   const { address, isConnected } = useAccount()
+
   const [allIntents, setAllIntents] = useState<Intent[]>([])
-  const [isLoading, setIsLoading] = useState(false)
   const [filter, setFilter] = useState<Filter>(Filter.ALL)
+  const [isLoading, setIsLoading] = useState(false)
   const [processingIntentId, setProcessingIntentId] = useState<string | null>(
     null,
   )
+  const [hideAdminMessage, setHideAdminMessage] = useState(false)
+
   const myIntents = useMemo(() => {
     if (filter === Filter.ALL) {
       return allIntents
@@ -232,12 +224,17 @@ export function IntentHistory() {
     }
   }
 
-  if (!isConnected) {
-    return (
-      <div className="bg-card/50 rounded-[24px] p-8 backdrop-blur-xl border border-border/50 text-center">
-        <p className="text-muted-foreground">{t('connectWalletMessage')}</p>
-      </div>
-    )
+  const getIntentTypeString = (type: IntentStatus) => {
+    switch (type) {
+      case IntentStatus.SIGNALED:
+        return tIntentStatus('signaled')
+      case IntentStatus.FULFILLED:
+        return tIntentStatus('fulfilled')
+      case IntentStatus.RELEASED:
+        return tIntentStatus('released')
+      case IntentStatus.CANCELLED:
+        return tIntentStatus('cancelled')
+    }
   }
 
   const intents = filter === Filter.MY ? myIntents : allIntents
@@ -259,6 +256,15 @@ export function IntentHistory() {
     }
     return true
   }
+
+  if (!isConnected) {
+    return (
+      <div className="bg-card/50 rounded-[24px] p-8 backdrop-blur-xl border border-border/50 text-center">
+        <p className="text-muted-foreground">{t('connectWalletMessage')}</p>
+      </div>
+    )
+  }
+
   return (
     <section className="space-y-4">
       <div className="bg-card/50 rounded-[24px] p-6 backdrop-blur-xl border border-border/50 space-y-4">
@@ -286,12 +292,14 @@ export function IntentHistory() {
           </button>
         </div>
 
-        {isAdmin && (
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+        {isAdmin && !hideAdminMessage && (
+          <button
+            className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 flex items-center justify-between"
+            onClick={() => setHideAdminMessage(true)}>
             <p className="text-sm text-yellow-800 dark:text-yellow-200">
               {t('adminModeMessage')}
             </p>
-          </div>
+          </button>
         )}
 
         {isLoading ? (
@@ -304,17 +312,17 @@ export function IntentHistory() {
           </div>
         ) : (
           <div className="space-y-4">
-            {intents.map((intent: Intent) => (
+            {intents.map((intent: Intent, index: number) => (
               <div
                 key={`${intent.intentId}-${intent.status}`}
-                className="bg-secondary/30 rounded-2xl p-4 border border-border/50 transition-all duration-300">
+                className="bg-secondary/30 rounded-2xl p-4 border border-border/50 ansition-all duration-300">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-semibold flex items-center gap-2">
                     <span className={getStatusColor(intent.status)}>
                       {getStatusIcon(intent.status)}
                     </span>
                     {t('requestId')}
-                    {intent.intentId}
+                    {index + 1}
                     <span
                       className={cn(
                         'px-2 py-1 rounded-full text-xs font-medium',
@@ -346,27 +354,31 @@ export function IntentHistory() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <span className="text-xs text-muted-foreground">
+                      {t('id')}
+                    </span>
+                    <p className="text-sm font-mono font-medium text-primary">
+                      {intent.intentId}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-xs text-muted-foreground">
                       {tCommon('amount')}
                     </span>
-                    {intent.status !== IntentStatus.CANCELLED && (
-                      <p className="text-sm font-mono font-medium text-primary">
-                        {formatUnits(BigInt(intent.amount), 6)} USDC
-                      </p>
-                    )}
+                    <p className="text-sm font-mono font-medium text-primary">
+                      {formatUnits(BigInt(intent.amount), 6)} USDC
+                    </p>
                   </div>
                   <div className="space-y-1">
                     <span className="text-xs text-muted-foreground">
                       {t('krwAmount')}
                     </span>
-                    {intent.status === IntentStatus.SIGNALED && (
-                      <p className="text-sm font-mono font-medium text-primary">
-                        {getKRWAmount({
-                          usdcAmount: BigInt(intent.amount),
-                          conversionRate: BigInt(intent.conversionRate),
-                        })}
-                        KRW
-                      </p>
-                    )}
+                    <p className="text-sm font-mono font-medium text-primary">
+                      {getKRWAmount({
+                        usdcAmount: BigInt(intent.amount),
+                        conversionRate: BigInt(intent.conversionRate),
+                      })}
+                      KRW
+                    </p>
                   </div>
 
                   <div className="space-y-1">
@@ -378,16 +390,14 @@ export function IntentHistory() {
                     </p>
                   </div>
 
-                  {intent.status !== IntentStatus.CANCELLED && (
-                    <div className="space-y-1">
-                      <span className="text-xs text-muted-foreground">
-                        {t('to')}
-                      </span>
-                      <p className="text-sm font-mono">
-                        {truncateAddress(intent.to)}
-                      </p>
-                    </div>
-                  )}
+                  <div className="space-y-1">
+                    <span className="text-xs text-muted-foreground">
+                      {t('to')}
+                    </span>
+                    <p className="text-sm font-mono">
+                      {truncateAddress(intent.to)}
+                    </p>
+                  </div>
                   <div
                     className="space-y-1 cursor-pointer"
                     onClick={() => {

@@ -93,6 +93,7 @@
     "withdrawDeposit": "Withdraw Deposit"
   },
   "intentHistory": {
+    "id": "ID",
     "connectWalletMessage": "Please connect your wallet to view swap history",
     "allRequests": "All Requests",
     "myRequests": "My Requests",
@@ -106,6 +107,12 @@
     "transaction": "Transaction",
     "processing": "Processing...",
     "releaseFunds": "Release Funds"
+  },
+  "intentStatus": {
+    "signaled": "Request Pending",
+    "fulfilled": "Processed (Manual)",
+    "released": "Processed",
+    "cancelled": "Cancelled"
   },
   "transfer": {
     "title": "Transfer",

@@ -93,6 +93,7 @@
     "withdrawDeposit": "디포짓 출금"
   },
   "intentHistory": {
+    "id": "ID",
     "connectWalletMessage": "스왑 기록을 보려면 지갑을 연결해주세요",
     "allRequests": "모든 요청",
     "myRequests": "내 요청",
@@ -106,6 +107,12 @@
     "transaction": "트랜잭션",
     "processing": "처리 중...",
     "releaseFunds": "자금 해제"
+  },
+  "intentStatus": {
+    "signaled": "요청 대기중",
+    "fulfilled": "처리완료(수동)",
+    "released": "처리완료",
+    "cancelled": "취소됨"
   },
   "transfer": {
     "title": "송금",
