@@ -5,14 +5,10 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 Add the following variables to your `.env` file:
 
 ```env
-# Alchemy API Key (server-side only)
-ALCHEMY_API_KEY=your_alchemy_api_key_here
-
 # Existing public environment variables
 NEXT_PUBLIC_CHAIN_NETWORK=production # or test, local
 ```
 
-Note: The `ALCHEMY_API_KEY` is used server-side only in the API routes to keep it secure.
 
 ## Getting Started
 
