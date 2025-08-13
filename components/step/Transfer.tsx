@@ -94,11 +94,9 @@ export default function Transfer({
               {t('sendMoneyTitle')}
             </h3>
             <div className="space-y-2 text-sm text-muted-foreground ml-6">
-              <p>
-                {t('sendMoneyDescription1')}{' '}
-                <span className="text-foreground font-medium">
-                  {t('bankApp')}
-                </span>
+              <p>{t('sendMoneyDescription1')} </p>
+              <p className="text-sm font-bold text-red-600 dark:text-red-400 ">
+                {t('sendMoneyDescription_caution')}
               </p>
               <p>{t('sendMoneyDescription2')}</p>
             </div>

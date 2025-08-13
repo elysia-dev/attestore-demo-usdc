@@ -19,8 +19,8 @@ function ConfirmationModal({
   memo: string
   address: string
 }) {
-  const t = useTranslations('confirmationModal')
   const tCommon = useTranslations('common')
+  const tConfirmationModal = useTranslations('confirmationModal')
 
   if (!isOpen) return null
 
@@ -56,7 +56,9 @@ function ConfirmationModal({
       <aside className="relative min-w-[320px] z-10 max-w-[400px] mx-auto w-[90%] bg-card/95 backdrop-blur-xl rounded-3xl overflow-hidden border border-border/50 shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-border/30">
-          <h3 className="text-lg font-semibold">{t('title')}</h3>
+          <h3 className="text-lg font-semibold">
+            {tConfirmationModal('title')}
+          </h3>
           <button
             onClick={onClose}
             className="p-1.5 rounded-full hover:bg-secondary/50 transition-colors">
@@ -77,24 +79,36 @@ function ConfirmationModal({
 
         {/* Content */}
         <div className="p-5">
-          <p className="text-sm text-muted-foreground mb-4">{t('question')}</p>
+          <p className="text-sm text-muted-foreground mb-4">
+            {tConfirmationModal('question')}
+          </p>
+          <div className="mb-6 p-5 bg-gradient-to-r from-red-500/5 via-orange-500/10 to-red-500/5 border border-red-500/20 rounded-2xl shadow-lg backdrop-blur-sm relative overflow-hidden">
+            <div className="relative z-10">
+              <p className="text-sm font-bold text-red-600 dark:text-red-400 text-center leading-relaxed drop-shadow-sm flex items-center justify-center gap-2">
+                <span className="inline-block animate-caret-blink">⚠️</span>
+                {tConfirmationModal('question2')}
+              </p>
+            </div>
+          </div>
           <section className="relative w-full max-h-[600px] aspect-[1080/1394] bg-[#18171c] rounded-2xl overflow-hidden">
             <section className="pt-10">
               <p className="text-white text-center text-[22px] font-bold">
                 <span className="text-[#3a83f1]">{name}</span>
-                {t('recipientDisplay')}
+                {tConfirmationModal('recipientDisplay')}
               </p>
               <p className="text-white text-center text-[22px] font-bold">
                 {transferAmount.toLocaleString()}
-                {t('amountDisplay')}
+                {tConfirmationModal('amountDisplay')}
               </p>
               <p className="text-white text-center text-[22px] font-bold">
-                {t('confirmQuestion')}
+                {tConfirmationModal('confirmQuestion')}
               </p>
             </section>
             <section className="flex flex-col absolute bottom-10 w-[90%] -translate-x-1/2 left-1/2 gap-2">
               <div className="flex justify-between w-full items-center">
-                <p className="text-[#7e7e86] label">{t('receiverLabel')}</p>
+                <p className="text-[#7e7e86] label">
+                  {tConfirmationModal('receiverLabel')}
+                </p>
                 <div className="flex items-center">
                   <p className="text-blue-primary font-bold border border-red-primary px-2 py-1 label">
                     {memo}
@@ -104,7 +118,7 @@ function ConfirmationModal({
               </div>
               <div className="flex justify-between w-full items-center">
                 <p className="text-[#7e7e86] label">
-                  {t('withdrawAccountLabel')}
+                  {tConfirmationModal('withdrawAccountLabel')}
                 </p>
                 <div className="flex items-center">
                   <p className="text-white label pr-2">-</p>
@@ -113,7 +127,7 @@ function ConfirmationModal({
               </div>
               <div className="flex justify-between w-full items-center">
                 <p className="text-[#7e7e86] label">
-                  {t('depositAccountLabel')}
+                  {tConfirmationModal('depositAccountLabel')}
                 </p>
                 <div className="flex items-center">
                   <p className="text-blue-primary font-bold border border-red-primary px-2 py-1 label">
@@ -130,12 +144,12 @@ function ConfirmationModal({
             <button
               onClick={onClose}
               className="flex-1 px-6 py-3 rounded-2xl bg-secondary/50 hover:bg-secondary/70 transition-all duration-200 border border-border/30 hover:border-border/50 font-semibold">
-              {tCommon('no')}
+              {tConfirmationModal('no')}
             </button>
             <button
               onClick={onConfirm}
               className="flex-1 px-6 py-3 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-all duration-200 hover:shadow-lg">
-              {tCommon('yes')}
+              {tConfirmationModal('yes')}
             </button>
           </div>
         </div>

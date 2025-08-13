@@ -120,9 +120,10 @@
     "browserNotSupported": "Your browser does not support the video tag.",
     "bankTransferDemo": "Bank Transfer Demo",
     "sendMoneyTitle": "Send money via Bank app",
-    "sendMoneyDescription1": "1. Send KRW WON to the recipient via",
+    "sendMoneyDescription1": "1. Send KRW WON to the recipient via TOSS",
     "bankAccount": "Bank Account",
     "bankApp": "Bank app.",
+    "sendMoneyDescription_caution": "⚠️Please modify the 'Transfer Memo'.",
     "sendMoneyDescription2": "2. You must use Toss (In this version) as the sending bank.",
     "sendViaBankApp": "Send via Bank App",
     "installBankApp": "Install Bank App",
@@ -135,12 +136,15 @@
   "confirmationModal": {
     "title": "Transfer Confirmation",
     "question": "Did your KRW transfer completed?",
+    "question2": "Please modify the 'Transfer Memo'.",
     "recipientDisplay": "님에게",
     "amountDisplay": "원을",
     "confirmQuestion": "보낼까요?",
     "receiverLabel": "받는 분에게 표시",
     "withdrawAccountLabel": "출금 계좌",
-    "depositAccountLabel": "입금 계좌"
+    "depositAccountLabel": "입금 계좌",
+    "yes": "Transfer Complete",
+    "no": "Back"
   },
   "proof": {
     "title": "Proof",

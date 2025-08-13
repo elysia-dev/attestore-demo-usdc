@@ -74,7 +74,7 @@
     "description": "관리자가 예치금에 대한 KRW 송금을 처리하고 있습니다",
     "elapsedTime": "경과 시간",
     "checkingStatus": "상태 확인 중...",
-    "bankAccount": "은행 계좌",
+    "bankAccount": "계좌",
     "depositId": "디포짓 ID",
     "howItWorksTitle": "작동 방식:",
     "howItWorksDescription": "관리자가 예치금을 모니터링하고 사용자가 스왑을 생성할 때 은행 계좌로 KRW를 송금합니다. 모든 자금이 처리되면 예치금이 완료로 표시됩니다.",
@@ -120,14 +120,15 @@
     "browserNotSupported": "브라우저가 비디오 태그를 지원하지 않습니다.",
     "bankTransferDemo": "은행 송금 데모",
     "sendMoneyTitle": "은행 앱을 통한 송금",
-    "sendMoneyDescription1": "1. '다음' 버튼을 클릭하여 수령인에게 KRW WON을 보냅니다",
-    "bankAccount": "은행 계좌",
+    "sendMoneyDescription1": "1. 토스를 통해 원화를 보내고 '다음' 버튼을 클릭해주세요.",
+    "bankAccount": "계좌",
     "bankApp": "은행 앱.",
+    "sendMoneyDescription_caution": "⚠️'받는 분에게 표시'를 꼭 수정해주세요.",
     "sendMoneyDescription2": "2. 반드시 송금은행으로 토스를 사용해야 합니다. (추후 은행확장 예정)",
     "sendViaBankApp": "은행 앱으로 송금",
     "installBankApp": "은행 앱 설치",
     "recipientName": "수령인 이름",
-    "transferMemo": "송금 메모",
+    "transferMemo": "받는 분에게 표시",
     "transferAmount": "송금 금액",
     "lookupIntentFirst": "먼저 스왑 ID를 조회해주세요. (이전 클릭)",
     "clickToCopy": "복사하려면 클릭"
@@ -135,12 +136,15 @@
   "confirmationModal": {
     "title": "송금 확인",
     "question": "KRW 송금이 완료되었나요?",
+    "question2": "'받는 분에게 표시'를 꼭 수정해주세요.",
     "recipientDisplay": "님에게",
     "amountDisplay": "원을",
     "confirmQuestion": "보낼까요?",
     "receiverLabel": "받는 분에게 표시",
     "withdrawAccountLabel": "출금 계좌",
-    "depositAccountLabel": "입금 계좌"
+    "depositAccountLabel": "입금 계좌",
+    "yes": "송금완료",
+    "no": "이전으로"
   },
   "proof": {
     "title": "증명",
@@ -194,7 +198,7 @@
     "typicalProcessingTime": "일반적인 처리 시간",
     "processingTimeValue": "1-5분",
     "processingDescription": "관리자가 정기적으로 결제를 확인하고 자동으로 처리합니다.",
-    "authorizationNote": "결제가 승인되면 기록 탭에서 확인할 수 있습니다.",
+    "authorizationNote": "결제가 승인되면 히스토리 탭에서 확인할 수 있습니다.",
     "dontWantToWait": "기다리고 싶지 않으신가요?",
     "manualProofDescription": "결제 증명을 수동으로 생성하여 즉시 USDC를 받을 수 있습니다.",
     "proveTransferManually": "수동으로 송금 증명"
