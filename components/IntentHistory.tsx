@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAccount } from 'wagmi'
-import { formatUnits, ToFunctionHashErrorType } from 'viem'
+import { formatUnits } from 'viem'
 import {
   cn,
   getKRWAmount,
@@ -12,7 +12,7 @@ import {
 import { Button } from './ui/button'
 import { useReleaseFunds } from '@/hooks/useReleaseFunds'
 import { useTranslations } from 'next-intl'
-import { GraphQLResponse, IntentStatus } from '@/types/transfer-history'
+import { GraphQLResponse, Intent, IntentStatus } from '@/types/transfer-history'
 import {
   graphQLResponseSchema,
   IntentCancelled,
@@ -21,50 +21,8 @@ import {
   IntentSignaled,
 } from '@/lib/schemas'
 import { validateApiResponse } from '@/lib/validation'
-
-const getStatusColor = (type: IntentStatus) => {
-  switch (type) {
-    case IntentStatus.SIGNALED:
-      return 'text-yellow-500'
-    case IntentStatus.FULFILLED:
-      return 'text-green-500'
-    case IntentStatus.CANCELLED:
-      return 'text-red-500'
-    case IntentStatus.RELEASED:
-      return 'text-blue-500'
-    default:
-      return 'text-gray-500'
-  }
-}
-
-const getStatusIcon = (type: IntentStatus) => {
-  switch (type) {
-    case IntentStatus.SIGNALED:
-      return '⏳'
-    case IntentStatus.FULFILLED:
-      return '✅'
-    case IntentStatus.RELEASED:
-      return '✅'
-    case IntentStatus.CANCELLED:
-      return '❌'
-    default:
-      return '❓'
-  }
-}
-
-type Intent = {
-  intentId: string
-  owner: string
-  amount: string
-  to: string
-  verifier: string
-  conversionRate: string
-  blockNumber: number
-  txHash: string
-  timestamp: number
-  depositId?: string
-  status: IntentStatus
-}
+import StatusIcon from './ui/StatusIcon'
+import { getStatusText } from './ui/intent'
 
 // make current intents using events history
 const generateIntentsByHistory = ({
@@ -224,19 +182,6 @@ export function IntentHistory() {
     }
   }
 
-  const getIntentTypeString = (type: IntentStatus) => {
-    switch (type) {
-      case IntentStatus.SIGNALED:
-        return tIntentStatus('signaled')
-      case IntentStatus.FULFILLED:
-        return tIntentStatus('fulfilled')
-      case IntentStatus.RELEASED:
-        return tIntentStatus('released')
-      case IntentStatus.CANCELLED:
-        return tIntentStatus('cancelled')
-    }
-  }
-
   const intents = filter === Filter.MY ? myIntents : allIntents
 
   const isReleaseable = (intent: Intent) => {
@@ -318,11 +263,11 @@ export function IntentHistory() {
                 className="bg-secondary/30 rounded-2xl p-4 border border-border/50 ansition-all duration-300">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-semibold flex items-center gap-2">
-                    <span className={getStatusColor(intent.status)}>
-                      {getStatusIcon(intent.status)}
+                    <span>
+                      <StatusIcon status={intent.status} />
+                      {t('requestId')}
+                      {index + 1}
                     </span>
-                    {t('requestId')}
-                    {index + 1}
                     <span
                       className={cn(
                         'px-2 py-1 rounded-full text-xs font-medium',
@@ -335,7 +280,7 @@ export function IntentHistory() {
                         intent.status === IntentStatus.CANCELLED &&
                           'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200',
                       )}>
-                      {getIntentTypeString(intent.status)}
+                      {getStatusText(intent.status, tIntentStatus)}
                     </span>
                   </h3>
                   <span className="text-xs text-muted-foreground">

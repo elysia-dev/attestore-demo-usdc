@@ -32,3 +32,17 @@ export interface TransferHistoryResponse {
   intentReleaseds: (IntentReleased & { owner: string })[]
   intentCancelleds: (IntentCancelled & { owner: string })[]
 }
+
+export type Intent = {
+  intentId: string
+  owner: string
+  amount: string
+  to: string
+  verifier: string
+  conversionRate: string
+  blockNumber: number
+  txHash: string
+  timestamp: number
+  depositId?: string
+  status: IntentStatus
+}
