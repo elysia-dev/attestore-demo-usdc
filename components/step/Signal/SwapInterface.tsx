@@ -488,7 +488,12 @@ export default function SwapInterface({
       {/* Exchange Rate Info */}
       {!!conversionRate && (
         <div className="text-center text-sm text-muted-foreground">
-          1 KRW = {(Number(conversionRate) / 1e18).toFixed(6)} USDC
+          1 KRW ={' '}
+          {(Number(conversionRate) / 1e18).toLocaleString('en-US', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 6,
+          })}{' '}
+          USDC
         </div>
       )}
 
