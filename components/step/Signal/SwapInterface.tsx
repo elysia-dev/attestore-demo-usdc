@@ -22,6 +22,7 @@ import { useContractWrite } from '@/hooks/useContractWrite'
 import { useAccount, usePublicClient } from 'wagmi'
 import { calculateConvertedAmount } from '@/lib/tokenConversoin'
 import { useTranslations } from 'next-intl'
+import Image from 'next/image'
 
 interface SwapInterfaceProps {
   amount: string
@@ -390,13 +391,18 @@ export default function SwapInterface({
             placeholder="0"
             className="bg-transparent text-2xl font-medium outline-none w-full"
           />
+
           <div className="flex items-center gap-2 min-w-fit">
-            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-              <span className="text-xs font-bold text-white">
-                {isOnramp ? '₩' : '$'}
-              </span>
-            </div>
             <span className="font-medium">{isOnramp ? 'KRW' : 'USDC'}</span>
+            {!isOnramp && (
+              <Image
+                src="/base-usdc.png"
+                alt="USDC"
+                width={24}
+                height={24}
+                className="w-6 h-6"
+              />
+            )}
           </div>
         </div>
       </div>
@@ -410,9 +416,13 @@ export default function SwapInterface({
           <div className="bg-background/50 rounded-xl p-4 border border-border/30 opacity-60">
             <div className="flex items-center justify-between">
               <span className="font-medium">TossBank</span>
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-blue-500 flex items-center justify-center">
-                <span className="text-xs font-bold text-white">T</span>
-              </div>
+              <Image
+                src="/toss.png"
+                alt="TossBank"
+                width={24}
+                height={24}
+                className="w-6 h-6"
+              />
             </div>
           </div>
         </div>
@@ -436,14 +446,24 @@ export default function SwapInterface({
                   ? '0.00'
                   : '0'}
             </span>
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
-                <span className="text-xs font-bold text-white">
-                  {isOnramp ? '$' : '₩'}
-                </span>
+            {
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 min-w-fit">
+                  <span className="font-medium">
+                    {isOnramp ? 'USDC' : 'KRW'}
+                  </span>
+                  {isOnramp && (
+                    <Image
+                      src="/base-usdc.png"
+                      alt="USDC"
+                      width={24}
+                      height={24}
+                      className="w-6 h-6"
+                    />
+                  )}
+                </div>
               </div>
-              <span className="font-medium">{isOnramp ? 'USDC' : 'KRW'}</span>
-            </div>
+            }
           </div>
         </div>
       </div>
