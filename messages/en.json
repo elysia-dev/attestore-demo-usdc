@@ -28,6 +28,14 @@
     "processing": "Processing...",
     "amount": "Amount"
   },
+  "accountModal": {
+    "title": "Account Info",
+    "copyAddress": "Copy Address",
+    "addressCopied": "Address copied",
+    "network": "Network",
+    "disconnect": "Disconnect Wallet",
+    "balance": "Balance"
+  },
   "landing": {
     "title": "Welcome to Zenie",
     "subtitle": "Attestation Demo"

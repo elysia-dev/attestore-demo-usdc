@@ -28,6 +28,14 @@
     "processing": "처리 중...",
     "amount": "금액"
   },
+  "accountModal": {
+    "title": "계정 정보",
+    "copyAddress": "주소 복사",
+    "addressCopied": "주소가 복사되었습니다",
+    "network": "네트워크",
+    "disconnect": "지갑 연결 해제",
+    "balance": "잔액"
+  },
   "landing": {
     "title": "Zenie에 오신 것을 환영합니다",
     "subtitle": "증명 데모"
