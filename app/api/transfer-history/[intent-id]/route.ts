@@ -5,7 +5,10 @@ const HISTORY_API_URL = isProduction
   ? process.env.HISTORY_API_URL_PROD
   : process.env.HISTORY_API_URL_TEST
 
-export async function GET(request: NextRequest) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ 'intent-id': string }> },
+) {
   if (!HISTORY_API_URL) {
     return NextResponse.json(
       { error: 'HISTORY_API_URL is not set' },
@@ -13,9 +16,18 @@ export async function GET(request: NextRequest) {
     )
   }
 
+  const { 'intent-id': intentId } = await params
+
+  if (!intentId) {
+    return NextResponse.json(
+      { error: 'Intent ID is required' },
+      { status: 400 },
+    )
+  }
+
   const query = `
     {
-      intentSignaleds {
+      intentSignaleds(where: {intentId: "${intentId}"}) {
         items {
           intentId
           owner
@@ -29,7 +41,7 @@ export async function GET(request: NextRequest) {
         }
         totalCount
       }
-      intentFulfilleds {
+      intentFulfilleds(where: {intentId: "${intentId}"}) {
         items {
           intentId
           owner
@@ -42,7 +54,7 @@ export async function GET(request: NextRequest) {
           timestamp
         }
       }
-      intentReleaseds {
+      intentReleaseds(where: {intentId: "${intentId}"}) {
         items {
           txHash
           owner
@@ -54,7 +66,7 @@ export async function GET(request: NextRequest) {
           timestamp
         }
       }
-      intentCancelleds {
+      intentCancelleds(where: {intentId: "${intentId}"}) {
         items {
           intentId
           owner
@@ -65,13 +77,26 @@ export async function GET(request: NextRequest) {
       }
     }`
 
-  const result = await fetch(HISTORY_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ query }),
-  })
-  const rawData = await result.json()
-  return NextResponse.json(rawData)
+  try {
+    const result = await fetch(HISTORY_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query }),
+    })
+
+    if (!result.ok) {
+      throw new Error(`HTTP error! status: ${result.status}`)
+    }
+
+    const rawData = await result.json()
+    return NextResponse.json(rawData)
+  } catch (error) {
+    console.error('Error fetching intent history:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch intent history' },
+      { status: 500 },
+    )
+  }
 }
