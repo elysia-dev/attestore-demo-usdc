@@ -15,6 +15,7 @@ import { VideoPopup } from '../ui/VideoPopup'
 import { WorkflowStep } from '../StepIndicator'
 import { WaitingForRelease } from '../WaitingForRelease'
 import { useTranslations } from 'next-intl'
+import { useRouter } from 'next/navigation'
 
 // Certificate number formatting function - don't filter out Korean characters
 const formatCertificateNumber = (value: string): string => {
@@ -242,7 +243,6 @@ export default function Proof({
       <WaitingForRelease
         intentId={intentId?.toString() || ''}
         onManualProof={() => setShowManualProof(true)}
-        onComplete={() => setCurrentStep(WorkflowStep.FULFILL)}
         handlePrevious={handlePrevious}
       />
     )

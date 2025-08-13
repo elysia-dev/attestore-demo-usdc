@@ -109,7 +109,7 @@
     "releaseFunds": "자금 해제"
   },
   "intentStatus": {
-    "signaled": "요청 대기중",
+    "signaled": "대기중",
     "fulfilled": "처리완료(수동)",
     "released": "처리완료",
     "cancelled": "취소됨"
@@ -193,8 +193,14 @@
     "transferUSDC": "USDC 송금"
   },
   "waitingForRelease": {
+    "request": "요청",
     "processingTransfer": "송금 처리 중",
     "waitingDescription": "관리자가 송금을 확인하고 USDC를 전송할 것입니다.",
+    "transferReleased": "🎉 축하합니다. 송금이 완료되었습니다.",
+    "transferCancelled": "🚨 송금이 취소되었습니다.",
+    "transferFulfilled": "🚨 송금이 이미 처리되었습니다.",
+    "goToHistory": "히스토리",
+    "checkHistoryForDetails": "히스토리 탭에서 자세한 내용을 확인할 수 있습니다.",
     "typicalProcessingTime": "일반적인 처리 시간",
     "processingTimeValue": "1-5분",
     "processingDescription": "관리자가 정기적으로 결제를 확인하고 자동으로 처리합니다.",

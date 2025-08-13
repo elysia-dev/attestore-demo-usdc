@@ -193,8 +193,14 @@
     "transferUSDC": "Transfer USDC"
   },
   "waitingForRelease": {
+    "request": "Request",
     "processingTransfer": "Processing Your Transfer",
     "waitingDescription": "Please wait while the admin verifies your off-chain payment and releases USDC",
+    "transferReleased": "🎉 Congratulations! Your transfer has been completed.",
+    "transferCancelled": "🚨 Your transfer has been cancelled.",
+    "transferFulfilled": "🚨 Your transfer has already been processed.",
+    "goToHistory": "History",
+    "checkHistoryForDetails": "You can check the details in the history tab.",
     "typicalProcessingTime": "Typical processing time",
     "processingTimeValue": "1-5 minutes",
     "processingDescription": "The admin regularly checks payments and processes them automatically.",
