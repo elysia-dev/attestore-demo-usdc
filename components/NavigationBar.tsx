@@ -105,7 +105,7 @@ export default function NavigationBar({ className }: NavigationBarProps) {
           <LanguageToggle />
 
           {/* Add Token Button */}
-          {isConnected && <AddTokenButton />}
+          {/* {isConnected && <AddTokenButton />} */}
 
           {/* Network Badge - simplified for mobile */}
           {isConnected && (
