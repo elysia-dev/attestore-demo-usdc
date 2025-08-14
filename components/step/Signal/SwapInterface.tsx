@@ -23,6 +23,7 @@ import { useAccount, usePublicClient } from 'wagmi'
 import { calculateConvertedAmount } from '@/lib/tokenConversoin'
 import { useTranslations } from 'next-intl'
 import Image from 'next/image'
+import useDepositStore from '@/stores/useDepositStore'
 
 interface SwapInterfaceProps {
   amount: string
@@ -56,6 +57,9 @@ export default function SwapInterface({
   const publicClient = usePublicClient()
   const [isSwapping, setIsSwapping] = useState(false)
   const { setError, freeError } = useContext(ErrorContext)
+  const { allDeposits } = useDepositStore()
+  const defaultDeposit = allDeposits.find((d) => d.id === DEFAULT_DEPOSIT_ID)
+
   const { address } = useAccount()
   // Contract write hook for signalIntent
   const { writeAndWait: signalIntentWrite, isLoading: isSignalIntentLoading } =
@@ -96,13 +100,6 @@ export default function SwapInterface({
         }
       },
     })
-
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [processStep, setProcessStep] = useState<string>('')
-  const [processProgress, setProcessProgress] = useState<{
-    current: number
-    total: number
-  }>({ current: 0, total: 0 })
 
   const { writeAndWait: approveWrite } = useContractWrite()
 
@@ -162,15 +159,7 @@ export default function SwapInterface({
     }
 
     try {
-      setIsProcessing(true)
-      setProcessStep(tSwap('checkingRequirements'))
-      setProcessProgress({ current: 1, total: 3 })
-
-      // 1. Skip checking for existing deposits due to contract interface mismatch
-      // In a production environment, you would need to implement proper tracking
-      // of user deposits, possibly through events or a different contract method
-
-      // 2. Check user token balance
+      // 1. Check user token balance
       const balance = await publicClient?.readContract({
         address: ADDRESSES.USDC,
         abi: erc20Abi,
@@ -190,20 +179,16 @@ export default function SwapInterface({
         return
       }
 
-      // 3. Validate account number
+      // 2. Validate account number
       if (!accountNumber.trim()) {
         setError(ErrorType.ACCOUNT_NUMBER_EMPTY)
         return
       }
 
-      // 4. Check and handle token approval
-      setProcessStep(tSwap('checkingTokenApproval'))
+      // 3. Check and handle token approval
       const hasAllowance = await checkAllowance(depositAmount)
 
       if (!hasAllowance) {
-        setProcessStep(tSwap('approvingTokens'))
-        setProcessProgress({ current: 2, total: 3 })
-
         // Ensure addresses are defined
         if (!ADDRESSES.USDC || !ADDRESSES.ESCROW) {
           throw new Error('Contract addresses not properly configured')
@@ -229,9 +214,7 @@ export default function SwapInterface({
         }
       }
 
-      // 5. Create deposit
-      setProcessStep(tSwap('creatingDeposit'))
-      setProcessProgress({ current: 3, total: 3 })
+      // 4. Create deposit
 
       const minIntentAmount = parseUnits('0.1', 6)
       const maxIntentAmount = parseUnits('100', 6)
@@ -279,8 +262,6 @@ export default function SwapInterface({
         }
         throw createError
       }
-
-      setProcessStep(tSwap('successDepositCreated'))
     } catch (error: any) {
       const errorMessage = extractErrorMessage(error)
       console.error('CreateDeposit error:', error)
@@ -291,9 +272,7 @@ export default function SwapInterface({
       })
       setError(tSwap('depositCreationFailed', { error: errorMessage }))
     } finally {
-      setIsProcessing(false)
-      setProcessStep('')
-      setProcessProgress({ current: 0, total: 0 })
+      handleRefreshMyIntentId()
     }
   }
 
@@ -401,25 +380,7 @@ export default function SwapInterface({
       </div>
 
       {/* Paying using */}
-      {isOnramp && (
-        <div className="space-y-2">
-          <label className="text-sm text-muted-foreground">
-            {tSwap('payingUsing')}
-          </label>
-          <div className="bg-background/50 rounded-xl p-4 border border-border/30 opacity-60">
-            <div className="flex items-center justify-between">
-              <span className="font-medium">TossBank</span>
-              <Image
-                src="/toss.png"
-                alt="TossBank"
-                width={24}
-                height={24}
-                className="w-6 h-6"
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      {isOnramp && <PayingUsing />}
 
       {/* You receive */}
       <div className="space-y-2">
@@ -498,36 +459,92 @@ export default function SwapInterface({
         </div>
       )}
 
-      {/* Exchange Rate Info */}
-      {!!conversionRate && (
-        <div className="text-center text-sm text-muted-foreground">
-          1 KRW ={' '}
-          {(Number(conversionRate) / 1e18).toLocaleString('en-US', {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 6,
-          })}{' '}
-          USDC
-        </div>
-      )}
-
-      {/* Action Button */}
-      <button
-        onClick={handleSwap}
-        disabled={
-          !amount ||
-          parseFloat(amount) <= 0 ||
-          isSwapping ||
-          isSignalIntentLoading ||
-          (isOnramp && !recipientAddress) ||
-          (!isOnramp && !accountNumber)
-        }
-        className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-4 py-2 rounded-full font-semibold transition-all duration-200 hover:shadow-lg">
-        {isSwapping || isSignalIntentLoading
-          ? t('processing')
-          : isOnramp
-            ? tSwap('buyUSDC')
-            : tSwap('sellUSDC')}
-      </button>
+      {!!conversionRate && <ConversionRate conversionRate={conversionRate} />}
+      <ActionButton
+        isSwapping={isSwapping}
+        isSignalIntentLoading={isSignalIntentLoading}
+        isOnramp={isOnramp}
+        amount={amount}
+        recipientAddress={recipientAddress}
+        accountNumber={accountNumber}
+        handleSwap={handleSwap}
+      />
     </div>
+  )
+}
+const PayingUsing = () => {
+  const tSwap = useTranslations('swap')
+  return (
+    <div className="space-y-2">
+      <label className="text-sm text-muted-foreground">
+        {tSwap('payingUsing')}
+      </label>
+      <div className="bg-background/50 rounded-xl p-4 border border-border/30 opacity-60">
+        <div className="flex items-center justify-between">
+          <span className="font-medium">TossBank</span>
+          <Image
+            src="/toss.png"
+            alt="TossBank"
+            width={24}
+            height={24}
+            className="w-6 h-6"
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const ConversionRate = ({ conversionRate }: { conversionRate: bigint }) => {
+  return (
+    <div className="text-center text-sm text-muted-foreground">
+      1 KRW ={' '}
+      {(Number(conversionRate) / 1e18).toLocaleString('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 6,
+      })}{' '}
+      USDC
+    </div>
+  )
+}
+
+const ActionButton = ({
+  isSwapping,
+  isSignalIntentLoading,
+  isOnramp,
+  amount,
+  recipientAddress,
+  accountNumber,
+  handleSwap,
+}: {
+  isSwapping: boolean
+  isSignalIntentLoading: boolean
+  isOnramp: boolean
+  amount: string
+  recipientAddress: string
+  accountNumber: string
+  handleSwap: () => void
+}) => {
+  const t = useTranslations('common')
+  const tSwap = useTranslations('swap')
+
+  return (
+    <button
+      onClick={handleSwap}
+      disabled={
+        !amount ||
+        parseFloat(amount) <= 0 ||
+        isSwapping ||
+        isSignalIntentLoading ||
+        (isOnramp && !recipientAddress) ||
+        (!isOnramp && !accountNumber)
+      }
+      className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-4 py-2 rounded-full font-semibold transition-all duration-200 hover:shadow-lg">
+      {isSwapping || isSignalIntentLoading
+        ? t('processing')
+        : isOnramp
+          ? tSwap('buyUSDC')
+          : tSwap('sellUSDC')}
+    </button>
   )
 }

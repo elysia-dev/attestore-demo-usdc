@@ -43,8 +43,7 @@ export default function Signal({
   isLoadingDeposits?: boolean // Optional for backward compatibility
 }) {
   // Get data from Zustand store
-  const { myDeposits, depositDetail, setDepositDetail, allDeposits } =
-    useDepositStore()
+  const { myDeposits, depositDetail } = useDepositStore()
 
   const [mode, setMode] = useState<SignalMode>(SignalMode.ONRAMP)
   const [accountNumber, setAccountNumber] = useState('')
@@ -52,12 +51,11 @@ export default function Signal({
   const [conversionRate, setConversionRate] = useState<bigint | null>(null)
   const [recipientAddress, setRecipientAddress] = useState('')
   const tCommon = useTranslations('common')
-  const { address } = useAccount()
 
   const depositId = depositDetail?.id || myDeposits[myDeposits.length - 1]?.id
 
   const publicClient = usePublicClient()
-  const { setError, freeError } = useContext(ErrorContext)
+  const { freeError } = useContext(ErrorContext)
   // conversionRate of deposit 1
   const fetchConversionRate = useCallback(async () => {
     if (!publicClient) return
