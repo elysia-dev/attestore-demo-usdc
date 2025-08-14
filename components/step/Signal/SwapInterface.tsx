@@ -36,8 +36,6 @@ interface SwapInterfaceProps {
   setIntentId: (intentId: number) => void
   setSearchIntentId: (searchIntentId: number) => void
   handleRefreshMyIntentId: () => void
-
-  handleRefreshDepositDetails: (depositId: number) => Promise<void>
 }
 
 export default function SwapInterface({
@@ -52,8 +50,6 @@ export default function SwapInterface({
   setIntentId,
   setSearchIntentId,
   handleRefreshMyIntentId,
-
-  handleRefreshDepositDetails,
 }: SwapInterfaceProps) {
   const t = useTranslations('common')
   const tSwap = useTranslations('swap')
@@ -135,9 +131,6 @@ export default function SwapInterface({
           const { depositId: newDepositId } = decodedLog.args as unknown as {
             depositId: bigint
           }
-
-          const depositIdNumber = Number(newDepositId)
-          handleRefreshDepositDetails(depositIdNumber)
         }
       } catch (error) {
         console.error('Failed to parse DepositCreated event:', error)

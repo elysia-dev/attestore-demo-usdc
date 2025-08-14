@@ -11,19 +11,20 @@ import { ErrorContext } from '@/context/ErrorContext'
 import { extractErrorMessage } from '@/components/utils/extractErrorMessage'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
+import useDepositStore from '@/stores/useDepositStore'
 
 const DepositManagement = ({
   depositId,
   depositDetail,
-  setDepositDetail,
 }: {
   depositId: number | null
   depositDetail: DepositDetail | null
-  setDepositDetail: Dispatch<SetStateAction<DepositDetail | null>>
 }) => {
   const t = useTranslations('depositManagement')
   const tCommon = useTranslations('common')
   const { setError } = useContext(ErrorContext)
+
+  const { setDepositDetail } = useDepositStore()
 
   const {
     writeAndWait: withdrawDepositWrite,

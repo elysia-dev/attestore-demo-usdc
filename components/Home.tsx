@@ -114,7 +114,7 @@ export default function Home() {
     handleRefreshMyIntentId()
     if (address) {
       setCurrentAddress(address)
-      fetchAndFilterDeposits(publicClient)
+      fetchDeposits(publicClient)
     }
   }, [isConnected, address, publicClient]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -146,7 +146,7 @@ export default function Home() {
 
   const [proofResult, setProofResult] = useState<ProofResult | null>(null)
 
-  const { setCurrentAddress, fetchAndFilterDeposits } = useDepositStore()
+  const { setCurrentAddress, fetchDeposits } = useDepositStore()
 
   useEffect(() => {
     if (error && errorRef.current) {

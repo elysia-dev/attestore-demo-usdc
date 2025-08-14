@@ -43,7 +43,8 @@ export default function Signal({
   isLoadingDeposits?: boolean // Optional for backward compatibility
 }) {
   // Get data from Zustand store
-  const { myDeposits, depositDetail, setDepositDetail } = useDepositStore()
+  const { myDeposits, depositDetail, setDepositDetail, allDeposits } =
+    useDepositStore()
 
   const [mode, setMode] = useState<SignalMode>(SignalMode.ONRAMP)
   const [accountNumber, setAccountNumber] = useState('')
@@ -57,58 +58,6 @@ export default function Signal({
 
   const publicClient = usePublicClient()
   const { setError, freeError } = useContext(ErrorContext)
-
-  // Handle deposit details refresh
-  const handleRefreshDepositDetails = useCallback(
-    async (targetDepositId: number) => {
-      if (!targetDepositId) return
-
-      try {
-        const depositData = await publicClient?.readContract({
-          address: ADDRESSES.ESCROW,
-          abi: ESCROW_ABI,
-          functionName: 'deposits',
-          args: [BigInt(targetDepositId)],
-        })
-
-        if (
-          depositData &&
-          depositData[0] !== '0x0000000000000000000000000000000000000000'
-        ) {
-          const [
-            depositor,
-            token,
-            amount,
-            intentAmountRange,
-            acceptingIntents,
-            remainingDeposits,
-            outstandingIntentAmount,
-          ] = depositData
-          const newDepositDetails = {
-            id: targetDepositId,
-            depositor,
-            token,
-            amount,
-            intentAmountRange,
-            acceptingIntents,
-            remainingDeposits,
-            outstandingIntentAmount,
-          }
-          setDepositDetail(newDepositDetails)
-          // Also update store if it's the current user's deposit
-          if (depositor.toLowerCase() === address?.toLowerCase()) {
-            setDepositDetail(newDepositDetails)
-          }
-        } else {
-          setError('Deposit not found')
-        }
-      } catch (error) {
-        console.error('Failed to lookup Deposit ID:', error)
-        setError('Failed to lookup Deposit')
-      }
-    },
-    [publicClient, setError],
-  )
   // conversionRate of deposit 1
   const fetchConversionRate = useCallback(async () => {
     if (!publicClient) return
@@ -158,7 +107,6 @@ export default function Signal({
           setIntentId={setIntentId}
           setSearchIntentId={setSearchIntentId}
           handleRefreshMyIntentId={handleRefreshMyIntentId}
-          handleRefreshDepositDetails={handleRefreshDepositDetails}
         />
       )
     } else if (isOnramp) {
@@ -183,7 +131,6 @@ export default function Signal({
         <DepositManagement
           depositId={depositId}
           depositDetail={depositDetail}
-          setDepositDetail={setDepositDetail}
         />
       )
     }
