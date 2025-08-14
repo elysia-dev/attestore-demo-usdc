@@ -4,6 +4,7 @@ import ADDRESSES from '@/lib/addresses'
 import { ESCROW_ABI } from '@/lib/abi'
 
 interface DepositState {
+  allDeposits: DepositDetail[]
   myDeposits: DepositDetail[]
   depositDetail: DepositDetail | null
   currentAddress: string
@@ -14,7 +15,7 @@ interface DepositState {
   setCurrentAddress: (address: string) => void
   setIsLoadingDeposits: (loading: boolean) => void
   setIsLoadingIntentIds: (loading: boolean) => void
-  fetchAndFilterDeposits: (publicClient: any) => Promise<void>
+  fetchDeposits: (publicClient: any) => Promise<void>
   fetchDepositIntentIds: (
     publicClient: any,
     depositId: number,
@@ -24,6 +25,7 @@ interface DepositState {
 }
 
 const useDepositStore = create<DepositState>((set, get) => ({
+  allDeposits: [],
   myDeposits: [],
   depositDetail: null,
   currentAddress: '',
@@ -36,7 +38,7 @@ const useDepositStore = create<DepositState>((set, get) => ({
 
   setIsLoadingIntentIds: (loading) => set({ isLoadingIntentIds: loading }),
 
-  fetchAndFilterDeposits: async (publicClient) => {
+  fetchDeposits: async (publicClient) => {
     const { currentAddress } = get()
     if (!currentAddress || !publicClient) return
 
@@ -111,6 +113,7 @@ const useDepositStore = create<DepositState>((set, get) => ({
           : null
 
       set({
+        allDeposits,
         myDeposits: filtered,
         depositDetail: latest,
         isLoadingDeposits: false,
