@@ -57,7 +57,10 @@
     "invalidAmount": "Invalid amount",
     "insufficientBalance": "Insufficient USDC balance. You have {balance} USDC but need {amount} USDC",
     "depositCreationFailed": "Deposit creation failed: {error}",
-    "transactionFailed": "Transaction failed: Unable to estimate gas. Please check your wallet balance and try again."
+    "transactionFailed": "Transaction failed: Unable to estimate gas. Please check your wallet balance and try again.",
+    "amountTooLow": "Minimum amount is {min} USDC",
+    "amountTooHigh": "Maximum amount is {max} USDC",
+    "maxAvailable": "Max"
   },
   "navigation": {
     "swap": "Swap",

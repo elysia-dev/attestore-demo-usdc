@@ -57,7 +57,10 @@
     "invalidAmount": "잘못된 금액입니다",
     "insufficientBalance": "잔액이 부족합니다. {balance} USDC가 있지만 {amount} USDC가 필요합니다",
     "depositCreationFailed": "디포짓 생성 실패: {error}",
-    "transactionFailed": "거래 실패: 가스를 추정할 수 없습니다. 지갑 잔액을 확인하고 다시 시도해주세요."
+    "transactionFailed": "거래 실패: 가스를 추정할 수 없습니다. 지갑 잔액을 확인하고 다시 시도해주세요.",
+    "amountTooLow": "최소 금액은 {min} USDC입니다",
+    "amountTooHigh": "최대 금액은 {max} USDC입니다",
+    "maxAvailable": "최대"
   },
   "navigation": {
     "swap": "스왑",

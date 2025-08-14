@@ -9,7 +9,7 @@ import { ErrorContext } from '@/context/ErrorContext'
 import { ESCROW_ABI } from '@/lib/abi'
 import ADDRESSES from '@/lib/addresses'
 import { ErrorType } from '@/lib/errors'
-import { useContext, useState } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 import {
   decodeEventLog,
   erc20Abi,
@@ -56,7 +56,12 @@ export default function SwapInterface({
   const tSwap = useTranslations('swap')
   const publicClient = usePublicClient()
   const [isSwapping, setIsSwapping] = useState(false)
-  const { setError, freeError } = useContext(ErrorContext)
+
+  // show on input
+  const [amountError, setAmountError] = useState<string | null>(null)
+
+  // show on below. it is for api call error
+  const { setError } = useContext(ErrorContext)
   const { allDeposits } = useDepositStore()
   const defaultDeposit = allDeposits.find((d) => d.id === DEFAULT_DEPOSIT_ID)
 
@@ -276,6 +281,49 @@ export default function SwapInterface({
     }
   }
 
+  // Helper function to validate USDC amount against deposit limits
+  const validateUsdcAmount = useCallback(
+    (usdcAmountString: string): string | null => {
+      if (!defaultDeposit) return null
+
+      const usdcAmountBigInt = parseUnits(usdcAmountString, 6)
+      const minAmount = defaultDeposit.intentAmountRange.min // 1000n = 0.001 USDC
+      const maxAmount = defaultDeposit.intentAmountRange.max // 2000000000n = 2000 USDC
+
+      // Also consider remainingDeposits
+      const effectiveMax =
+        defaultDeposit.remainingDeposits < maxAmount
+          ? defaultDeposit.remainingDeposits
+          : maxAmount
+
+      if (usdcAmountBigInt < minAmount) {
+        return tSwap('amountTooLow', { min: formatUnits(minAmount, 6) })
+      }
+
+      if (usdcAmountBigInt > effectiveMax) {
+        return tSwap('amountTooHigh', {
+          max: formatUnits(effectiveMax, 6),
+          remaining: formatUnits(defaultDeposit.remainingDeposits, 6),
+        })
+      }
+
+      return null
+    },
+    [defaultDeposit, tSwap],
+  )
+
+  useEffect(() => {
+    const usdcAmount = isOnramp
+      ? calculateConvertedAmount({
+          inputAmount: amount,
+          isBuying: true,
+          conversionRate,
+        })
+      : amount
+    const error = validateUsdcAmount(usdcAmount)
+    setAmountError(error)
+  }, [isOnramp, amount, conversionRate, validateUsdcAmount, setAmountError])
+
   const handleSwap = async () => {
     if (isOnramp) {
       // KRW -> USDC (onramp)
@@ -294,6 +342,13 @@ export default function SwapInterface({
       // Validate the calculated amount
       if (!usdcAmount || usdcAmount === '0' || usdcAmount === '0.00') {
         setError(tSwap('invalidAmount'))
+        return
+      }
+
+      // Validate against deposit limits
+      const validationError = validateUsdcAmount(usdcAmount)
+      if (validationError) {
+        setError(validationError)
         return
       }
 
@@ -330,9 +385,22 @@ export default function SwapInterface({
       }
     } else {
       // USDC -> KRW (offramp/deposit)
-      // Set the account number from swap interface
-      if (!accountNumber) {
-        setError(ErrorType.ACCOUNT_NUMBER_EMPTY)
+      if (!amount || !accountNumber) {
+        setError(ErrorType.REQUIRED_FIELDS_MISSING)
+        return
+      }
+
+      // Validate USDC amount is positive
+      const usdcAmount = parseFloat(amount)
+      if (usdcAmount <= 0 || isNaN(usdcAmount)) {
+        setError(tSwap('invalidAmount'))
+        return
+      }
+
+      // Validate against deposit limits
+      const validationError = validateUsdcAmount(amount)
+      if (validationError) {
+        setError(validationError)
         return
       }
 
@@ -350,14 +418,35 @@ export default function SwapInterface({
             value={amount}
             onChange={(e) => {
               const value = e.target.value
+              setAmountError(null) // Clear error on change
 
               if (isOnramp) {
-                // KRW input - only integers allowed
+                // KRW input - only positive integers allowed
                 if (value === '' || /^\d+$/.test(value)) {
                   setAmount(value)
+
+                  // Validate the resulting USDC amount
+                  if (value && conversionRate) {
+                    const usdcAmount = calculateConvertedAmount({
+                      inputAmount: value,
+                      isBuying: true,
+                      conversionRate,
+                    })
+
+                    if (usdcAmount && usdcAmount !== '0') {
+                      const error = validateUsdcAmount(usdcAmount)
+                      setAmountError(error)
+                    }
+                  }
                 }
               } else {
-                setAmount(value)
+                if (value === '' || /^\d*\.?\d{0,6}$/.test(value)) {
+                  // Allow empty value or valid positive number (including 0 for editing)
+                  const numValue = parseFloat(value)
+                  if (value === '' || (numValue >= 0 && !isNaN(numValue))) {
+                    setAmount(value)
+                  }
+                }
               }
             }}
             placeholder="0"
@@ -377,6 +466,9 @@ export default function SwapInterface({
             )}
           </div>
         </div>
+        {amountError && (
+          <p className="text-sm text-destructive mt-1">{amountError}</p>
+        )}
       </div>
 
       {/* Paying using */}
@@ -384,9 +476,25 @@ export default function SwapInterface({
 
       {/* You receive */}
       <div className="space-y-2">
-        <label className="text-sm text-muted-foreground">
-          {tSwap('youReceive')}
-        </label>
+        <div className="flex items-center justify-between">
+          <label className="text-sm text-muted-foreground">
+            {tSwap('youReceive')}
+          </label>
+          {isOnramp && defaultDeposit && (
+            <span className="text-xs text-muted-foreground">
+              {tSwap('maxAvailable', {
+                max: formatUnits(
+                  defaultDeposit.remainingDeposits <
+                    defaultDeposit.intentAmountRange.max
+                    ? defaultDeposit.remainingDeposits
+                    : defaultDeposit.intentAmountRange.max,
+                  6,
+                ),
+              })}{' '}
+              USDC
+            </span>
+          )}
+        </div>
         <div className="bg-background/50 rounded-xl p-4 border border-border/30">
           <div className="flex items-center justify-between">
             <span className="text-xl font-medium text-muted-foreground">
@@ -468,6 +576,7 @@ export default function SwapInterface({
         recipientAddress={recipientAddress}
         accountNumber={accountNumber}
         handleSwap={handleSwap}
+        amountError={amountError}
       />
     </div>
   )
@@ -516,6 +625,7 @@ const ActionButton = ({
   recipientAddress,
   accountNumber,
   handleSwap,
+  amountError,
 }: {
   isSwapping: boolean
   isSignalIntentLoading: boolean
@@ -524,6 +634,7 @@ const ActionButton = ({
   recipientAddress: string
   accountNumber: string
   handleSwap: () => void
+  amountError: string | null
 }) => {
   const t = useTranslations('common')
   const tSwap = useTranslations('swap')
@@ -537,7 +648,8 @@ const ActionButton = ({
         isSwapping ||
         isSignalIntentLoading ||
         (isOnramp && !recipientAddress) ||
-        (!isOnramp && !accountNumber)
+        (!isOnramp && !accountNumber) ||
+        !!amountError
       }
       className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-4 py-2 rounded-full font-semibold transition-all duration-200 hover:shadow-lg">
       {isSwapping || isSignalIntentLoading
