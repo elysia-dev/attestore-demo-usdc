@@ -313,6 +313,18 @@ export default function SwapInterface({
   )
 
   useEffect(() => {
+    // Only validate if amount is not empty and is a valid positive number
+    if (!amount || amount === '') {
+      setAmountError(null)
+      return
+    }
+
+    const numValue = parseFloat(amount)
+    if (isNaN(numValue) || numValue <= 0) {
+      setAmountError(null)
+      return
+    }
+
     const usdcAmount = isOnramp
       ? calculateConvertedAmount({
           inputAmount: amount,
@@ -320,9 +332,15 @@ export default function SwapInterface({
           conversionRate,
         })
       : amount
-    const error = validateUsdcAmount(usdcAmount)
-    setAmountError(error)
-  }, [isOnramp, amount, conversionRate, validateUsdcAmount, setAmountError])
+
+    // Only validate if we have a valid USDC amount
+    if (usdcAmount && usdcAmount !== '0' && usdcAmount !== '0.00') {
+      const error = validateUsdcAmount(usdcAmount)
+      setAmountError(error)
+    } else {
+      setAmountError(null)
+    }
+  }, [isOnramp, amount, conversionRate, validateUsdcAmount])
 
   const handleSwap = async () => {
     if (isOnramp) {
