@@ -1,4 +1,4 @@
-import { IntentDetails } from '@/components/Home'
+import { IntentDetail } from '@/components/Home'
 import { TOKEN_SYMBOL, USDC_SYMBOL } from '@/constant'
 import { useContractWrite } from '@/hooks/useContractWrite'
 import ADDRESSES from '@/lib/addresses'
@@ -15,14 +15,14 @@ import { useTranslations, useLocale } from 'next-intl'
 const IntentManagement = ({
   intentId,
   searchIntentId,
-  intentDetails,
+  intentDetail,
   handleRefreshMyIntentId,
   setIntentId,
   setSearchIntentId,
 }: {
   intentId: number | null
   searchIntentId: number | null
-  intentDetails: IntentDetails | null
+  intentDetail: IntentDetail | null
   handleRefreshMyIntentId: () => void
   setIntentId: (intentId: number) => void
   setSearchIntentId: (searchIntentId: number) => void
@@ -52,10 +52,10 @@ const IntentManagement = ({
   )
 
   useEffect(() => {
-    if (intentDetails) {
-      readReceiverTokenBalance(intentDetails.to)
+    if (intentDetail) {
+      readReceiverTokenBalance(intentDetail.to)
     }
-  }, [intentDetails, readReceiverTokenBalance])
+  }, [intentDetail, readReceiverTokenBalance])
 
   const { writeAndWait: cancelIntentWrite, isLoading: isCancelIntentLoading } =
     useContractWrite({
@@ -90,7 +90,7 @@ const IntentManagement = ({
 
   return (
     <div className="space-y-6">
-      {intentDetails && (
+      {intentDetail && (
         <div className="bg-card/50 backdrop-blur-sm rounded-3xl border border-border/50 overflow-hidden">
           {/* Pending Swap Section */}
           <div className="p-6 pb-4">
@@ -111,8 +111,8 @@ const IntentManagement = ({
                     {t('receiver')}
                   </p>
                   <p className="font-mono">
-                    {intentDetails.to.slice(0, 6)}...
-                    {intentDetails.to.slice(-4)}
+                    {intentDetail.to.slice(0, 6)}...
+                    {intentDetail.to.slice(-4)}
                   </p>
                 </div>
               </div>
@@ -124,7 +124,7 @@ const IntentManagement = ({
                     {t('amount')}
                   </p>
                   <p className="font-mono font-medium text-lg text-primary">
-                    {formatUnits(intentDetails.amount, 6)} USDC
+                    {formatUnits(intentDetail.amount, 6)} USDC
                   </p>
                 </div>
                 <div className="text-right">
@@ -132,18 +132,20 @@ const IntentManagement = ({
                     {t('createdTime')}
                   </p>
                   <p className="text-sm">
-                    {new Date(
-                      intentDetails.timestamp * 1000,
-                    ).toLocaleDateString(locale, {
-                      month: 'numeric',
-                      day: 'numeric',
-                    })}{' '}
-                    {new Date(
-                      intentDetails.timestamp * 1000,
-                    ).toLocaleTimeString(locale, {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
+                    {new Date(intentDetail.timestamp * 1000).toLocaleDateString(
+                      locale,
+                      {
+                        month: 'numeric',
+                        day: 'numeric',
+                      },
+                    )}{' '}
+                    {new Date(intentDetail.timestamp * 1000).toLocaleTimeString(
+                      locale,
+                      {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      },
+                    )}
                   </p>
                 </div>
               </div>
@@ -177,11 +179,11 @@ const IntentManagement = ({
                   <button
                     className="font-mono text-sm hover:text-primary transition-colors"
                     onClick={() => {
-                      const url = getExplorerUrl(intentDetails.to)
+                      const url = getExplorerUrl(intentDetail.to)
                       window.open(url, '_blank')
                     }}>
-                    {intentDetails.to.slice(0, 8)}...
-                    {intentDetails.to.slice(-6)}
+                    {intentDetail.to.slice(0, 8)}...
+                    {intentDetail.to.slice(-6)}
                   </button>
                 </div>
               </div>

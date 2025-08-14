@@ -1,5 +1,5 @@
 import { formatUnits } from 'viem'
-import { IntentDetails } from '../Home'
+import { IntentDetail } from '../Home'
 import { getTossBankQRCode, TOSS_ACCOUNT_NUMBER } from '@/constant'
 import { useContext, useState } from 'react'
 import { ErrorContext } from '@/context/ErrorContext'
@@ -14,11 +14,11 @@ import { useTranslations } from 'next-intl'
 
 export default function Transfer({
   intentId,
-  intentDetails,
+  intentDetail,
   setCurrentStep,
 }: {
   intentId: number
-  intentDetails: IntentDetails
+  intentDetail: IntentDetail
   setCurrentStep: (step: WorkflowStep) => void
 }) {
   const t = useTranslations('transfer')
@@ -28,8 +28,8 @@ export default function Transfer({
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
 
   const transferAmount = getKRWAmount({
-    usdcAmount: intentDetails.amount,
-    conversionRate: intentDetails.conversionRate,
+    usdcAmount: intentDetail.amount,
+    conversionRate: intentDetail.conversionRate,
   })
 
   const checkAndGoNext = () => {
@@ -86,7 +86,7 @@ export default function Transfer({
       />
 
       {/* 토스 송금 안내 - Intent ID가 있을 때만 표시 */}
-      {intentId && intentDetails?.amount && (
+      {intentId && intentDetail?.amount && (
         <section className="bg-card/50 rounded-[24px] p-6 backdrop-blur-xl border border-border/50 space-y-4">
           <div className="space-y-2">
             <h3 className="text-lg font-semibold flex items-center gap-2">
@@ -159,7 +159,7 @@ export default function Transfer({
                 {tCommon('amount')}
               </p>
               <p className="text-sm font-medium">
-                {formatUnits(intentDetails?.amount, 6)} USDC
+                {formatUnits(intentDetail?.amount, 6)} USDC
               </p>
             </div>
             <div className="flex items-center justify-between">

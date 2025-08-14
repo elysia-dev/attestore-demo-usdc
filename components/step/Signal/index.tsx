@@ -1,4 +1,4 @@
-import { IntentDetails, DepositDetails } from '@/components/Home'
+import { IntentDetail, DepositDetail } from '@/components/Home'
 import { useContext, useEffect, useState, useCallback } from 'react'
 import { useAccount, usePublicClient } from 'wagmi'
 import useDepositStore from '@/stores/useDepositStore'
@@ -22,7 +22,7 @@ export enum SignalMode {
 export default function Signal({
   intentId,
   searchIntentId,
-  intentDetails,
+  intentDetail,
   setIntentId,
   setSearchIntentId,
   handleRefreshMyIntentId,
@@ -32,14 +32,14 @@ export default function Signal({
 }: {
   intentId: number | null
   searchIntentId: number | null
-  intentDetails: IntentDetails | null
+  intentDetail: IntentDetail | null
   setIntentId: (intentId: number) => void
   setSearchIntentId: (searchIntentId: number) => void
   handleRefreshMyIntentId: () => void
   setCurrentStep: (step: WorkflowStep) => void
   chainId: number
   isConnected: boolean
-  deposits?: DepositDetails[] // Optional for backward compatibility
+  deposits?: DepositDetail[] // Optional for backward compatibility
   isLoadingDeposits?: boolean // Optional for backward compatibility
 }) {
   // Get data from Zustand store
@@ -51,17 +51,6 @@ export default function Signal({
   const [conversionRate, setConversionRate] = useState<bigint | null>(null)
   const [recipientAddress, setRecipientAddress] = useState('')
   const tCommon = useTranslations('common')
-
-  // Use depositDetail from store as the default depositDetails
-  const [depositDetails, setDepositDetails] = useState<DepositDetails | null>(
-    depositDetail,
-  )
-
-  // Update local state when store changes
-  useEffect(() => {
-    setDepositDetails(depositDetail)
-  }, [depositDetail])
-
   const { address } = useAccount()
 
   const depositId = depositDetail?.id || myDeposits[myDeposits.length - 1]?.id
@@ -105,7 +94,7 @@ export default function Signal({
             remainingDeposits,
             outstandingIntentAmount,
           }
-          setDepositDetails(newDepositDetails)
+          setDepositDetail(newDepositDetails)
           // Also update store if it's the current user's deposit
           if (depositor.toLowerCase() === address?.toLowerCase()) {
             setDepositDetail(newDepositDetails)
@@ -180,7 +169,7 @@ export default function Signal({
         <IntentManagement
           intentId={intentId}
           searchIntentId={searchIntentId}
-          intentDetails={intentDetails}
+          intentDetail={intentDetail}
           handleRefreshMyIntentId={handleRefreshMyIntentId}
           setIntentId={setIntentId}
           setSearchIntentId={setSearchIntentId}
@@ -193,14 +182,14 @@ export default function Signal({
       return (
         <DepositManagement
           depositId={depositId}
-          depositDetails={depositDetails}
-          setDepositDetails={setDepositDetails}
+          depositDetail={depositDetail}
+          setDepositDetail={setDepositDetail}
         />
       )
     }
   }
 
-  const disableNextStep = !intentId || !intentDetails?.amount
+  const disableNextStep = !intentId || !intentDetail?.amount
   const tSwap = useTranslations('swap')
 
   const swapText = isOnramp

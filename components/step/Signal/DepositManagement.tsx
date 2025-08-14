@@ -1,4 +1,4 @@
-import { DepositDetails, DepositResult } from '@/components/Home'
+import { DepositDetail, DepositResult } from '@/components/Home'
 import { Button } from '@/components/ui/button'
 import { TOKEN_SYMBOL, USDC_SYMBOL } from '@/constant'
 import { useContractWrite } from '@/hooks/useContractWrite'
@@ -14,12 +14,12 @@ import { useTranslations } from 'next-intl'
 
 const DepositManagement = ({
   depositId,
-  depositDetails,
-  setDepositDetails,
+  depositDetail,
+  setDepositDetail,
 }: {
   depositId: number | null
-  depositDetails: DepositDetails | null
-  setDepositDetails: Dispatch<SetStateAction<DepositDetails | null>>
+  depositDetail: DepositDetail | null
+  setDepositDetail: Dispatch<SetStateAction<DepositDetail | null>>
 }) => {
   const t = useTranslations('depositManagement')
   const tCommon = useTranslations('common')
@@ -30,7 +30,7 @@ const DepositManagement = ({
     isLoading: isWithdrawDepositLoading,
   } = useContractWrite({
     onSuccess: () => {
-      setDepositDetails(null)
+      setDepositDetail(null)
     },
   })
 
@@ -54,7 +54,7 @@ const DepositManagement = ({
 
   return (
     <div className="space-y-6">
-      {depositId && depositDetails && (
+      {depositId && depositDetail && (
         <div className="bg-card/50 backdrop-blur-sm rounded-3xl border border-border/50 overflow-hidden">
           {/* Deposit Details Section */}
           <div className="p-6 pb-4">
@@ -63,11 +63,11 @@ const DepositManagement = ({
               <span
                 className={cn(
                   'px-3 py-1 rounded-full text-xs font-medium',
-                  depositDetails.acceptingIntents
+                  depositDetail.acceptingIntents
                     ? 'bg-green-500/10 text-green-500'
                     : 'bg-gray-500/10 text-gray-500',
                 )}>
-                {depositDetails.acceptingIntents ? t('active') : t('inactive')}
+                {depositDetail.acceptingIntents ? t('active') : t('inactive')}
               </span>
             </div>
 
@@ -86,7 +86,7 @@ const DepositManagement = ({
                     {tCommon('amount')}
                   </p>
                   <p className="font-mono font-medium text-lg">
-                    {formatUnits(depositDetails.amount, 6)} USDC
+                    {formatUnits(depositDetail.amount, 6)} USDC
                   </p>
                 </div>
               </div>
@@ -99,8 +99,8 @@ const DepositManagement = ({
                     {t('intentRange')}
                   </p>
                   <p className="text-sm">
-                    {formatUnits(depositDetails.intentAmountRange.min, 6)} -{' '}
-                    {formatUnits(depositDetails.intentAmountRange.max, 6)} USDC
+                    {formatUnits(depositDetail.intentAmountRange.min, 6)} -{' '}
+                    {formatUnits(depositDetail.intentAmountRange.max, 6)} USDC
                   </p>
                 </div>
               </div>
@@ -110,7 +110,7 @@ const DepositManagement = ({
                     {t('remaining')}
                   </p>
                   <p className="font-mono font-medium text-lg">
-                    {formatUnits(depositDetails.remainingDeposits, 6)} USDC
+                    {formatUnits(depositDetail.remainingDeposits, 6)} USDC
                   </p>
                 </div>
               </div>
@@ -122,7 +122,7 @@ const DepositManagement = ({
                 <div
                   className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-300"
                   style={{
-                    width: `${Math.round((Number(depositDetails.amount - depositDetails.remainingDeposits) / Number(depositDetails.amount)) * 100)}%`,
+                    width: `${Math.round((Number(depositDetail.amount - depositDetail.remainingDeposits) / Number(depositDetail.amount)) * 100)}%`,
                   }}
                 />
               </div>

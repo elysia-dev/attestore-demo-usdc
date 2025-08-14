@@ -1,11 +1,11 @@
 import { create } from 'zustand'
-import { DepositDetails } from '@/components/Home'
+import { DepositDetail } from '@/components/Home'
 import ADDRESSES from '@/lib/addresses'
 import { ESCROW_ABI } from '@/lib/abi'
 
 interface DepositState {
-  myDeposits: DepositDetails[]
-  depositDetail: DepositDetails | null
+  myDeposits: DepositDetail[]
+  depositDetail: DepositDetail | null
   currentAddress: string
   isLoadingDeposits: boolean
   isLoadingIntentIds: boolean
@@ -19,8 +19,8 @@ interface DepositState {
     publicClient: any,
     depositId: number,
   ) => Promise<bigint[]>
-  setDepositDetail: (deposit: DepositDetails | null) => void
-  createDeposit: (deposit: DepositDetails) => void
+  setDepositDetail: (deposit: DepositDetail | null) => void
+  createDeposit: (deposit: DepositDetail) => void
 }
 
 const useDepositStore = create<DepositState>((set, get) => ({
@@ -56,7 +56,7 @@ const useDepositStore = create<DepositState>((set, get) => ({
       }
 
       // Fetch all deposits
-      const allDeposits: DepositDetails[] = []
+      const allDeposits: DepositDetail[] = []
 
       for (let i = 0; i < Number(depositCounter); i++) {
         const depositId = i + 1

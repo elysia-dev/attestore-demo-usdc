@@ -90,7 +90,7 @@ const validateCertificateNumber = (
 
 export default function Proof({
   intentId,
-  intentDetails,
+  intentDetail,
   issueDate,
   setIssueDate,
   certificateNumber,
@@ -102,7 +102,7 @@ export default function Proof({
   proofResult,
 }: {
   intentId: number | null
-  intentDetails: any | null
+  intentDetail: any | null
   issueDate: string
   setIssueDate: (issueDate: string) => void
   certificateNumber: string

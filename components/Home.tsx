@@ -36,7 +36,7 @@ export type FulfillmentResult = {
   amount?: bigint
   txHash?: string
 }
-export type IntentDetails = {
+export type IntentDetail = {
   owner: string
   to: string
   depositId: bigint
@@ -47,7 +47,7 @@ export type IntentDetails = {
   conversionRate: bigint
 }
 
-export type DepositDetails = {
+export type DepositDetail = {
   id: number
   depositor: string
   token: string
@@ -124,7 +124,7 @@ export default function Home() {
 
   const [intentId, setIntentId] = useState<number | null>(null)
   const [searchIntentId, setSearchIntentId] = useState<number | null>(null)
-  const [intentDetails, setIntentDetails] = useState<IntentDetails | null>(null)
+  const [intentDetail, setIntentDetail] = useState<IntentDetail | null>(null)
 
   const defaultValue =
     process.env.NEXT_PUBLIC_CHAIN_NETWORK === 'local'
@@ -169,7 +169,7 @@ export default function Home() {
       setCertificateNumber('')
       setFulfillmentResult(null)
       setSearchIntentId(null)
-      setIntentDetails(null)
+      setIntentDetail(null)
     }
   }, [isConnected, currentStep])
 
@@ -192,7 +192,7 @@ export default function Home() {
         setIntentId(newIntentId)
         handleSearchIntentDetails(newIntentId)
       } else {
-        setIntentDetails(null)
+        setIntentDetail(null)
       }
     } catch (error) {
       console.error('Failed to lookup Intent ID:', error)
@@ -237,7 +237,7 @@ export default function Home() {
           string,
           bigint,
         ]
-        setIntentDetails({
+        setIntentDetail({
           owner,
           to,
           depositId,
@@ -248,12 +248,12 @@ export default function Home() {
           conversionRate,
         })
       } else {
-        setIntentDetails(null)
+        setIntentDetail(null)
         setError(ErrorType.INTENT_NOT_FOUND, { id: targetIntentId })
       }
     } catch (error) {
       console.error('Failed to lookup Intent ID:', error)
-      setIntentDetails(null)
+      setIntentDetail(null)
       setError(ErrorType.INTENT_NOT_FOUND, { id: targetIntentId })
     } finally {
       setIsLoading(false)
@@ -269,7 +269,7 @@ export default function Home() {
           <Signal
             intentId={intentId}
             searchIntentId={searchIntentId}
-            intentDetails={intentDetails}
+            intentDetail={intentDetail}
             setIntentId={setIntentId}
             setSearchIntentId={setSearchIntentId}
             handleRefreshMyIntentId={handleRefreshMyIntentId}
@@ -280,13 +280,13 @@ export default function Home() {
         )
 
       case WorkflowStep.TRANSFER:
-        if (!intentId || !intentDetails) {
+        if (!intentId || !intentDetail) {
           return <>no intent</>
         }
         return (
           <Transfer
             intentId={intentId}
-            intentDetails={intentDetails}
+            intentDetail={intentDetail}
             setCurrentStep={setCurrentStep}
           />
         )
@@ -299,7 +299,7 @@ export default function Home() {
             certificateNumber={certificateNumber}
             setCertificateNumber={setCertificateNumber}
             intentId={intentId}
-            intentDetails={intentDetails}
+            intentDetail={intentDetail}
             setCurrentStep={setCurrentStep}
             isLoading={isLoading}
             setIsLoading={setIsLoading}
