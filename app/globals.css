@@ -42,58 +42,113 @@
   --container-container: var(--container-lg);
 }
 
+/* Typography System */
+@utility text-xs {
+  font-size: 12px;
+  line-height: 16px;
+}
+
+@utility text-sm {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+@utility text-base {
+  font-size: 16px;
+  line-height: 24px;
+}
+
+@utility text-lg {
+  font-size: 18px;
+  line-height: 28px;
+}
+
+@utility text-xl {
+  font-size: 20px;
+  line-height: 28px;
+}
+
+@utility text-2xl {
+  font-size: 24px;
+  line-height: 32px;
+}
+
+@utility text-3xl {
+  font-size: 30px;
+  line-height: 36px;
+}
+
+/* Button Sizes */
+@utility btn-sm {
+  padding: 8px 16px;
+  font-size: 14px;
+  line-height: 20px;
+  border-radius: 12px;
+}
+
+@utility btn-md {
+  padding: 10px 20px;
+  font-size: 14px;
+  line-height: 20px;
+  border-radius: 16px;
+}
+
+@utility btn-lg {
+  padding: 12px 24px;
+  font-size: 16px;
+  line-height: 24px;
+  border-radius: 20px;
+}
+
+@utility btn-xl {
+  padding: 14px 28px;
+  font-size: 16px;
+  line-height: 24px;
+  border-radius: 24px;
+}
+
+/* Legacy utilities for backward compatibility */
 @utility title {
-  font-size: 60px;
+  font-size: 30px;
   font-weight: 700;
-  line-height: 72px;
-  font-family: var(--font-jakarta-sans);
-  @media (max-width: 948px) {
-    font-size: 6.8cqw;
-    white-space: nowrap;
-    line-height: 1.2;
-    width: 100%;
+  line-height: 36px;
+  @media (max-width: 640px) {
+    font-size: 24px;
+    line-height: 32px;
   }
 }
 
 @utility header {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 600;
-  line-height: 35px;
+  line-height: 32px;
   @media (max-width: 640px) {
     font-size: 20px;
-    line-height: 26px;
+    line-height: 28px;
   }
 }
 
 @utility body {
-  font-size: 18px;
-  line-height: 23px;
+  font-size: 16px;
+  line-height: 24px;
   @media (max-width: 640px) {
     font-size: 14px;
-    line-height: 18px;
+    line-height: 20px;
   }
 }
 
 @utility button-text {
-  font-size: 15px;
-  line-height: 19px;
-  @media (max-width: 640px) {
-    font-size: 13px;
-    line-height: 16px;
-  }
+  font-size: 14px;
+  line-height: 20px;
 }
 
 @utility text {
-  font-size: 15px;
-  line-height: 19px;
-  @media (max-width: 640px) {
-    font-size: 13px;
-    line-height: 16px;
-  }
+  font-size: 14px;
+  line-height: 20px;
 }
 
 @utility label {
-  font-size: 13px;
+  font-size: 12px;
   line-height: 16px;
 }
 

@@ -389,7 +389,7 @@ export default function SwapInterface({
               }
             }}
             placeholder="0"
-            className="bg-transparent text-2xl font-medium outline-none w-full"
+            className="bg-transparent text-xl font-medium outline-none w-full"
           />
 
           <div className="flex items-center gap-2 min-w-fit">
@@ -435,7 +435,7 @@ export default function SwapInterface({
         </label>
         <div className="bg-background/50 rounded-xl p-4 border border-border/30">
           <div className="flex items-center justify-between">
-            <span className="text-2xl font-medium text-muted-foreground">
+            <span className="text-xl font-medium text-muted-foreground">
               {amount
                 ? calculateConvertedAmount({
                     inputAmount: amount,

@@ -261,7 +261,7 @@ export function WaitingForRelease({
         <CardFooter className="flex justify-between gap-3">
           <button
             onClick={handlePrevious}
-            className="flex-1 px-2 py-2 rounded-full bg-secondary/50 hover:bg-secondary/70 transition-all duration-200 border border-border/50 flex items-center justify-center gap-2 text-sm font-medium">
+            className="flex-1 px-4 py-2 rounded-full bg-secondary/50 hover:bg-secondary/70 transition-all duration-200 border border-border/50 flex items-center justify-center gap-2 text-sm font-medium">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path
                 d="M12.5 15L7.5 10L12.5 5"
@@ -277,14 +277,14 @@ export function WaitingForRelease({
           {isCompleted ? (
             <button
               onClick={handleGoToHistory}
-              className="flex-2 bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-2 rounded-full font-semibold transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-1">
+              className="flex-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-full text-xs font-semibold transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-1">
               {t('goToHistory')}
               <ArrowRight className="w-5 h-5" />
             </button>
           ) : (
             <button
               onClick={onManualProof}
-              className="flex-2 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-3 py-2 rounded-full font-semibold transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-1">
+              className="flex-2 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-4 py-2 rounded-full text-xs font-semibold transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-1">
               {t('proveTransferManually')}
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path

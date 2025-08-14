@@ -12,12 +12,12 @@ export default function FulfillmentResultComponent({
 
   return (
     <section className="space-y-6">
-      <h2 className="text-2xl font-bold text-center text-gradient">
+      <h2 className="text-xl font-bold text-center text-gradient">
         {t('transferCompleted')}
       </h2>
       <section className="bg-card/50 rounded-[24px] p-6 backdrop-blur-xl border border-border/50">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <span className="text-2xl">🎉</span>
+        <h3 className="text-base font-semibold mb-4 flex items-center gap-2">
+          <span className="text-lg">🎉</span>
           {t('transferInfo')}
         </h3>
         <section className="bg-secondary/30 rounded-2xl p-4 border border-border/50">
@@ -64,7 +64,7 @@ export default function FulfillmentResultComponent({
         onClick={() => {
           window.location.href = '/'
         }}
-        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 rounded-full font-semibold transition-all duration-200 hover:shadow-lg">
+        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 hover:shadow-lg">
         {t('goToMain')}
       </button>
     </section>

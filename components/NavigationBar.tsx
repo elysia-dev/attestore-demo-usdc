@@ -71,7 +71,7 @@ export default function NavigationBar({ className }: NavigationBarProps) {
                 router.push('/')
               }}
               className={cn(
-                'text-sm sm:text-base font-medium transition-colors relative pb-1',
+                'text-sm font-medium transition-colors relative pb-1',
                 activeTab === 'swap'
                   ? 'text-white'
                   : 'text-white/60 hover:text-white/80',
@@ -87,7 +87,7 @@ export default function NavigationBar({ className }: NavigationBarProps) {
                 router.push('/?view=history')
               }}
               className={cn(
-                'text-sm sm:text-base font-medium transition-colors relative pb-1',
+                'text-sm font-medium transition-colors relative pb-1',
                 activeTab === 'history'
                   ? 'text-white'
                   : 'text-white/60 hover:text-white/80',

@@ -126,8 +126,8 @@ export function WaitingForDepositFulfillment({
           <div className="mx-auto w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4 animate-pulse">
             <BanknoteIcon className="w-10 h-10 text-primary" />
           </div>
-          <CardTitle className="text-2xl">{t('title')}</CardTitle>
-          <CardDescription className="text-base">
+          <CardTitle className="text-xl font-semibold">{t('title')}</CardTitle>
+          <CardDescription className="text-sm text-muted-foreground">
             {t('description')}
           </CardDescription>
         </CardHeader>
@@ -157,7 +157,7 @@ export function WaitingForDepositFulfillment({
           {/* Elapsed time */}
           <div className="text-center">
             <p className="text-sm text-muted-foreground">{t('elapsedTime')}</p>
-            <p className="text-2xl font-mono font-semibold">
+            <p className="text-lg font-mono font-semibold">
               {formatTime(elapsedTime)}
             </p>
           </div>
