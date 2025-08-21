@@ -21,12 +21,31 @@ const PRODUCTION_ADDRESSES = {
   TOSS_BANK_VERIFIER: '0xc3D3cDc54a4Ef7d36220604Fd73fa521B6F5Fb6c',
 } as const
 
+// https://github.com/ModoriLabs/zk-escrow/tree/ZEN-040/deploy-kairos?tab=readme-ov-file#kairos-test
+const KAIROS_ADDRESSES = {
+  USDC: '0xef1E927798fc7d016835d2b8B65367b99919F11E',
+  NULLIFIER_REGISTRY: '0x72f91969485c7eFa53990FB0763fFA57Ba73F3Be',
+  TOSS_BANK_VERIFIER: '0x945926b0945f6028d2a4190760341fcd51250f42',
+  ESCROW: '0xB2bACB93a5046Fa2A9b5709CB06d41dAb0De6D37',
+} as const
+
+const KAIA_ADDRESSES = {
+  USDC: '0xd077a400968890eacc75cdc901f0356c943e4fdb',
+  NULLIFIER_REGISTRY: '0x18ac6522530f88Cf7d61Dd29609F13397869d330',
+  TOSS_BANK_VERIFIER: '0x861aA44bDe09bB3878203276487e0aB47239fEA1',
+  ESCROW: '0x8c9bd74c6796eAf8cB48De320FFbe70021021395',
+} as const
+
 const ADDRESSES = (function () {
   const CHAIN_NETWORK = process.env.NEXT_PUBLIC_CHAIN_NETWORK
   if (CHAIN_NETWORK === 'test') {
     return TESTNET_ADDRESSES
   } else if (CHAIN_NETWORK === 'production') {
     return PRODUCTION_ADDRESSES
+  } else if (CHAIN_NETWORK === 'kairos') {
+    return KAIROS_ADDRESSES
+  } else if (CHAIN_NETWORK === 'kaia') {
+    return KAIA_ADDRESSES
   } else {
     return LOCALNET_ADDRESSES
   }

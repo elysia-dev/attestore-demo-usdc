@@ -11,6 +11,33 @@ export const anvil = {
   testnet: true,
 } as const
 
+export const kairos = {
+  id: 1001,
+  name: 'Kairos Testnet',
+  nativeCurrency: { name: 'KAIA', symbol: 'KAIA', decimals: 18 },
+  rpcUrls: {
+    default: { http: ['https://public-en-kairos.node.kaia.io'] },
+    public: { http: ['https://public-en-kairos.node.kaia.io'] },
+  },
+  blockExplorers: {
+    default: { name: 'KaiaScan', url: 'https://kairos.kaiascan.io' },
+  },
+  testnet: true,
+} as const
+
+export const kaia = {
+  id: 8217,
+  name: 'Kaia',
+  nativeCurrency: { name: 'KAIA', symbol: 'KAIA', decimals: 18 },
+  rpcUrls: {
+    default: { http: ['https://kaia-browser.line-apps.com'] },
+    public: { http: ['https://kaia-browser.line-apps.com'] },
+  },
+  blockExplorers: {
+    default: { name: 'KaiaScan', url: 'https://www.kaiascan.io' },
+  },
+} as const
+
 export const ANVIL_ACCOUNTS = {
   OWNER: {
     address: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',

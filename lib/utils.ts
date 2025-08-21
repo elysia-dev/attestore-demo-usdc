@@ -14,6 +14,8 @@ export enum NetworkName {
   LOCAL = 'local',
   TEST = 'test',
   PRODUCTION = 'production',
+  KAIROS = 'kairos',
+  KAIA = 'kaia',
 }
 
 export function getExplorerUrl(address: string) {
@@ -22,6 +24,10 @@ export function getExplorerUrl(address: string) {
     return `https://holesky.etherscan.io/address/${address}`
   } else if (chainNetwork === NetworkName.TEST) {
     return `https://sepolia.basescan.org/address/${address}`
+  } else if (chainNetwork === NetworkName.KAIROS) {
+    return `https://kairos.kaiascan.io/address/${address}`
+  } else if (chainNetwork === NetworkName.KAIA) {
+    return `https://www.kaiascan.io/address/${address}`
   } else {
     return `https://basescan.org/address/${address}`
   }
@@ -33,6 +39,10 @@ export function getTransactionExplorerUrl(txHash: string) {
     return `https://holesky.etherscan.io/tx/${txHash}`
   } else if (chainNetwork === NetworkName.TEST) {
     return `https://sepolia.basescan.org/tx/${txHash}`
+  } else if (chainNetwork === NetworkName.KAIROS) {
+    return `https://kairos.kaiascan.io/tx/${txHash}`
+  } else if (chainNetwork === NetworkName.KAIA) {
+    return `https://www.kaiascan.io/tx/${txHash}`
   } else {
     return `https://basescan.org/tx/${txHash}`
   }
@@ -68,6 +78,10 @@ export const getNetworkNameByChainId = (chainId: number, short = false) => {
       return 'Base Sepolia'
     case 31337:
       return 'Anvil'
+    case 1001:
+      return 'Kairos Testnet'
+    case 8217:
+      return 'Kaia'
     default:
       return `Chain ID: ${chainId}`
   }
@@ -79,6 +93,10 @@ export const getNetworkNameByEnv = () => {
     return 'anvil'
   } else if (chainNetwork === NetworkName.TEST) {
     return 'basesep'
+  } else if (chainNetwork === NetworkName.KAIROS) {
+    return 'kairos'
+  } else if (chainNetwork === NetworkName.KAIA) {
+    return 'kaia'
   } else {
     return 'base'
   }
