@@ -56,6 +56,21 @@ export const isLocal = process.env.NEXT_PUBLIC_CHAIN_NETWORK === 'local'
 export const isProduction =
   process.env.NEXT_PUBLIC_CHAIN_NETWORK === 'production'
 
+export const NETWORK_CONFIG = {
+  production: {
+    allowedNetworks: ['base', 'kaia'] as const,
+    defaultNetwork: 'base' as const,
+  },
+  development: {
+    allowedNetworks: ['baseSepolia', 'kairos'] as const,
+    defaultNetwork: 'baseSepolia' as const,
+  },
+} as const
+
+export const getCurrentNetworkConfig = () => {
+  return isProduction ? NETWORK_CONFIG.production : NETWORK_CONFIG.development
+}
+
 export const chain = (function () {
   const chainNetwork = process.env.NEXT_PUBLIC_CHAIN_NETWORK
   if (chainNetwork === 'local') {

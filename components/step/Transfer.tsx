@@ -15,6 +15,7 @@ import { useTossLauncher } from '../../hooks/useTossLauncher'
 import ConfirmationModal from '../ui/ConfirmationModal'
 import { WorkflowStep } from '../StepIndicator'
 import { useTranslations } from 'next-intl'
+import { useAccount } from 'wagmi'
 
 export default function Transfer({
   intentId,
@@ -30,6 +31,7 @@ export default function Transfer({
   const { freeError } = useContext(ErrorContext)
   const [isVideoPopupOpen, setIsVideoPopupOpen] = useState(false)
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
+  const { chainId } = useAccount()
 
   const transferAmount = getKRWAmount({
     usdcAmount: intentDetail.amount,
@@ -154,8 +156,8 @@ export default function Transfer({
               </p>
               {/* <TransferMemoCopyButton /> */}
               <CopyTextButton
-                text={getTransferMemo(intentId)}
-                title={getTransferMemo(intentId)}
+                text={getTransferMemo(intentId, chainId)}
+                title={getTransferMemo(intentId, chainId)}
               />
             </div>
             <div className="flex items-center justify-between">

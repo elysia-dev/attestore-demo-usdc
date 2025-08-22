@@ -8,7 +8,7 @@ import { extractErrorMessage } from '@/components/utils/extractErrorMessage'
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { cn, getExplorerUrl, truncateAddress } from '@/lib/utils'
 import { erc20Abi, formatUnits } from 'viem'
-import { usePublicClient } from 'wagmi'
+import { useAccount, usePublicClient } from 'wagmi'
 import { ErrorContext } from '@/context/ErrorContext'
 import { useTranslations, useLocale } from 'next-intl'
 
@@ -27,6 +27,7 @@ const IntentManagement = ({
   setIntentId: (intentId: number) => void
   setSearchIntentId: (searchIntentId: number) => void
 }) => {
+  const { chainId } = useAccount()
   const publicClient = usePublicClient()
   const { setError } = useContext(ErrorContext)
   const t = useTranslations('intent')
@@ -179,7 +180,7 @@ const IntentManagement = ({
                   <button
                     className="font-mono text-sm hover:text-primary transition-colors"
                     onClick={() => {
-                      const url = getExplorerUrl(intentDetail.to)
+                      const url = getExplorerUrl(intentDetail.to, chainId)
                       window.open(url, '_blank')
                     }}>
                     {intentDetail.to.slice(0, 8)}...

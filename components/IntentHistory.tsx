@@ -84,7 +84,7 @@ export function IntentHistory() {
   const tCommon = useTranslations('common')
   const tIntentStatus = useTranslations('intentStatus')
 
-  const { address, isConnected } = useAccount()
+  const { address, isConnected, chainId } = useAccount()
 
   const [allIntents, setAllIntents] = useState<Intent[]>([])
   const [filter, setFilter] = useState<Filter>(Filter.ALL)
@@ -348,7 +348,7 @@ export function IntentHistory() {
                     className="space-y-1 cursor-pointer"
                     onClick={() => {
                       window.open(
-                        getTransactionExplorerUrl(intent.txHash),
+                        getTransactionExplorerUrl(intent.txHash, chainId),
                         '_blank',
                       )
                     }}>
@@ -359,7 +359,7 @@ export function IntentHistory() {
                       className="text-sm font-mono"
                       onClick={() => {
                         window.open(
-                          getTransactionExplorerUrl(intent.txHash),
+                          getTransactionExplorerUrl(intent.txHash, chainId),
                           '_blank',
                         )
                       }}>

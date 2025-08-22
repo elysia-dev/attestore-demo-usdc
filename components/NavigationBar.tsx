@@ -10,6 +10,7 @@ import { AddTokenButton } from './AddTokenButton'
 import { useTranslations } from 'next-intl'
 import LanguageToggle from './LanguageToggle'
 import CustomConnectButton from './utils/CustomConnectButton'
+import { NetworkSwitcher } from './ui/NetworkSwitcher'
 
 interface NavigationBarProps {
   className?: string
@@ -114,6 +115,9 @@ export default function NavigationBar({ className }: NavigationBarProps) {
 
         {/* Right side - Wallet and Network info */}
         <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+          {/* Network Switcher */}
+          <NetworkSwitcher />
+
           {/* Language Toggle - Only on desktop */}
           <LanguageToggle />
 

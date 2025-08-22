@@ -1,4 +1,3 @@
-import { getTransferMemo } from '@/lib/utils'
 import { Button } from './button'
 import { useTranslations } from 'next-intl'
 

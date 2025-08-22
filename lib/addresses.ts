@@ -7,14 +7,14 @@ const LOCALNET_ADDRESSES = {
 } as const
 
 // https://github.com/ModoriLabs/zk-escrow/tree/ZEN-037/escrow-upgradeable?tab=readme-ov-file#base_sepolia-test
-const TESTNET_ADDRESSES = {
+const BASE_SEPOLIA_ADDRESSES = {
   ESCROW: '0x90f1bc9C597902B7A60836B63F084d9aC5a657cd',
   USDC: '0x72f91969485c7efa53990fb0763ffa57ba73f3be',
   NULLIFIER_REGISTRY: '0xfE9a7603641e5Ac1cc155C62bAA7242dABf93B5a',
   TOSS_BANK_VERIFIER: '0x08A773D828Ae1195FE7355e8885bD47456815da1',
 } as const
 
-const PRODUCTION_ADDRESSES = {
+const BASE_ADDRESSES = {
   ESCROW: '0x5a790BC3038d6e46B8246127EC05540b424577E4',
   USDC: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
   NULLIFIER_REGISTRY: '0x517Ce8079ab28652BB1e5742B3B82afb41B8d5CE',
@@ -36,19 +36,11 @@ const KAIA_ADDRESSES = {
   ESCROW: '0x8c9bd74c6796eAf8cB48De320FFbe70021021395',
 } as const
 
-const ADDRESSES = (function () {
-  const CHAIN_NETWORK = process.env.NEXT_PUBLIC_CHAIN_NETWORK
-  if (CHAIN_NETWORK === 'test') {
-    return TESTNET_ADDRESSES
-  } else if (CHAIN_NETWORK === 'production') {
-    return PRODUCTION_ADDRESSES
-  } else if (CHAIN_NETWORK === 'kairos') {
-    return KAIROS_ADDRESSES
-  } else if (CHAIN_NETWORK === 'kaia') {
-    return KAIA_ADDRESSES
-  } else {
-    return LOCALNET_ADDRESSES
-  }
-})()
-
-export default ADDRESSES
+// Export individual address sets for use in useAddresses hook
+export {
+  LOCALNET_ADDRESSES,
+  BASE_SEPOLIA_ADDRESSES,
+  BASE_ADDRESSES,
+  KAIROS_ADDRESSES,
+  KAIA_ADDRESSES,
+}

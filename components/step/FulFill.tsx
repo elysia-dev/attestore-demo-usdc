@@ -3,7 +3,7 @@ import { FulfillmentResult, ProofResult } from '../Home'
 import FulfillmentResultComponent from '../FulfillmentResult'
 import { decodeEventLog, encodeAbiParameters, keccak256, toBytes } from 'viem'
 import { useContractWrite } from '@/hooks/useContractWrite'
-import { usePublicClient } from 'wagmi'
+import { useAccount, usePublicClient } from 'wagmi'
 import ADDRESSES from '@/lib/addresses'
 import { ESCROW_ABI } from '@/lib/abi'
 import { ErrorType } from '@/lib/errors'
@@ -155,6 +155,7 @@ export default function FulFill({
   const [elapsedTime, setElapsedTime] = useState(0)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const publicClient = usePublicClient()
+  const { chainId } = useAccount()
 
   // Manual check transaction status
   const checkTransactionStatus = async () => {
@@ -463,7 +464,10 @@ export default function FulFill({
                       </p>
                       <div className="flex items-center justify-between mt-2">
                         <a
-                          href={getTransactionExplorerUrl(transactionHash)}
+                          href={getTransactionExplorerUrl(
+                            transactionHash,
+                            chainId,
+                          )}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
