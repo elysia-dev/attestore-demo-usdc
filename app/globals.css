@@ -598,13 +598,6 @@
       ) !important;
   }
 
-  /* Modal and popup glassmorphism */
-  [role='dialog'] {
-    background: rgba(20, 20, 20, 0.85) !important;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-  }
-
   /* Enhanced floating animations */
   @keyframes float-enhanced {
     0%,
