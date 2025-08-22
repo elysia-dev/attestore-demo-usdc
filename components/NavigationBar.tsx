@@ -1,12 +1,9 @@
 'use client'
 
-import { cn, getNetworkNameByChainId, truncateAddress } from '@/lib/utils'
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+import { cn } from '@/lib/utils'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { useAccount, useChainId } from 'wagmi'
-import { ConnectButton } from '@rainbow-me/rainbowkit'
 import Image from 'next/image'
-import { AddTokenButton } from './AddTokenButton'
 import { useTranslations } from 'next-intl'
 import LanguageToggle from './LanguageToggle'
 import CustomConnectButton from './utils/CustomConnectButton'
@@ -27,12 +24,7 @@ export default function NavigationBar({ className }: NavigationBarProps) {
   const view = searchParams.get('view')
   const [activeTab, setActiveTab] = useState<Tab>(Tab.SWAP)
   const [showNetwork, setShowNetwork] = useState(false)
-  const { isConnected } = useAccount()
-  const chainId = useChainId()
   const t = useTranslations('navigation')
-
-  // Check if current network is Kaia or Kairos
-  const isKaiaNetwork = chainId === 8217 || chainId === 1001
 
   useEffect(() => {
     if (view === 'history') {
@@ -41,13 +33,6 @@ export default function NavigationBar({ className }: NavigationBarProps) {
       setActiveTab(Tab.SWAP)
     }
   }, [view])
-
-  // Redirect to main page if on Kaia/Kairos and viewing history
-  useEffect(() => {
-    if (isKaiaNetwork && view === 'history') {
-      router.push('/')
-    }
-  }, [isKaiaNetwork, view, router])
 
   useEffect(() => {
     if (showNetwork) {
@@ -74,43 +59,41 @@ export default function NavigationBar({ className }: NavigationBarProps) {
             onClick={() => (window.location.href = '/')}
           />
 
-          {/* Main navigation links - hidden on Kaia/Kairos networks */}
-          {!isKaiaNetwork && (
-            <div className="flex items-center gap-3 sm:gap-4 ml-2">
-              <button
-                onClick={() => {
-                  setActiveTab(Tab.SWAP)
-                  router.push('/')
-                }}
-                className={cn(
-                  'text-sm font-medium transition-colors relative pb-1',
-                  activeTab === 'swap'
-                    ? 'text-white'
-                    : 'text-white/60 hover:text-white/80',
-                )}>
-                {t('swap')}
-                {activeTab === 'swap' && (
-                  <div className="absolute -bottom-0.5 left-0 right-0 h-0.5 bg-white" />
-                )}
-              </button>
-              <button
-                onClick={() => {
-                  setActiveTab(Tab.HISTORY)
-                  router.push('/?view=history')
-                }}
-                className={cn(
-                  'text-sm font-medium transition-colors relative pb-1',
-                  activeTab === 'history'
-                    ? 'text-white'
-                    : 'text-white/60 hover:text-white/80',
-                )}>
-                {t('history')}
-                {activeTab === Tab.HISTORY && (
-                  <div className="absolute -bottom-0.5 left-0 right-0 h-0.5 bg-white" />
-                )}
-              </button>
-            </div>
-          )}
+          {/* Main navigation links */}
+          <div className="flex items-center gap-3 sm:gap-4 ml-2">
+            <button
+              onClick={() => {
+                setActiveTab(Tab.SWAP)
+                router.push('/')
+              }}
+              className={cn(
+                'text-sm font-medium transition-colors relative pb-1',
+                activeTab === 'swap'
+                  ? 'text-white'
+                  : 'text-white/60 hover:text-white/80',
+              )}>
+              {t('swap')}
+              {activeTab === 'swap' && (
+                <div className="absolute -bottom-0.5 left-0 right-0 h-0.5 bg-white" />
+              )}
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab(Tab.HISTORY)
+                router.push('/?view=history')
+              }}
+              className={cn(
+                'text-sm font-medium transition-colors relative pb-1',
+                activeTab === 'history'
+                  ? 'text-white'
+                  : 'text-white/60 hover:text-white/80',
+              )}>
+              {t('history')}
+              {activeTab === Tab.HISTORY && (
+                <div className="absolute -bottom-0.5 left-0 right-0 h-0.5 bg-white" />
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Right side - Wallet and Network info */}
