@@ -30,8 +30,8 @@ export const kaia = {
   name: 'Kaia',
   nativeCurrency: { name: 'KAIA', symbol: 'KAIA', decimals: 18 },
   rpcUrls: {
-    default: { http: ['https://kaia-browser.line-apps.com'] },
-    public: { http: ['https://kaia-browser.line-apps.com'] },
+    default: { http: ['https://public-en.node.kaia.io'] },
+    public: { http: ['https://public-en.node.kaia.io'] },
   },
   blockExplorers: {
     default: { name: 'KaiaScan', url: 'https://www.kaiascan.io' },
