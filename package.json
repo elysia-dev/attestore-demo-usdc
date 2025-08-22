@@ -13,6 +13,8 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@privy-io/react-auth": "^2.21.4",
+    "@privy-io/wagmi": "^1.0.6",
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-slot": "^1.2.3",
     "@rainbow-me/rainbowkit": "^2.2.8",
