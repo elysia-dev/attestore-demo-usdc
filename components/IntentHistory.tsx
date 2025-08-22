@@ -117,12 +117,12 @@ export function IntentHistory() {
   const isAdmin = address?.toLowerCase() === adminAddress?.toLowerCase()
 
   const fetchIntents = useCallback(async () => {
-    if (!address) return
+    if (!address || !chainId) return
 
     try {
       setIsLoading(true)
 
-      const response = await fetch(`/api/transfer-history`)
+      const response = await fetch(`/api/transfer-history?chainId=${chainId}`)
 
       if (!response.ok) {
         throw new Error(`HTTP error: ${response.status} ${response.statusText}`)
@@ -166,7 +166,7 @@ export function IntentHistory() {
     } finally {
       setIsLoading(false)
     }
-  }, [address])
+  }, [address, chainId])
 
   useEffect(() => {
     if (isConnected && address) {

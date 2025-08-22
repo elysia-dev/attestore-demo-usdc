@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { usePublicClient } from 'wagmi'
+import { usePublicClient, useAccount } from 'wagmi'
 import { FileCheck, ArrowRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import {
@@ -39,6 +39,7 @@ export function WaitingForRelease({
   handlePrevious,
 }: WaitingForReleaseProps) {
   const router = useRouter()
+  const { chainId } = useAccount()
   const t = useTranslations('waitingForRelease')
   const tCommon = useTranslations('common')
   const tIntentStatus = useTranslations('intentStatus')
@@ -52,7 +53,10 @@ export function WaitingForRelease({
 
       try {
         setIsLoading(true)
-        const response = await fetch(`/api/transfer-history/${intentId}`)
+        const url = chainId
+          ? `/api/transfer-history/${intentId}?chainId=${chainId}`
+          : `/api/transfer-history/${intentId}`
+        const response = await fetch(url)
 
         if (!response.ok) {
           throw new Error(
