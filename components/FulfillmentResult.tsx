@@ -1,6 +1,6 @@
 import { formatUnits } from 'viem'
 import { FulfillmentResult } from './Home'
-import { USDC_SYMBOL } from '@/constant'
+import { CURRENCY_SYMBOL } from '@/constant'
 import { useTranslations } from 'next-intl'
 
 export default function FulfillmentResultComponent({
@@ -45,7 +45,7 @@ export default function FulfillmentResultComponent({
               <p className="text-sm font-mono font-medium text-primary">
                 {fulfillmentResult.amount &&
                   formatUnits(fulfillmentResult.amount, 6)}{' '}
-                {USDC_SYMBOL}
+                {CURRENCY_SYMBOL}
               </p>
             </div>
             <div className="space-y-1">

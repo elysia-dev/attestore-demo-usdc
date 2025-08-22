@@ -15,6 +15,7 @@ import * as Sentry from '@sentry/nextjs'
 import { cn, getTransactionExplorerUrl } from '@/lib/utils'
 import { WorkflowStep } from '../StepIndicator'
 import { useTranslations } from 'next-intl'
+import { CURRENCY_SYMBOL } from '@/constant'
 
 const formatProofForContract = (receiptData: any) => {
   if (!receiptData) {
@@ -364,7 +365,7 @@ export default function FulFill({
         },
       })
 
-      setError(`USDC transfer failed: ${errorMessage}`)
+      setError(`${CURRENCY_SYMBOL} transfer failed: ${errorMessage}`)
       setFulfillmentResult({ success: false })
       setTransactionStatus('error')
     }
@@ -377,10 +378,14 @@ export default function FulFill({
         : transactionStatus === 'confirming'
           ? t('confirming')
           : isFulfillIntentLoading
-            ? t('transferringUSDC')
+            ? t('transferringUSDC', {
+                token: CURRENCY_SYMBOL.toUpperCase(),
+              })
             : fulfillmentResult?.success
               ? t('transferComplete')
-              : t('transferUSDC')
+              : t('transferUSDC', {
+                  token: CURRENCY_SYMBOL.toUpperCase(),
+                })
 
     if (
       !isFulfillIntentLoading &&
@@ -408,7 +413,9 @@ export default function FulFill({
   return (
     <>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold">{t('title')}</h2>
+        <h2 className="text-xl font-semibold">
+          {t('title', { token: CURRENCY_SYMBOL.toUpperCase() })}
+        </h2>
       </div>
       {fulfillmentResult?.success && (
         <FulfillmentResultComponent fulfillmentResult={fulfillmentResult} />
@@ -523,12 +530,16 @@ export default function FulFill({
             <div className="space-y-2">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <span className="text-primary">◆</span>
-                {t('clickTransferTitle')}
+                {t('clickTransferTitle', {
+                  token: CURRENCY_SYMBOL.toUpperCase(),
+                })}
               </h3>
               <p className="text-sm text-muted-foreground ml-6">
                 {t('proofGeneratedSuccess')}
                 <br />
-                {t('transferUSDCDescription')}
+                {t('transferUSDCDescription', {
+                  token: CURRENCY_SYMBOL.toUpperCase(),
+                })}
               </p>
             </div>
           </section>

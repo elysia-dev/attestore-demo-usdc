@@ -16,6 +16,7 @@ import { parseAbiItem } from 'viem'
 import ADDRESSES from '@/lib/addresses'
 import { ESCROW_ABI } from '@/lib/abi'
 import { useTranslations } from 'next-intl'
+import { CURRENCY_SYMBOL } from '@/constant'
 
 interface WaitingForDepositFulfillmentProps {
   depositId: string
@@ -168,7 +169,9 @@ export function WaitingForDepositFulfillment({
               <span className="text-sm text-muted-foreground">
                 {tCommon('amount')}
               </span>
-              <span className="text-sm font-medium">{amount} USDC</span>
+              <span className="text-sm font-medium">
+                {amount} {CURRENCY_SYMBOL}
+              </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">

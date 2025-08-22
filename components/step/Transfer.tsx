@@ -1,6 +1,10 @@
 import { formatUnits } from 'viem'
 import { IntentDetail } from '../Home'
-import { getTossBankQRCode, TOSS_ACCOUNT_NUMBER } from '@/constant'
+import {
+  CURRENCY_SYMBOL,
+  getTossBankQRCode,
+  TOSS_ACCOUNT_NUMBER,
+} from '@/constant'
 import { useContext, useState } from 'react'
 import { ErrorContext } from '@/context/ErrorContext'
 import QRCode from 'react-qr-code'
@@ -159,7 +163,7 @@ export default function Transfer({
                 {tCommon('amount')}
               </p>
               <p className="text-sm font-medium">
-                {formatUnits(intentDetail?.amount, 6)} USDC
+                {formatUnits(intentDetail?.amount, 6)} {CURRENCY_SYMBOL}
               </p>
             </div>
             <div className="flex items-center justify-between">

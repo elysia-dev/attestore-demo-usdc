@@ -354,7 +354,8 @@ export default function Home() {
                 {/* Subtitle */}
                 {currentStep === WorkflowStep.CONNECT && (
                   <p className="text-center text-muted-foreground mb-8">
-                    Instant KRW to USDC swaps powered by zero-knowledge proofs
+                    Instant KRW to Stablecoin swaps powered by zero-knowledge
+                    proofs
                   </p>
                 )}
 

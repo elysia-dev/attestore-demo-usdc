@@ -23,6 +23,7 @@ import {
 import { validateApiResponse } from '@/lib/validation'
 import StatusIcon from './ui/StatusIcon'
 import { getStatusText } from './ui/intent'
+import { CURRENCY_SYMBOL } from '@/constant'
 
 // make current intents using events history
 const generateIntentsByHistory = ({
@@ -310,7 +311,7 @@ export function IntentHistory() {
                       {tCommon('amount')}
                     </span>
                     <p className="text-sm font-mono font-medium text-primary">
-                      {formatUnits(BigInt(intent.amount), 6)} USDC
+                      {formatUnits(BigInt(intent.amount), 6)} {CURRENCY_SYMBOL}
                     </p>
                   </div>
                   <div className="space-y-1">

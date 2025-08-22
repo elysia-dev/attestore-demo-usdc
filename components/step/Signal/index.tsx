@@ -7,7 +7,11 @@ import { ESCROW_ABI } from '@/lib/abi'
 import SwapInterface from './SwapInterface'
 import { ErrorContext } from '@/context/ErrorContext'
 import { ArrowIcon } from '@/components/icons/ArrowIcon'
-import { DEFAULT_DEPOSIT_ID, KRW_CURRENCY_CODE } from '@/constant'
+import {
+  CURRENCY_SYMBOL,
+  DEFAULT_DEPOSIT_ID,
+  KRW_CURRENCY_CODE,
+} from '@/constant'
 import { WorkflowStep } from '@/components/StepIndicator'
 import DepositManagement from './DepositManagement'
 import IntentManagement from './IntentManagement'
@@ -138,8 +142,8 @@ export default function Signal({
   const tSwap = useTranslations('swap')
 
   const swapText = isOnramp
-    ? `${tSwap('swap')}(KRW->USDC)`
-    : `${tSwap('swap')}(USDC->KRW)`
+    ? `${tSwap('swap')}(KRW->${CURRENCY_SYMBOL})`
+    : `${tSwap('swap')}(${CURRENCY_SYMBOL}->KRW)`
   return (
     <>
       <div className="flex items-center justify-between mb-6">

@@ -1,5 +1,5 @@
 import { IntentDetail } from '@/components/Home'
-import { TOKEN_SYMBOL, USDC_SYMBOL } from '@/constant'
+import { CURRENCY_SYMBOL, TOKEN_SYMBOL } from '@/constant'
 import { useContractWrite } from '@/hooks/useContractWrite'
 import ADDRESSES from '@/lib/addresses'
 import { ESCROW_ABI } from '@/lib/abi'
@@ -124,7 +124,7 @@ const IntentManagement = ({
                     {t('amount')}
                   </p>
                   <p className="font-mono font-medium text-lg text-primary">
-                    {formatUnits(intentDetail.amount, 6)} USDC
+                    {formatUnits(intentDetail.amount, 6)} {CURRENCY_SYMBOL}
                   </p>
                 </div>
                 <div className="text-right">
@@ -169,7 +169,7 @@ const IntentManagement = ({
                     {receiverTokenBalance
                       ? formatUnits(receiverTokenBalance, 6)
                       : '0'}{' '}
-                    USDC
+                    {CURRENCY_SYMBOL}
                   </p>
                 </div>
                 <div className="text-right">

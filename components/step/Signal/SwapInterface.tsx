@@ -1,5 +1,6 @@
 import { extractErrorMessage } from '@/components/utils/extractErrorMessage'
 import {
+  CURRENCY_SYMBOL,
   DEFAULT_DEPOSIT_ID,
   INTENT_SIGNAL_TOPIC,
   KRW_CURRENCY_CODE,
@@ -179,6 +180,7 @@ export default function SwapInterface({
           tSwap('insufficientBalance', {
             balance: balance ? formatUnits(balance, 6) : '0',
             amount,
+            token: CURRENCY_SYMBOL.toUpperCase(),
           }),
         )
         return
@@ -297,13 +299,17 @@ export default function SwapInterface({
           : maxAmount
 
       if (usdcAmountBigInt < minAmount) {
-        return tSwap('amountTooLow', { min: formatUnits(minAmount, 6) })
+        return tSwap('amountTooLow', {
+          min: formatUnits(minAmount, 6),
+          token: CURRENCY_SYMBOL.toUpperCase(),
+        })
       }
 
       if (usdcAmountBigInt > effectiveMax) {
         return tSwap('amountTooHigh', {
           max: formatUnits(effectiveMax, 6),
           remaining: formatUnits(defaultDeposit.remainingDeposits, 6),
+          token: CURRENCY_SYMBOL.toUpperCase(),
         })
       }
 
@@ -472,15 +478,29 @@ export default function SwapInterface({
           />
 
           <div className="flex items-center gap-2 min-w-fit">
-            <span className="font-medium">{isOnramp ? 'KRW' : 'USDC'}</span>
+            <span className="font-medium">
+              {isOnramp ? 'KRW' : CURRENCY_SYMBOL}
+            </span>
             {!isOnramp && (
-              <Image
-                src="/base-usdc.png"
-                alt="USDC"
-                width={24}
-                height={24}
-                className="w-6 h-6"
-              />
+              <>
+                {CURRENCY_SYMBOL === 'USDC' ? (
+                  <Image
+                    src="/base-usdc.png"
+                    alt="USDC"
+                    width={24}
+                    height={24}
+                    className="w-6 h-6"
+                  />
+                ) : (
+                  <Image
+                    src="/base-usdt.png"
+                    alt="USDT"
+                    width={24}
+                    height={24}
+                    className="w-6 h-6"
+                  />
+                )}
+              </>
             )}
           </div>
         </div>
@@ -509,7 +529,7 @@ export default function SwapInterface({
                   6,
                 ),
               })}{' '}
-              USDC
+              {CURRENCY_SYMBOL}
             </span>
           )}
         </div>
@@ -530,17 +550,26 @@ export default function SwapInterface({
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-2 min-w-fit">
                   <span className="font-medium">
-                    {isOnramp ? 'USDC' : 'KRW'}
+                    {isOnramp ? CURRENCY_SYMBOL : 'KRW'}
                   </span>
-                  {isOnramp && (
-                    <Image
-                      src="/base-usdc.png"
-                      alt="USDC"
-                      width={24}
-                      height={24}
-                      className="w-6 h-6"
-                    />
-                  )}
+                  {isOnramp &&
+                    (CURRENCY_SYMBOL === 'USDC' ? (
+                      <Image
+                        src="/base-usdc.png"
+                        alt="USDC"
+                        width={24}
+                        height={24}
+                        className="w-6 h-6"
+                      />
+                    ) : (
+                      <Image
+                        src="/base-usdt.png"
+                        alt="USDT"
+                        width={24}
+                        height={24}
+                        className="w-6 h-6"
+                      />
+                    ))}
                 </div>
               </div>
             }
@@ -630,7 +659,7 @@ const ConversionRate = ({ conversionRate }: { conversionRate: bigint }) => {
         minimumFractionDigits: 0,
         maximumFractionDigits: 6,
       })}{' '}
-      USDC
+      {CURRENCY_SYMBOL}
     </div>
   )
 }
@@ -673,8 +702,8 @@ const ActionButton = ({
       {isSwapping || isSignalIntentLoading
         ? t('processing')
         : isOnramp
-          ? tSwap('buyUSDC')
-          : tSwap('sellUSDC')}
+          ? tSwap('buyUSDC', { token: CURRENCY_SYMBOL.toUpperCase() })
+          : tSwap('sellUSDC', { token: CURRENCY_SYMBOL.toUpperCase() })}
     </button>
   )
 }

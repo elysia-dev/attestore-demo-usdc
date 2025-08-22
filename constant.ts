@@ -17,7 +17,11 @@ export const TOSS_ACCOUNT_NUMBER =
       : TOSS_ACCOUNT_NUMBER_LOCAL
 
 export const TOKEN_SYMBOL = 'KRW'
-export const USDC_SYMBOL = 'USDC'
+export const CURRENCY_SYMBOL =
+  process.env.NEXT_PUBLIC_CHAIN_NETWORK === 'kairos' ||
+  process.env.NEXT_PUBLIC_CHAIN_NETWORK === 'kaia'
+    ? 'USDT'
+    : 'USDC'
 
 // Fixed depositId for frontend
 export const DEFAULT_DEPOSIT_ID = 1

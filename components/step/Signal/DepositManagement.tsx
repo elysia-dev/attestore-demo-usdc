@@ -1,6 +1,6 @@
 import { DepositDetail, DepositResult } from '@/components/Home'
 import { Button } from '@/components/ui/button'
-import { TOKEN_SYMBOL, USDC_SYMBOL } from '@/constant'
+import { CURRENCY_SYMBOL, TOKEN_SYMBOL } from '@/constant'
 import { useContractWrite } from '@/hooks/useContractWrite'
 import ADDRESSES from '@/lib/addresses'
 import { ESCROW_ABI } from '@/lib/abi'
@@ -87,7 +87,7 @@ const DepositManagement = ({
                     {tCommon('amount')}
                   </p>
                   <p className="font-mono font-medium text-lg">
-                    {formatUnits(depositDetail.amount, 6)} USDC
+                    {formatUnits(depositDetail.amount, 6)} {CURRENCY_SYMBOL}
                   </p>
                 </div>
               </div>
@@ -101,7 +101,8 @@ const DepositManagement = ({
                   </p>
                   <p className="text-sm">
                     {formatUnits(depositDetail.intentAmountRange.min, 6)} -{' '}
-                    {formatUnits(depositDetail.intentAmountRange.max, 6)} USDC
+                    {formatUnits(depositDetail.intentAmountRange.max, 6)}{' '}
+                    {CURRENCY_SYMBOL}
                   </p>
                 </div>
               </div>
@@ -111,7 +112,8 @@ const DepositManagement = ({
                     {t('remaining')}
                   </p>
                   <p className="font-mono font-medium text-lg">
-                    {formatUnits(depositDetail.remainingDeposits, 6)} USDC
+                    {formatUnits(depositDetail.remainingDeposits, 6)}{' '}
+                    {CURRENCY_SYMBOL}
                   </p>
                 </div>
               </div>

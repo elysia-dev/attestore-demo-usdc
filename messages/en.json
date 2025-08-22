@@ -47,19 +47,19 @@
     "recipientAddress": "Recipient Address",
     "useMyAddress": "Use my address",
     "receivingBankAccount": "Receiving Bank Account",
-    "buyUSDC": "Buy USDC",
-    "sellUSDC": "Sell USDC",
+    "buyUSDC": "Buy {token}",
+    "sellUSDC": "Sell {token}",
     "checkingRequirements": "Checking requirements...",
     "checkingTokenApproval": "Checking token approval...",
     "approvingTokens": "Approving tokens...",
     "creatingDeposit": "Creating deposit...",
     "successDepositCreated": "Success! Deposit created.",
     "invalidAmount": "Invalid amount",
-    "insufficientBalance": "Insufficient USDC balance. You have {balance} USDC but need {amount} USDC",
+    "insufficientBalance": "Insufficient {token} balance. You have {balance} {token} but need {amount} {token}",
     "depositCreationFailed": "Deposit creation failed: {error}",
     "transactionFailed": "Transaction failed: Unable to estimate gas. Please check your wallet balance and try again.",
-    "amountTooLow": "Minimum amount is {min} USDC",
-    "amountTooHigh": "Maximum amount is {max} USDC",
+    "amountTooLow": "Minimum amount is {min} {token}",
+    "amountTooHigh": "Maximum amount is {max} {token}",
     "maxAvailable": "Max"
   },
   "navigation": {
@@ -161,7 +161,7 @@
     "title": "Proof",
     "generateProofTitle": "Click 'Generate Transfer Proof'",
     "generateProofDescription1": "1. Generate ZK Proof of your transfer.",
-    "generateProofDescription2": "2. Using this proof, you can receive USDC instantly.",
+    "generateProofDescription2": "2. Using this proof, you can receive Stablecoin instantly.",
     "showGuide": "Show Guide",
     "swapId": "Swap Id",
     "issueDate": "Issue Date",
@@ -182,7 +182,7 @@
     "swapId": "Swap ID",
     "issueDate": "Issue Date",
     "certificateIssueNumber": "Certificate Number",
-    "title": "Transfer USDC",
+    "title": "Transfer {token}",
     "preparingTransaction": "Preparing Transaction...",
     "confirmTransactionWallet": "Please confirm the transaction in your wallet",
     "transactionSubmitted": "Transaction Submitted",
@@ -194,14 +194,14 @@
     "transactionDelayWarning": "⚠️ Transaction is taking longer than usual. This might be due to network congestion. Please check the transaction status on the block explorer.",
     "transactionFailed": "Transaction Failed",
     "checkErrorMessage": "Please check the error message and try again",
-    "clickTransferTitle": "Click 'Transfer USDC'",
+    "clickTransferTitle": "Click 'Transfer {token}'",
     "proofGeneratedSuccess": "Proof generated successfully.",
-    "transferUSDCDescription": "Transfer USDC to the recipient wallet.",
+    "transferUSDCDescription": "Transfer {token} to the recipient wallet.",
     "confirmInWallet": "Confirm in Wallet...",
     "confirming": "Confirming...",
-    "transferringUSDC": "Transferring USDC...",
+    "transferringUSDC": "Transferring {token}...",
     "transferComplete": "Transfer Complete",
-    "transferUSDC": "Transfer USDC"
+    "transferUSDC": "Transfer {token}"
   },
   "waitingForRelease": {
     "request": "Request",
@@ -217,14 +217,14 @@
     "processingDescription": "The admin regularly checks payments and processes them automatically.",
     "authorizationNote": "Once your payment has been authorized, you can view it in the history tab.",
     "dontWantToWait": "Don't want to wait?",
-    "manualProofDescription": "You can generate a payment proof manually to receive USDC instantly.",
+    "manualProofDescription": "You can generate a payment proof manually to receive {token} instantly.",
     "proveTransferManually": "Prove Transfer Manually"
   },
   "home": {
     "securedByZK": "Secured by ZK Proofs • Instant Settlement",
     "transferKRW": "Transfer KRW",
     "waitProof": "Wait / Proof",
-    "transferUSDC": "Transfer USDC"
+    "transferUSDC": "Transfer Stablecoin"
   },
   "connectButton": {
     "connectWallet": "Connect Wallet"
@@ -234,7 +234,7 @@
     "swap": "Swap",
     "transferKRW": "Transfer KRW",
     "waitProof": "Wait / Proof",
-    "transferUSDC": "Transfer USDC"
+    "transferUSDC": "Transfer Stablecoin"
   },
   "connect": {
     "privacyFirst": "Privacy First",
@@ -246,7 +246,7 @@
     "crossChain": "Cross-Chain",
     "crossChainDesc": "Works across multiple networks",
     "howItWorks": "How it works:",
-    "howItWorksSteps": "Create Swap → Transfer KRW → Prove → Transfer USDC"
+    "howItWorksSteps": "Create Swap → Transfer KRW → Prove → Transfer Stablecoin"
   },
   "fulfillmentResult": {
     "transferCompleted": "Transfer Completed",
