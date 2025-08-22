@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useContractWrite } from './useContractWrite'
 import { ESCROW_ABI } from '@/lib/abi'
-import ADDRESSES from '@/lib/addresses'
+import { useAddresses } from '@/hooks/useAddresses'
 import { usePublicClient } from 'wagmi'
 
 interface UseReleaseFundsOptions {
@@ -12,7 +12,7 @@ interface UseReleaseFundsOptions {
 export function useReleaseFunds(options?: UseReleaseFundsOptions) {
   const [intentId, setIntentId] = useState<string>('')
   const publicClient = usePublicClient()
-
+  const addresses = useAddresses()
   const { writeAndWait, isLoading, error, clearError } = useContractWrite({
     onSuccess: (receipt) => {
       options?.onSuccess?.()
@@ -31,7 +31,7 @@ export function useReleaseFunds(options?: UseReleaseFundsOptions) {
 
     try {
       const intentData = await publicClient.readContract({
-        address: ADDRESSES.ESCROW,
+        address: addresses.ESCROW,
         abi: ESCROW_ABI,
         functionName: 'intents',
         args: [BigInt(intentIdToCheck)],
@@ -71,7 +71,7 @@ export function useReleaseFunds(options?: UseReleaseFundsOptions) {
       // Note: ESCROW contract is NOT an ERC20 token
       // It's a smart contract that manages intents and deposits
       const result = await writeAndWait({
-        address: ADDRESSES.ESCROW,
+        address: addresses.ESCROW,
         abi: ESCROW_ABI,
         functionName: 'releaseFundsToPayer',
         args: [BigInt(id)],

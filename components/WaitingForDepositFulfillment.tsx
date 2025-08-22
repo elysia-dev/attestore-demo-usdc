@@ -13,10 +13,10 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { parseAbiItem } from 'viem'
-import ADDRESSES from '@/lib/addresses'
 import { ESCROW_ABI } from '@/lib/abi'
 import { useTranslations } from 'next-intl'
 import { CURRENCY_SYMBOL } from '@/constant'
+import { useAddresses } from '@/hooks/useAddresses'
 
 interface WaitingForDepositFulfillmentProps {
   depositId: string
@@ -40,6 +40,7 @@ export function WaitingForDepositFulfillment({
   const publicClient = usePublicClient()
   const [isChecking, setIsChecking] = useState(false)
   const [elapsedTime, setElapsedTime] = useState(0)
+  const addresses = useAddresses()
 
   // Check for DepositClosed event (which indicates all funds have been processed)
   useEffect(() => {
@@ -50,7 +51,7 @@ export function WaitingForDepositFulfillment({
       try {
         // Check if deposit is closed
         const logs = await publicClient.getLogs({
-          address: ADDRESSES.ESCROW,
+          address: addresses.ESCROW,
           event: parseAbiItem(
             'event DepositClosed(uint256 indexed depositId, address depositor)',
           ),
@@ -67,7 +68,7 @@ export function WaitingForDepositFulfillment({
         } else {
           // Also check if deposit is empty (remainingDeposits = 0)
           const deposit = await publicClient.readContract({
-            address: ADDRESSES.ESCROW,
+            address: addresses.ESCROW,
             abi: ESCROW_ABI,
             functionName: 'deposits',
             args: [BigInt(depositId)],

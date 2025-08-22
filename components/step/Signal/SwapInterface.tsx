@@ -8,7 +8,7 @@ import {
 } from '@/constant'
 import { ErrorContext } from '@/context/ErrorContext'
 import { ESCROW_ABI } from '@/lib/abi'
-import ADDRESSES from '@/lib/addresses'
+import { useAddresses } from '@/hooks/useAddresses'
 import { ErrorType } from '@/lib/errors'
 import { useCallback, useContext, useEffect, useState } from 'react'
 import {
@@ -57,7 +57,7 @@ export default function SwapInterface({
   const tSwap = useTranslations('swap')
   const publicClient = usePublicClient()
   const [isSwapping, setIsSwapping] = useState(false)
-
+  const addresses = useAddresses()
   // show on input
   const [amountError, setAmountError] = useState<string | null>(null)
 
@@ -75,7 +75,7 @@ export default function SwapInterface({
           const intentSignaledEvent = receipt.logs.find((log: any) => {
             return (
               log.topics[0] === INTENT_SIGNAL_TOPIC &&
-              log.address.toLowerCase() === ADDRESSES.ESCROW.toLowerCase()
+              log.address.toLowerCase() === addresses.ESCROW.toLowerCase()
             )
           })
 
@@ -120,7 +120,7 @@ export default function SwapInterface({
           )
           return (
             log.topics[0] === depositCreatedTopic &&
-            log.address.toLowerCase() === ADDRESSES.ESCROW.toLowerCase()
+            log.address.toLowerCase() === addresses.ESCROW.toLowerCase()
           )
         })
 
@@ -145,10 +145,10 @@ export default function SwapInterface({
     if (!address || !publicClient) return false
 
     const allowance = await publicClient.readContract({
-      address: ADDRESSES.USDC,
+      address: addresses.USDC,
       abi: erc20Abi,
       functionName: 'allowance',
-      args: [address, ADDRESSES.ESCROW],
+      args: [address, addresses.ESCROW],
     })
 
     return allowance >= depositAmount
@@ -167,7 +167,7 @@ export default function SwapInterface({
     try {
       // 1. Check user token balance
       const balance = await publicClient?.readContract({
-        address: ADDRESSES.USDC,
+        address: addresses.USDC,
         abi: erc20Abi,
         functionName: 'balanceOf',
         args: [address],
@@ -197,20 +197,20 @@ export default function SwapInterface({
 
       if (!hasAllowance) {
         // Ensure addresses are defined
-        if (!ADDRESSES.USDC || !ADDRESSES.ESCROW) {
+        if (!addresses.USDC || !addresses.ESCROW) {
           throw new Error('Contract addresses not properly configured')
         }
 
         try {
           // Validate args before sending
-          const approveArgs = [ADDRESSES.ESCROW, depositAmount]
+          const approveArgs = [addresses.ESCROW, depositAmount]
 
           if (!approveArgs[0] || approveArgs[1] === undefined) {
             throw new Error('Invalid approve arguments')
           }
 
           await approveWrite({
-            address: ADDRESSES.USDC as `0x${string}`,
+            address: addresses.USDC as `0x${string}`,
             abi: erc20Abi,
             functionName: 'approve',
             args: approveArgs as unknown as readonly [string, bigint],
@@ -249,14 +249,14 @@ export default function SwapInterface({
 
       try {
         await createDepositWrite({
-          address: ADDRESSES.ESCROW,
+          address: addresses.ESCROW,
           abi: ESCROW_ABI,
           functionName: 'createDeposit',
           args: [
-            ADDRESSES.USDC, // token
+            addresses.USDC, // token
             depositAmount, // amount
             { min: minIntentAmount, max: maxIntentAmount }, // intentAmountRange
-            [ADDRESSES.TOSS_BANK_VERIFIER], // verifiers
+            [addresses.TOSS_BANK_VERIFIER], // verifiers
             verifierData, // verifierData
             currencies, // currencies
           ],
@@ -379,14 +379,14 @@ export default function SwapInterface({
       try {
         setIsSwapping(true)
         await signalIntentWrite({
-          address: ADDRESSES.ESCROW,
+          address: addresses.ESCROW,
           abi: ESCROW_ABI,
           functionName: 'signalIntent',
           args: [
             BigInt(DEFAULT_DEPOSIT_ID),
             parseUnits(usdcAmount, 6), // USDC has 6 decimals
             recipientAddress as `0x${string}`,
-            ADDRESSES.TOSS_BANK_VERIFIER,
+            addresses.TOSS_BANK_VERIFIER,
             KRW_CURRENCY_CODE,
           ],
         })

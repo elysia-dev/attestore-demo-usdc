@@ -1,7 +1,7 @@
 import { IntentDetail } from '@/components/Home'
 import { CURRENCY_SYMBOL, TOKEN_SYMBOL } from '@/constant'
 import { useContractWrite } from '@/hooks/useContractWrite'
-import ADDRESSES from '@/lib/addresses'
+import { useAddresses } from '@/hooks/useAddresses'
 import { ESCROW_ABI } from '@/lib/abi'
 import { ErrorType } from '@/lib/errors'
 import { extractErrorMessage } from '@/components/utils/extractErrorMessage'
@@ -32,7 +32,7 @@ const IntentManagement = ({
   const { setError } = useContext(ErrorContext)
   const t = useTranslations('intent')
   const locale = useLocale()
-
+  const addresses = useAddresses()
   const [receiverTokenBalance, setReceiverTokenBalance] = useState<
     bigint | undefined
   >(undefined)
@@ -42,14 +42,14 @@ const IntentManagement = ({
       if (!to) return
 
       const balance = await publicClient?.readContract({
-        address: ADDRESSES.USDC, // USDC token
+        address: addresses.USDC, // USDC token
         abi: erc20Abi,
         functionName: 'balanceOf',
         args: [to as `0x${string}`],
       })
       setReceiverTokenBalance(balance)
     },
-    [publicClient],
+    [publicClient, addresses],
   )
 
   useEffect(() => {
@@ -72,7 +72,7 @@ const IntentManagement = ({
 
     try {
       await cancelIntentWrite({
-        address: ADDRESSES.ESCROW,
+        address: addresses.ESCROW,
         abi: ESCROW_ABI,
         functionName: 'cancelIntent',
         args: [BigInt(intentId)],

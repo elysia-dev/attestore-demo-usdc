@@ -4,7 +4,7 @@ import FulfillmentResultComponent from '../FulfillmentResult'
 import { decodeEventLog, encodeAbiParameters, keccak256, toBytes } from 'viem'
 import { useContractWrite } from '@/hooks/useContractWrite'
 import { useAccount, usePublicClient } from 'wagmi'
-import ADDRESSES from '@/lib/addresses'
+import { useAddresses } from '@/hooks/useAddresses'
 import { ESCROW_ABI } from '@/lib/abi'
 import { ErrorType } from '@/lib/errors'
 import { useContext, useState, useEffect, useRef } from 'react'
@@ -156,6 +156,7 @@ export default function FulFill({
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const publicClient = usePublicClient()
   const { chainId } = useAccount()
+  const addresses = useAddresses()
 
   // Manual check transaction status
   const checkTransactionStatus = async () => {
@@ -172,7 +173,7 @@ export default function FulFill({
           const intentFulfilledEvent = receipt.logs.find((log: any) => {
             return (
               log.topics[0] === INTENT_FULFILLED_TOPIC &&
-              log.address.toLowerCase() === ADDRESSES.ESCROW.toLowerCase()
+              log.address.toLowerCase() === addresses.ESCROW.toLowerCase()
             )
           })
 
@@ -246,7 +247,7 @@ export default function FulFill({
         const intentFulfilledEvent = receipt.logs.find((log: any) => {
           return (
             log.topics[0] === INTENT_FULFILLED_TOPIC &&
-            log.address.toLowerCase() === ADDRESSES.ESCROW.toLowerCase()
+            log.address.toLowerCase() === addresses.ESCROW.toLowerCase()
           )
         })
 
@@ -333,7 +334,7 @@ export default function FulFill({
       })
 
       const result = await fulfillIntentWrite({
-        address: ADDRESSES.ESCROW,
+        address: addresses.ESCROW,
         abi: ESCROW_ABI,
         functionName: 'fulfillIntent',
         args: [

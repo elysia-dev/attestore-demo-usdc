@@ -2,7 +2,7 @@ import { DepositDetail, DepositResult } from '@/components/Home'
 import { Button } from '@/components/ui/button'
 import { CURRENCY_SYMBOL, TOKEN_SYMBOL } from '@/constant'
 import { useContractWrite } from '@/hooks/useContractWrite'
-import ADDRESSES from '@/lib/addresses'
+import { useAddresses } from '@/hooks/useAddresses'
 import { ESCROW_ABI } from '@/lib/abi'
 import { Dispatch, SetStateAction, useContext } from 'react'
 import { formatUnits } from 'viem'
@@ -23,7 +23,7 @@ const DepositManagement = ({
   const t = useTranslations('depositManagement')
   const tCommon = useTranslations('common')
   const { setError } = useContext(ErrorContext)
-
+  const addresses = useAddresses()
   const { setDepositDetail } = useDepositStore()
 
   const {
@@ -40,7 +40,7 @@ const DepositManagement = ({
 
     try {
       await withdrawDepositWrite({
-        address: ADDRESSES.ESCROW,
+        address: addresses.ESCROW,
         abi: ESCROW_ABI,
         functionName: 'withdrawDeposit',
         args: [BigInt(depositId)],

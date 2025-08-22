@@ -4,10 +4,8 @@ import React from 'react'
 import { Button } from './ui/button'
 import { Plus } from 'lucide-react'
 import { useChainId } from 'wagmi'
-import ADDRESSES from '@/lib/addresses'
+import { useAddresses } from '@/hooks/useAddresses'
 import { kaia, kairos } from '@/lib/network'
-
-const address = ADDRESSES.USDC
 
 const USDC_OPTIONS = {
   symbol: 'USDC',
@@ -23,6 +21,7 @@ const USDT_OPTIONS = {
 export function AddTokenButton() {
   const [isAdding, setIsAdding] = React.useState(false)
   const chainId = useChainId()
+  const addresses = useAddresses()
 
   const tokenOptions =
     chainId === kairos.id || chainId === kaia.id ? USDT_OPTIONS : USDC_OPTIONS
@@ -40,7 +39,7 @@ export function AddTokenButton() {
           params: {
             type: 'ERC20',
             options: {
-              address,
+              address: addresses.USDC,
               symbol: tokenOptions.symbol,
               decimals: 6,
               image: tokenOptions.image,
@@ -57,7 +56,7 @@ export function AddTokenButton() {
             // Method not found
             alert(
               `Your wallet does not support automatic token addition. Please add the ${tokenOptions.symbol} token manually using address: ` +
-                address,
+                addresses.USDC,
             )
             return false
           }

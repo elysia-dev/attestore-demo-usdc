@@ -1,7 +1,13 @@
 import { create } from 'zustand'
 import { DepositDetail } from '@/components/Home'
-import ADDRESSES from '@/lib/addresses'
 import { ESCROW_ABI } from '@/lib/abi'
+
+interface AddressSet {
+  readonly ESCROW: `0x${string}`
+  readonly USDC: `0x${string}`
+  readonly NULLIFIER_REGISTRY: `0x${string}`
+  readonly TOSS_BANK_VERIFIER: `0x${string}`
+}
 
 interface DepositState {
   allDeposits: DepositDetail[]
@@ -15,10 +21,11 @@ interface DepositState {
   setCurrentAddress: (address: string) => void
   setIsLoadingDeposits: (loading: boolean) => void
   setIsLoadingIntentIds: (loading: boolean) => void
-  fetchDeposits: (publicClient: any) => Promise<void>
+  fetchDeposits: (publicClient: any, addresses: AddressSet) => Promise<void>
   fetchDepositIntentIds: (
     publicClient: any,
     depositId: number,
+    addresses: AddressSet,
   ) => Promise<bigint[]>
   setDepositDetail: (deposit: DepositDetail | null) => void
   createDeposit: (deposit: DepositDetail) => void
@@ -38,7 +45,7 @@ const useDepositStore = create<DepositState>((set, get) => ({
 
   setIsLoadingIntentIds: (loading) => set({ isLoadingIntentIds: loading }),
 
-  fetchDeposits: async (publicClient) => {
+  fetchDeposits: async (publicClient, addresses) => {
     const { currentAddress } = get()
     if (!currentAddress || !publicClient) return
 
@@ -47,7 +54,7 @@ const useDepositStore = create<DepositState>((set, get) => ({
     try {
       // Get depositCounter
       const depositCounter = await publicClient.readContract({
-        address: ADDRESSES.ESCROW,
+        address: addresses.ESCROW,
         abi: ESCROW_ABI,
         functionName: 'depositCounter',
       })
@@ -64,7 +71,7 @@ const useDepositStore = create<DepositState>((set, get) => ({
         const depositId = i + 1
         try {
           const depositData = await publicClient.readContract({
-            address: ADDRESSES.ESCROW,
+            address: addresses.ESCROW,
             abi: ESCROW_ABI,
             functionName: 'deposits',
             args: [BigInt(depositId)],
@@ -125,7 +132,7 @@ const useDepositStore = create<DepositState>((set, get) => ({
     }
   },
 
-  fetchDepositIntentIds: async (publicClient, depositId) => {
+  fetchDepositIntentIds: async (publicClient, depositId, addresses) => {
     const { isLoadingIntentIds } = get()
     if (isLoadingIntentIds || !publicClient) return []
 
@@ -133,7 +140,7 @@ const useDepositStore = create<DepositState>((set, get) => ({
 
     try {
       const intentIds = await publicClient.readContract({
-        address: ADDRESSES.ESCROW,
+        address: addresses.ESCROW,
         abi: ESCROW_ABI,
         functionName: 'getDepositIntentIds',
         args: [BigInt(depositId)],
