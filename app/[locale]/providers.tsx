@@ -2,11 +2,13 @@
 
 import * as React from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { WagmiProvider } from 'wagmi'
-import { RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit'
+import { WagmiProvider } from '@privy-io/wagmi'
 import { ErrorProvider } from '@/context/ErrorContext'
 import { useSentryTracking } from '@/hooks/useSentryTracking'
-import { config } from '@/lib/wagmi'
+import { wagmiConfig } from '@/lib/wagmi'
+import { PrivyProvider } from '@privy-io/react-auth'
+import { privyConfig } from '@/lib/privy'
+import { PRIVY_APP_ID } from '@/constant'
 
 const queryClient = new QueryClient()
 
@@ -29,20 +31,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <ErrorProvider>
-      <WagmiProvider config={config}>
+      <PrivyProvider appId={PRIVY_APP_ID} config={privyConfig}>
         <QueryClientProvider client={queryClient}>
-          <RainbowKitProvider
-            theme={darkTheme({
-              accentColor: '#ec4899',
-              accentColorForeground: 'white',
-              borderRadius: 'large',
-              fontStack: 'system',
-              overlayBlur: 'small',
-            })}>
+          <WagmiProvider config={wagmiConfig}>
             <ProvidersWithTracking>{children}</ProvidersWithTracking>
-          </RainbowKitProvider>
+          </WagmiProvider>
         </QueryClientProvider>
-      </WagmiProvider>
+      </PrivyProvider>
     </ErrorProvider>
   )
 }

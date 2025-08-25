@@ -1,28 +1,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
-import { getDefaultConfig } from '@rainbow-me/rainbowkit'
-import { phantomWallet, rabbyWallet } from '@rainbow-me/rainbowkit/wallets'
-import { rainbowWallet } from '@rainbow-me/rainbowkit/wallets'
-import { metaMaskWallet } from '@rainbow-me/rainbowkit/wallets'
-import { anvil, base, baseSepolia, kairos, kaia } from 'viem/chains'
+import { anvil, base, baseSepolia } from 'wagmi/chains'
+import { createConfig, http } from 'wagmi'
 
 // Dynamic import to avoid SSR issues
-let config: any
+let wagmiConfig: any
 
 if (typeof window !== 'undefined') {
-  config = getDefaultConfig({
-    appName: 'Zenie',
-    projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '',
-    chains: [anvil, base, baseSepolia, kairos, kaia],
-    wallets: [
-      {
-        groupName: 'Recommended',
-        wallets: [rabbyWallet, rainbowWallet, metaMaskWallet, phantomWallet],
-      },
-    ],
+  const isLocal = process.env.NEXT_PUBLIC_CHAIN_NETWORK === 'local'
+  const isTest = process.env.NEXT_PUBLIC_CHAIN_NETWORK === 'test'
+
+  wagmiConfig = createConfig({
+    chains: isLocal ? [anvil] : isTest ? [baseSepolia] : [base],
+    transports: {
+      [anvil.id]: http(),
+      [base.id]: http(), // TODO: use alchemy rpc
+      [baseSepolia.id]: http(),
+    },
     ssr: true,
   })
 }
 
-export { config }
+export { wagmiConfig }

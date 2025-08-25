@@ -69,3 +69,7 @@ export const INTENT_SIGNAL_TOPIC = (function () {
   const typesString = inputs?.map((input) => `${input.type}`).join(',')
   return keccak256(toBytes(`${name}(${typesString})`))
 })()
+
+export const PRIVY_APP_ID = 'cmembr83y0031jo0bx9bc08ko'
+export const PRIVY_CLIENT_ID =
+  'client-WY6PqNJw3ouz1pnqEUkh4z8x68JFLBMnhr6nhivEVhPBt'
