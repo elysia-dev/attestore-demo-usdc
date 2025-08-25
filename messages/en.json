@@ -194,7 +194,7 @@
     "transactionDelayWarning": "⚠️ Transaction is taking longer than usual. This might be due to network congestion. Please check the transaction status on the block explorer.",
     "transactionFailed": "Transaction Failed",
     "checkErrorMessage": "Please check the error message and try again",
-    "clickTransferTitle": "Click 'Transfer {token}'",
+    "clickTransferTitle": "Click Transfer {token}",
     "proofGeneratedSuccess": "Proof generated successfully.",
     "transferUSDCDescription": "Transfer {token} to the recipient wallet.",
     "confirmInWallet": "Confirm in Wallet...",

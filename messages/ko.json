@@ -194,7 +194,7 @@
     "transactionDelayWarning": "⚠️ 트랜잭션이 평소보다 오래 걸리고 있습니다. 네트워크 혼잡 때문일 수 있습니다. 블록 탐색기에서 트랜잭션 상태를 확인해주세요.",
     "transactionFailed": "트랜잭션 실패",
     "checkErrorMessage": "오류 메시지를 확인하고 다시 시도해주세요",
-    "clickTransferTitle": "'{token} 송금'을 클릭하세요",
+    "clickTransferTitle": "{token} 송금을 클릭하세요",
     "proofGeneratedSuccess": "증명이 성공적으로 생성되었습니다.",
     "transferUSDCDescription": "수령인 지갑으로 {token}를 송금합니다.",
     "confirmInWallet": "지갑에서 확인...",
