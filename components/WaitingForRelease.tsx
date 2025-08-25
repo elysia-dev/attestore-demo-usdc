@@ -25,7 +25,7 @@ import {
 import { validateApiResponse } from '@/lib/validation'
 import { getStatusText } from './ui/intent'
 import StatusIcon from './ui/StatusIcon'
-import { CURRENCY_SYMBOL } from '@/constant'
+import { getCurrencySymbol } from '@/constant'
 
 interface WaitingForReleaseProps {
   intentId: string
@@ -40,6 +40,7 @@ export function WaitingForRelease({
 }: WaitingForReleaseProps) {
   const router = useRouter()
   const { chainId } = useAccount()
+  const currencySymbol = getCurrencySymbol(chainId || 0)
   const t = useTranslations('waitingForRelease')
   const tCommon = useTranslations('common')
   const tIntentStatus = useTranslations('intentStatus')
@@ -185,7 +186,7 @@ export function WaitingForRelease({
                     {tCommon('amount')}:
                   </span>
                   <span className="font-mono font-medium">
-                    {formatUnits(BigInt(intent.amount), 6)} {CURRENCY_SYMBOL}
+                    {formatUnits(BigInt(intent.amount), 6)} {currencySymbol}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
@@ -246,7 +247,7 @@ export function WaitingForRelease({
                     <p className="text-sm font-medium">{t('dontWantToWait')}</p>
                     <p className="text-sm text-muted-foreground">
                       {t('manualProofDescription', {
-                        token: CURRENCY_SYMBOL.toUpperCase(),
+                        token: currencySymbol.toUpperCase(),
                       })}
                     </p>
                   </div>

@@ -8,7 +8,7 @@ import SwapInterface from './SwapInterface'
 import { ErrorContext } from '@/context/ErrorContext'
 import { ArrowIcon } from '@/components/icons/ArrowIcon'
 import {
-  CURRENCY_SYMBOL,
+  getCurrencySymbol,
   DEFAULT_DEPOSIT_ID,
   KRW_CURRENCY_CODE,
 } from '@/constant'
@@ -49,6 +49,7 @@ export default function Signal({
   // Get data from Zustand store
   const { myDeposits, depositDetail } = useDepositStore()
   const addresses = useAddresses()
+  const currencySymbol = getCurrencySymbol(chainId || 0)
   const [mode, setMode] = useState<SignalMode>(SignalMode.ONRAMP)
   const [accountNumber, setAccountNumber] = useState('')
   const [amount, setAmount] = useState('140')
@@ -142,8 +143,8 @@ export default function Signal({
   const tSwap = useTranslations('swap')
 
   const swapText = isOnramp
-    ? `${tSwap('swap')}(KRW->${CURRENCY_SYMBOL})`
-    : `${tSwap('swap')}(${CURRENCY_SYMBOL}->KRW)`
+    ? `${tSwap('swap')}(KRW->${currencySymbol})`
+    : `${tSwap('swap')}(${currencySymbol}->KRW)`
   return (
     <>
       <div className="flex items-center justify-between mb-6">

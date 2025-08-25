@@ -17,12 +17,11 @@ export const TOSS_ACCOUNT_NUMBER =
       : TOSS_ACCOUNT_NUMBER_LOCAL
 
 export const TOKEN_SYMBOL = 'KRW'
-export const CURRENCY_SYMBOL =
-  process.env.NEXT_PUBLIC_CHAIN_NETWORK === 'kairos' ||
-  process.env.NEXT_PUBLIC_CHAIN_NETWORK === 'kaia'
-    ? 'USDT'
-    : 'USDC'
 
+// Dynamic currency symbol based on chain ID
+export function getCurrencySymbol(chainId: number): string {
+  return chainId === kaia.id || chainId === kairos.id ? 'USDT' : 'USDC'
+}
 // Fixed depositId for frontend
 export const DEFAULT_DEPOSIT_ID = 1
 
@@ -32,25 +31,6 @@ export const KRW_CURRENCY_CODE = keccak256(toBytes('KRW'))
 export const TOSS_PLAY =
   'https://play.google.com/store/apps/details?id=viva.republica.toss'
 export const TOSS_APPLE = 'https://apps.apple.com/kr/app/id839333328'
-
-const FROM_BLOCK_LOCAL = BigInt(0)
-const FROM_BLOCK_BASE_SEPOLIA = BigInt(28962302)
-const FROM_BLOCK_BASE = BigInt(33575627)
-// (kaia testnet)
-const FROM_BLOCK_KAIROS = BigInt(193936515)
-// (kaia mainnet)
-const FROM_BLOCK_KAIA = BigInt(193620000)
-
-export const FROM_BLOCK =
-  process.env.NEXT_PUBLIC_CHAIN_NETWORK === 'local'
-    ? FROM_BLOCK_LOCAL
-    : process.env.NEXT_PUBLIC_CHAIN_NETWORK === 'test'
-      ? FROM_BLOCK_BASE_SEPOLIA
-      : process.env.NEXT_PUBLIC_CHAIN_NETWORK === 'kairos'
-        ? FROM_BLOCK_KAIROS
-        : process.env.NEXT_PUBLIC_CHAIN_NETWORK === 'kaia'
-          ? FROM_BLOCK_KAIA
-          : FROM_BLOCK_BASE
 
 export const isLocal = process.env.NEXT_PUBLIC_CHAIN_NETWORK === 'local'
 export const isProduction =
@@ -70,21 +50,6 @@ export const NETWORK_CONFIG = {
 export const getCurrentNetworkConfig = () => {
   return isProduction ? NETWORK_CONFIG.production : NETWORK_CONFIG.development
 }
-
-export const chain = (function () {
-  const chainNetwork = process.env.NEXT_PUBLIC_CHAIN_NETWORK
-  if (chainNetwork === 'local') {
-    return anvil
-  } else if (chainNetwork === 'test') {
-    return baseSepolia
-  } else if (chainNetwork === 'kairos') {
-    return kairos
-  } else if (chainNetwork === 'kaia') {
-    return kaia
-  } else {
-    return base
-  }
-})()
 
 export const getTossBankQRCode = (transferAmount: string) =>
   `supertoss://send?amount=${transferAmount}&bank=%ED%86%A0%EC%8A%A4%EB%B1%85%ED%81%AC&accountNo=${TOSS_ACCOUNT_NUMBER}&origin=qr`

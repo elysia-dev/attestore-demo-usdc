@@ -15,7 +15,7 @@ import * as Sentry from '@sentry/nextjs'
 import { cn, getTransactionExplorerUrl } from '@/lib/utils'
 import { WorkflowStep } from '../StepIndicator'
 import { useTranslations } from 'next-intl'
-import { CURRENCY_SYMBOL } from '@/constant'
+import { getCurrencySymbol } from '@/constant'
 
 const formatProofForContract = (receiptData: any) => {
   if (!receiptData) {
@@ -157,6 +157,7 @@ export default function FulFill({
   const publicClient = usePublicClient()
   const { chainId } = useAccount()
   const addresses = useAddresses()
+  const currencySymbol = getCurrencySymbol(chainId || 0)
 
   // Manual check transaction status
   const checkTransactionStatus = async () => {
@@ -367,7 +368,7 @@ export default function FulFill({
         },
       })
 
-      setError(`${CURRENCY_SYMBOL} transfer failed: ${errorMessage}`)
+      setError(`${currencySymbol} transfer failed: ${errorMessage}`)
       setFulfillmentResult({ success: false })
       setTransactionStatus('error')
     }
@@ -381,12 +382,12 @@ export default function FulFill({
           ? t('confirming')
           : isFulfillIntentLoading
             ? t('transferringUSDC', {
-                token: CURRENCY_SYMBOL.toUpperCase(),
+                token: currencySymbol.toUpperCase(),
               })
             : fulfillmentResult?.success
               ? t('transferComplete')
               : t('transferUSDC', {
-                  token: CURRENCY_SYMBOL.toUpperCase(),
+                  token: currencySymbol.toUpperCase(),
                 })
 
     if (
@@ -416,7 +417,7 @@ export default function FulFill({
     <>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold">
-          {t('title', { token: CURRENCY_SYMBOL.toUpperCase() })}
+          {t('title', { token: currencySymbol.toUpperCase() })}
         </h2>
       </div>
       {fulfillmentResult?.success && (
@@ -536,14 +537,14 @@ export default function FulFill({
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <span className="text-primary">◆</span>
                 {t('clickTransferTitle', {
-                  token: CURRENCY_SYMBOL.toUpperCase(),
+                  token: currencySymbol.toUpperCase(),
                 })}
               </h3>
               <p className="text-sm text-muted-foreground ml-6">
                 {t('proofGeneratedSuccess')}
                 <br />
                 {t('transferUSDCDescription', {
-                  token: CURRENCY_SYMBOL.toUpperCase(),
+                  token: currencySymbol.toUpperCase(),
                 })}
               </p>
             </div>

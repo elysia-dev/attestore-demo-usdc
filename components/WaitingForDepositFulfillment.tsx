@@ -15,8 +15,9 @@ import {
 import { parseAbiItem } from 'viem'
 import { ESCROW_ABI } from '@/lib/abi'
 import { useTranslations } from 'next-intl'
-import { CURRENCY_SYMBOL } from '@/constant'
+import { getCurrencySymbol } from '@/constant'
 import { useAddresses } from '@/hooks/useAddresses'
+import { useAccount } from 'wagmi'
 
 interface WaitingForDepositFulfillmentProps {
   depositId: string
@@ -41,6 +42,8 @@ export function WaitingForDepositFulfillment({
   const [isChecking, setIsChecking] = useState(false)
   const [elapsedTime, setElapsedTime] = useState(0)
   const addresses = useAddresses()
+  const { chainId } = useAccount()
+  const currencySymbol = getCurrencySymbol(chainId || 0)
 
   // Check for DepositClosed event (which indicates all funds have been processed)
   useEffect(() => {
@@ -171,7 +174,7 @@ export function WaitingForDepositFulfillment({
                 {tCommon('amount')}
               </span>
               <span className="text-sm font-medium">
-                {amount} {CURRENCY_SYMBOL}
+                {amount} {currencySymbol}
               </span>
             </div>
             <div className="flex justify-between items-center">

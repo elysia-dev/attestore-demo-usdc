@@ -1,6 +1,6 @@
 import { extractErrorMessage } from '@/components/utils/extractErrorMessage'
 import {
-  CURRENCY_SYMBOL,
+  getCurrencySymbol,
   DEFAULT_DEPOSIT_ID,
   INTENT_SIGNAL_TOPIC,
   KRW_CURRENCY_CODE,
@@ -66,7 +66,8 @@ export default function SwapInterface({
   const { allDeposits } = useDepositStore()
   const defaultDeposit = allDeposits.find((d) => d.id === DEFAULT_DEPOSIT_ID)
 
-  const { address } = useAccount()
+  const { address, chainId } = useAccount()
+  const currencySymbol = getCurrencySymbol(chainId || 0)
   // Contract write hook for signalIntent
   const { writeAndWait: signalIntentWrite, isLoading: isSignalIntentLoading } =
     useContractWrite({
@@ -180,7 +181,7 @@ export default function SwapInterface({
           tSwap('insufficientBalance', {
             balance: balance ? formatUnits(balance, 6) : '0',
             amount,
-            token: CURRENCY_SYMBOL.toUpperCase(),
+            token: currencySymbol.toUpperCase(),
           }),
         )
         return
@@ -301,7 +302,7 @@ export default function SwapInterface({
       if (usdcAmountBigInt < minAmount) {
         return tSwap('amountTooLow', {
           min: formatUnits(minAmount, 6),
-          token: CURRENCY_SYMBOL.toUpperCase(),
+          token: currencySymbol.toUpperCase(),
         })
       }
 
@@ -309,13 +310,13 @@ export default function SwapInterface({
         return tSwap('amountTooHigh', {
           max: formatUnits(effectiveMax, 6),
           remaining: formatUnits(defaultDeposit.remainingDeposits, 6),
-          token: CURRENCY_SYMBOL.toUpperCase(),
+          token: currencySymbol.toUpperCase(),
         })
       }
 
       return null
     },
-    [defaultDeposit, tSwap],
+    [defaultDeposit, tSwap, currencySymbol],
   )
 
   useEffect(() => {
@@ -479,11 +480,11 @@ export default function SwapInterface({
 
           <div className="flex items-center gap-2 min-w-fit">
             <span className="font-medium">
-              {isOnramp ? 'KRW' : CURRENCY_SYMBOL}
+              {isOnramp ? 'KRW' : currencySymbol}
             </span>
             {!isOnramp && (
               <>
-                {CURRENCY_SYMBOL === 'USDC' ? (
+                {currencySymbol.toUpperCase() === 'USDC' ? (
                   <Image
                     src="/base-usdc.png"
                     alt="USDC"
@@ -529,7 +530,7 @@ export default function SwapInterface({
                   6,
                 ),
               })}{' '}
-              {CURRENCY_SYMBOL}
+              {currencySymbol}
             </span>
           )}
         </div>
@@ -550,10 +551,10 @@ export default function SwapInterface({
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-2 min-w-fit">
                   <span className="font-medium">
-                    {isOnramp ? CURRENCY_SYMBOL : 'KRW'}
+                    {isOnramp ? currencySymbol : 'KRW'}
                   </span>
                   {isOnramp &&
-                    (CURRENCY_SYMBOL === 'USDC' ? (
+                    (currencySymbol.toUpperCase() === 'USDC' ? (
                       <Image
                         src="/base-usdc.png"
                         alt="USDC"
@@ -614,7 +615,12 @@ export default function SwapInterface({
         </div>
       )}
 
-      {!!conversionRate && <ConversionRate conversionRate={conversionRate} />}
+      {!!conversionRate && (
+        <ConversionRate
+          conversionRate={conversionRate}
+          currencySymbol={currencySymbol}
+        />
+      )}
       <ActionButton
         isSwapping={isSwapping}
         isSignalIntentLoading={isSignalIntentLoading}
@@ -624,6 +630,7 @@ export default function SwapInterface({
         accountNumber={accountNumber}
         handleSwap={handleSwap}
         amountError={amountError}
+        currencySymbol={currencySymbol}
       />
     </div>
   )
@@ -651,7 +658,13 @@ const PayingUsing = () => {
   )
 }
 
-const ConversionRate = ({ conversionRate }: { conversionRate: bigint }) => {
+const ConversionRate = ({
+  conversionRate,
+  currencySymbol,
+}: {
+  conversionRate: bigint
+  currencySymbol: string
+}) => {
   return (
     <div className="text-center text-sm text-muted-foreground">
       1 KRW ={' '}
@@ -659,7 +672,7 @@ const ConversionRate = ({ conversionRate }: { conversionRate: bigint }) => {
         minimumFractionDigits: 0,
         maximumFractionDigits: 6,
       })}{' '}
-      {CURRENCY_SYMBOL}
+      {currencySymbol}
     </div>
   )
 }
@@ -673,6 +686,7 @@ const ActionButton = ({
   accountNumber,
   handleSwap,
   amountError,
+  currencySymbol,
 }: {
   isSwapping: boolean
   isSignalIntentLoading: boolean
@@ -682,6 +696,7 @@ const ActionButton = ({
   accountNumber: string
   handleSwap: () => void
   amountError: string | null
+  currencySymbol: string
 }) => {
   const t = useTranslations('common')
   const tSwap = useTranslations('swap')
@@ -702,8 +717,8 @@ const ActionButton = ({
       {isSwapping || isSignalIntentLoading
         ? t('processing')
         : isOnramp
-          ? tSwap('buyUSDC', { token: CURRENCY_SYMBOL.toUpperCase() })
-          : tSwap('sellUSDC', { token: CURRENCY_SYMBOL.toUpperCase() })}
+          ? tSwap('buyUSDC', { token: currencySymbol.toUpperCase() })
+          : tSwap('sellUSDC', { token: currencySymbol.toUpperCase() })}
     </button>
   )
 }

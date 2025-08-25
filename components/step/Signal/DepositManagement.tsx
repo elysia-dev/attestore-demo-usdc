@@ -1,6 +1,6 @@
 import { DepositDetail, DepositResult } from '@/components/Home'
 import { Button } from '@/components/ui/button'
-import { CURRENCY_SYMBOL, TOKEN_SYMBOL } from '@/constant'
+import { getCurrencySymbol, TOKEN_SYMBOL } from '@/constant'
 import { useContractWrite } from '@/hooks/useContractWrite'
 import { useAddresses } from '@/hooks/useAddresses'
 import { ESCROW_ABI } from '@/lib/abi'
@@ -12,6 +12,7 @@ import { extractErrorMessage } from '@/components/utils/extractErrorMessage'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import useDepositStore from '@/stores/useDepositStore'
+import { useAccount } from 'wagmi'
 
 const DepositManagement = ({
   depositId,
@@ -25,6 +26,8 @@ const DepositManagement = ({
   const { setError } = useContext(ErrorContext)
   const addresses = useAddresses()
   const { setDepositDetail } = useDepositStore()
+  const { chainId } = useAccount()
+  const currencySymbol = getCurrencySymbol(chainId || 0)
 
   const {
     writeAndWait: withdrawDepositWrite,
@@ -87,7 +90,7 @@ const DepositManagement = ({
                     {tCommon('amount')}
                   </p>
                   <p className="font-mono font-medium text-lg">
-                    {formatUnits(depositDetail.amount, 6)} {CURRENCY_SYMBOL}
+                    {formatUnits(depositDetail.amount, 6)} {currencySymbol}
                   </p>
                 </div>
               </div>
@@ -102,7 +105,7 @@ const DepositManagement = ({
                   <p className="text-sm">
                     {formatUnits(depositDetail.intentAmountRange.min, 6)} -{' '}
                     {formatUnits(depositDetail.intentAmountRange.max, 6)}{' '}
-                    {CURRENCY_SYMBOL}
+                    {currencySymbol}
                   </p>
                 </div>
               </div>
@@ -113,7 +116,7 @@ const DepositManagement = ({
                   </p>
                   <p className="font-mono font-medium text-lg">
                     {formatUnits(depositDetail.remainingDeposits, 6)}{' '}
-                    {CURRENCY_SYMBOL}
+                    {currencySymbol}
                   </p>
                 </div>
               </div>

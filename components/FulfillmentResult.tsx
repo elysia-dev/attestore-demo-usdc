@@ -1,7 +1,8 @@
 import { formatUnits } from 'viem'
 import { FulfillmentResult } from './Home'
-import { CURRENCY_SYMBOL } from '@/constant'
+import { getCurrencySymbol } from '@/constant'
 import { useTranslations } from 'next-intl'
+import { useAccount } from 'wagmi'
 
 export default function FulfillmentResultComponent({
   fulfillmentResult,
@@ -9,6 +10,8 @@ export default function FulfillmentResultComponent({
   fulfillmentResult: FulfillmentResult
 }) {
   const t = useTranslations('fulfillmentResult')
+  const { chainId } = useAccount()
+  const currencySymbol = getCurrencySymbol(chainId || 0)
 
   return (
     <section className="space-y-6">
@@ -45,7 +48,7 @@ export default function FulfillmentResultComponent({
               <p className="text-sm font-mono font-medium text-primary">
                 {fulfillmentResult.amount &&
                   formatUnits(fulfillmentResult.amount, 6)}{' '}
-                {CURRENCY_SYMBOL}
+                {currencySymbol}
               </p>
             </div>
             <div className="space-y-1">

@@ -1,7 +1,7 @@
 import { formatUnits } from 'viem'
 import { IntentDetail } from '../Home'
 import {
-  CURRENCY_SYMBOL,
+  getCurrencySymbol,
   getTossBankQRCode,
   TOSS_ACCOUNT_NUMBER,
 } from '@/constant'
@@ -32,6 +32,7 @@ export default function Transfer({
   const [isVideoPopupOpen, setIsVideoPopupOpen] = useState(false)
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
   const { chainId } = useAccount()
+  const currencySymbol = getCurrencySymbol(chainId || 0)
 
   const transferAmount = getKRWAmount({
     usdcAmount: intentDetail.amount,
@@ -165,7 +166,7 @@ export default function Transfer({
                 {tCommon('amount')}
               </p>
               <p className="text-sm font-medium">
-                {formatUnits(intentDetail?.amount, 6)} {CURRENCY_SYMBOL}
+                {formatUnits(intentDetail?.amount, 6)} {currencySymbol}
               </p>
             </div>
             <div className="flex items-center justify-between">

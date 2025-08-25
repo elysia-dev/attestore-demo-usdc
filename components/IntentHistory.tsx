@@ -23,7 +23,7 @@ import {
 import { validateApiResponse } from '@/lib/validation'
 import StatusIcon from './ui/StatusIcon'
 import { getStatusText } from './ui/intent'
-import { CURRENCY_SYMBOL } from '@/constant'
+import { getCurrencySymbol } from '@/constant'
 
 // make current intents using events history
 const generateIntentsByHistory = ({
@@ -85,6 +85,7 @@ export function IntentHistory() {
   const tIntentStatus = useTranslations('intentStatus')
 
   const { address, isConnected, chainId } = useAccount()
+  const currencySymbol = getCurrencySymbol(chainId || 0)
 
   const [allIntents, setAllIntents] = useState<Intent[]>([])
   const [filter, setFilter] = useState<Filter>(Filter.ALL)
@@ -311,7 +312,7 @@ export function IntentHistory() {
                       {tCommon('amount')}
                     </span>
                     <p className="text-sm font-mono font-medium text-primary">
-                      {formatUnits(BigInt(intent.amount), 6)} {CURRENCY_SYMBOL}
+                      {formatUnits(BigInt(intent.amount), 6)} {currencySymbol}
                     </p>
                   </div>
                   <div className="space-y-1">

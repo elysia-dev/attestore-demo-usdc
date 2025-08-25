@@ -1,5 +1,5 @@
 import { IntentDetail } from '@/components/Home'
-import { CURRENCY_SYMBOL, TOKEN_SYMBOL } from '@/constant'
+import { getCurrencySymbol, TOKEN_SYMBOL } from '@/constant'
 import { useContractWrite } from '@/hooks/useContractWrite'
 import { useAddresses } from '@/hooks/useAddresses'
 import { ESCROW_ABI } from '@/lib/abi'
@@ -33,6 +33,7 @@ const IntentManagement = ({
   const t = useTranslations('intent')
   const locale = useLocale()
   const addresses = useAddresses()
+  const currencySymbol = getCurrencySymbol(chainId || 0)
   const [receiverTokenBalance, setReceiverTokenBalance] = useState<
     bigint | undefined
   >(undefined)
@@ -125,7 +126,7 @@ const IntentManagement = ({
                     {t('amount')}
                   </p>
                   <p className="font-mono font-medium text-lg text-primary">
-                    {formatUnits(intentDetail.amount, 6)} {CURRENCY_SYMBOL}
+                    {formatUnits(intentDetail.amount, 6)} {currencySymbol}
                   </p>
                 </div>
                 <div className="text-right">
@@ -170,7 +171,7 @@ const IntentManagement = ({
                     {receiverTokenBalance
                       ? formatUnits(receiverTokenBalance, 6)
                       : '0'}{' '}
-                    {CURRENCY_SYMBOL}
+                    {currencySymbol}
                   </p>
                 </div>
                 <div className="text-right">
