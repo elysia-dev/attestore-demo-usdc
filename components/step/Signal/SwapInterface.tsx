@@ -437,7 +437,7 @@ export default function SwapInterface({
     <div className="space-y-4">
       <div className="space-y-2">
         <label className="text-sm text-muted-foreground">{t('youSend')}</label>
-        <div className="flex items-center justify-between bg-background/50 rounded-xl p-4 border border-border/30">
+        <div className="flex items-center transparent-input justify-between bg-background/50 rounded-xl p-4 border border-border/30">
           <input
             type="text"
             value={amount}
@@ -475,7 +475,7 @@ export default function SwapInterface({
               }
             }}
             placeholder="0"
-            className="bg-transparent text-xl font-medium outline-none w-full"
+            className="text-xl font-medium outline-none w-full"
           />
 
           <div className="flex items-center gap-2 min-w-fit">
@@ -668,7 +668,7 @@ const ConversionRate = ({
   return (
     <div className="text-center text-sm text-muted-foreground">
       1 KRW ={' '}
-      {(Number(conversionRate) / 1e18).toLocaleString('en-US', {
+      {(1 / (Number(conversionRate) / 1e18)).toLocaleString('en-US', {
         minimumFractionDigits: 0,
         maximumFractionDigits: 6,
       })}{' '}

@@ -326,7 +326,7 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen relative overflow-hidden pt-20">
+    <main className="min-h-screen relative overflow-hidden pt-20 pb-20">
       {/* Animated background - exactly like Zenie USDC */}
       <div className="absolute inset-0 bg-gradient-radial" />
       <div className="absolute inset-0">
@@ -347,40 +347,40 @@ export default function Home() {
       <div className="relative z-10 min-h-screen">
         {/* Main content */}
         <div className="flex flex-col items-center justify-center px-4">
-          <div className="w-full max-w-md">
-            {view === 'history' ? (
+          {view === 'history' ? (
+            <div className="w-full max-w-md">
               <IntentHistory />
-            ) : (
-              <>
-                {/* Subtitle */}
-                {currentStep === WorkflowStep.CONNECT && (
-                  <p className="text-center text-muted-foreground mb-8">
-                    Instant KRW to Stablecoin swaps powered by zero-knowledge
-                    proofs
-                  </p>
-                )}
+            </div>
+          ) : (
+            <div className="w-full max-w-md">
+              {/* Subtitle */}
+              {currentStep === WorkflowStep.CONNECT && (
+                <p className="text-center text-muted-foreground mb-8">
+                  Instant KRW to Stablecoin swaps powered by zero-knowledge
+                  proofs
+                </p>
+              )}
 
-                {/* Step Indicator */}
-                {isConnected && (
-                  <div className="sm:my-12 my-4">
-                    <StepIndicator currentStep={currentStep} />
-                  </div>
-                )}
-
-                {/* Card */}
-                <div className="bg-card/80 rounded-[32px] p-6 backdrop-blur-xl border border-border/50 shadow-2xl glow">
-                  {renderStepContent()}
+              {/* Step Indicator */}
+              {isConnected && (
+                <div className="sm:my-12 my-4">
+                  <StepIndicator currentStep={currentStep} />
                 </div>
+              )}
 
-                {/* Footer text */}
-                <div className="hidden sm:flex justify-center mt-4">
-                  <p className="text-center text-muted-foreground text-sm">
-                    {t('securedByZK')}
-                  </p>
-                </div>
-              </>
-            )}
-          </div>
+              {/* Card */}
+              <div className="bg-card--filterless rounded-[32px] p-6 border border-border/50 shadow-2xl glow">
+                {renderStepContent()}
+              </div>
+
+              {/* Footer text */}
+              <div className="hidden sm:flex justify-center mt-4">
+                <p className="text-center text-muted-foreground text-sm">
+                  {t('securedByZK')}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         <ErrorMessage error={error} freeError={freeError} ref={errorRef} />

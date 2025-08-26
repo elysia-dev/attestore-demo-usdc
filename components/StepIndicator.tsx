@@ -66,8 +66,7 @@ export function StepIndicator({ currentStep, className }: StepIndicatorProps) {
                       'relative flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all duration-500',
                       isCompleted &&
                         'border-primary bg-primary shadow-[0_0_15px_rgba(255,0,122,0.5)]',
-                      isCurrent &&
-                        'border-primary bg-primary shadow-[0_0_20px_rgba(255,0,122,0.6)] animate-pulse',
+                      isCurrent && 'border-white bg-primary border-glow',
                       isUpcoming && 'border-border bg-background',
                     )}>
                     {isCompleted || isCurrent ? (

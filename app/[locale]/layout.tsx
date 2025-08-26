@@ -72,7 +72,7 @@ export default async function LocaleLayout({
         <Providers>
           <NextIntlClientProvider>
             <NavigationBar />
-            <main className="min-h-screen pb-20">{children}</main>
+            <main className="min-h-screen">{children}</main>
           </NextIntlClientProvider>
         </Providers>
       </body>
