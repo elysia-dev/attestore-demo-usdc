@@ -1,8 +1,8 @@
 import { DepositDetail, DepositResult } from '@/components/Home'
 import { Button } from '@/components/ui/button'
-import { TOKEN_SYMBOL, USDC_SYMBOL } from '@/constant'
+import { getCurrencySymbol, TOKEN_SYMBOL } from '@/constant'
 import { useContractWrite } from '@/hooks/useContractWrite'
-import ADDRESSES from '@/lib/addresses'
+import { useAddresses } from '@/hooks/useAddresses'
 import { ESCROW_ABI } from '@/lib/abi'
 import { Dispatch, SetStateAction, useContext } from 'react'
 import { formatUnits } from 'viem'
@@ -12,6 +12,7 @@ import { extractErrorMessage } from '@/components/utils/extractErrorMessage'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import useDepositStore from '@/stores/useDepositStore'
+import { useAccount } from 'wagmi'
 
 const DepositManagement = ({
   depositId,
@@ -23,8 +24,10 @@ const DepositManagement = ({
   const t = useTranslations('depositManagement')
   const tCommon = useTranslations('common')
   const { setError } = useContext(ErrorContext)
-
+  const addresses = useAddresses()
   const { setDepositDetail } = useDepositStore()
+  const { chainId } = useAccount()
+  const currencySymbol = getCurrencySymbol(chainId || 0)
 
   const {
     writeAndWait: withdrawDepositWrite,
@@ -40,7 +43,7 @@ const DepositManagement = ({
 
     try {
       await withdrawDepositWrite({
-        address: ADDRESSES.ESCROW,
+        address: addresses.ESCROW,
         abi: ESCROW_ABI,
         functionName: 'withdrawDeposit',
         args: [BigInt(depositId)],
@@ -87,7 +90,7 @@ const DepositManagement = ({
                     {tCommon('amount')}
                   </p>
                   <p className="font-mono font-medium text-lg">
-                    {formatUnits(depositDetail.amount, 6)} USDC
+                    {formatUnits(depositDetail.amount, 6)} {currencySymbol}
                   </p>
                 </div>
               </div>
@@ -101,7 +104,8 @@ const DepositManagement = ({
                   </p>
                   <p className="text-sm">
                     {formatUnits(depositDetail.intentAmountRange.min, 6)} -{' '}
-                    {formatUnits(depositDetail.intentAmountRange.max, 6)} USDC
+                    {formatUnits(depositDetail.intentAmountRange.max, 6)}{' '}
+                    {currencySymbol}
                   </p>
                 </div>
               </div>
@@ -111,7 +115,8 @@ const DepositManagement = ({
                     {t('remaining')}
                   </p>
                   <p className="font-mono font-medium text-lg">
-                    {formatUnits(depositDetail.remainingDeposits, 6)} USDC
+                    {formatUnits(depositDetail.remainingDeposits, 6)}{' '}
+                    {currencySymbol}
                   </p>
                 </div>
               </div>

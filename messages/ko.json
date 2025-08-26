@@ -47,19 +47,19 @@
     "recipientAddress": "수령 지갑",
     "useMyAddress": "내 주소 사용",
     "receivingBankAccount": "받는 계좌",
-    "buyUSDC": "USDC 구매",
-    "sellUSDC": "USDC 판매",
+    "buyUSDC": "{token} 구매",
+    "sellUSDC": "{token} 판매",
     "checkingRequirements": "요구사항 확인 중...",
     "checkingTokenApproval": "토큰 승인 확인 중...",
     "approvingTokens": "토큰 승인 중...",
     "creatingDeposit": "디포짓 생성 중...",
     "successDepositCreated": "성공! 예치금이 생성되었습니다.",
     "invalidAmount": "잘못된 금액입니다",
-    "insufficientBalance": "잔액이 부족합니다. {balance} USDC가 있지만 {amount} USDC가 필요합니다",
+    "insufficientBalance": "잔액이 부족합니다. {balance} {token}가 있지만 {amount} {token}가 필요합니다",
     "depositCreationFailed": "디포짓 생성 실패: {error}",
     "transactionFailed": "거래 실패: 가스를 추정할 수 없습니다. 지갑 잔액을 확인하고 다시 시도해주세요.",
-    "amountTooLow": "최소 금액은 {min} USDC입니다",
-    "amountTooHigh": "최대 금액은 {max} USDC입니다",
+    "amountTooLow": "최소 금액은 {min} {token}입니다",
+    "amountTooHigh": "최대 금액은 {max} {token}입니다",
     "maxAvailable": "최대"
   },
   "navigation": {
@@ -161,7 +161,7 @@
     "title": "증명",
     "generateProofTitle": "'송금 증명 생성'을 클릭하세요",
     "generateProofDescription1": "1. 송금을 위한 ZK 증명을 생성합니다.",
-    "generateProofDescription2": "2. 이 증명을 사용하여 USDC를 즉시 받을 수 있습니다.",
+    "generateProofDescription2": "2. 이 증명을 사용하여 스테이블코인을 즉시 받을 수 있습니다.",
     "showGuide": "가이드 보기",
     "swapId": "스왑 ID",
     "issueDate": "발급 날짜",
@@ -182,7 +182,7 @@
     "swapId": "스왑 ID",
     "issueDate": "발급 날짜",
     "certificateIssueNumber": "인증서 번호",
-    "title": "USDC 송금",
+    "title": "{token} 송금",
     "preparingTransaction": "트랜잭션 준비 중...",
     "confirmTransactionWallet": "지갑에서 트랜잭션을 확인해주세요",
     "transactionSubmitted": "트랜잭션 제출됨",
@@ -194,14 +194,14 @@
     "transactionDelayWarning": "⚠️ 트랜잭션이 평소보다 오래 걸리고 있습니다. 네트워크 혼잡 때문일 수 있습니다. 블록 탐색기에서 트랜잭션 상태를 확인해주세요.",
     "transactionFailed": "트랜잭션 실패",
     "checkErrorMessage": "오류 메시지를 확인하고 다시 시도해주세요",
-    "clickTransferTitle": "'USDC 송금'을 클릭하세요",
+    "clickTransferTitle": "{token} 송금을 클릭하세요",
     "proofGeneratedSuccess": "증명이 성공적으로 생성되었습니다.",
-    "transferUSDCDescription": "수령인 지갑으로 USDC를 송금합니다.",
+    "transferUSDCDescription": "수령인 지갑으로 {token}를 송금합니다.",
     "confirmInWallet": "지갑에서 확인...",
     "confirming": "확인 중...",
-    "transferringUSDC": "USDC 송금 중...",
+    "transferringUSDC": "{token} 송금 중...",
     "transferComplete": "송금 완료",
-    "transferUSDC": "USDC 송금"
+    "transferUSDC": "{token} 송금"
   },
   "waitingForRelease": {
     "request": "요청",
@@ -217,14 +217,14 @@
     "processingDescription": "관리자가 정기적으로 결제를 확인하고 자동으로 처리합니다.",
     "authorizationNote": "결제가 승인되면 히스토리 탭에서 확인할 수 있습니다.",
     "dontWantToWait": "기다리고 싶지 않으신가요?",
-    "manualProofDescription": "결제 증명을 수동으로 생성하여 즉시 USDC를 받을 수 있습니다.",
+    "manualProofDescription": "결제 증명을 수동으로 생성하여 즉시 {token}를 받을 수 있습니다.",
     "proveTransferManually": "수동으로 송금증명"
   },
   "home": {
     "securedByZK": "Secured by ZK Proofs • Instant Settlement",
     "transferKRW": "Transfer KRW",
     "waitProof": "대기 / 증명",
-    "transferUSDC": "USDC 송금"
+    "transferUSDC": "스테이블코인 송금"
   },
   "connectButton": {
     "connectWallet": "지갑 연결"
@@ -234,7 +234,7 @@
     "swap": "스왑",
     "transferKRW": "KRW 송금",
     "waitProof": "대기 / 증명",
-    "transferUSDC": "USDC 송금"
+    "transferUSDC": "스테이블코인 송금"
   },
   "connect": {
     "privacyFirst": "개인정보 보호 우선",
@@ -246,7 +246,7 @@
     "crossChain": "크로스체인",
     "crossChainDesc": "여러 네트워크에서 작동합니다",
     "howItWorks": "작동 방식:",
-    "howItWorksSteps": "스왑 생성 → KRW 송금 → 증명 → USDC 송금"
+    "howItWorksSteps": "스왑 생성 → KRW 송금 → 증명 → 스테이블코인 송금"
   },
   "fulfillmentResult": {
     "transferCompleted": "송금 완료",

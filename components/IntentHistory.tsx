@@ -23,6 +23,7 @@ import {
 import { validateApiResponse } from '@/lib/validation'
 import StatusIcon from './ui/StatusIcon'
 import { getStatusText } from './ui/intent'
+import { getCurrencySymbol } from '@/constant'
 
 // make current intents using events history
 const generateIntentsByHistory = ({
@@ -83,7 +84,8 @@ export function IntentHistory() {
   const tCommon = useTranslations('common')
   const tIntentStatus = useTranslations('intentStatus')
 
-  const { address, isConnected } = useAccount()
+  const { address, isConnected, chainId } = useAccount()
+  const currencySymbol = getCurrencySymbol(chainId || 0)
 
   const [allIntents, setAllIntents] = useState<Intent[]>([])
   const [filter, setFilter] = useState<Filter>(Filter.ALL)
@@ -116,12 +118,12 @@ export function IntentHistory() {
   const isAdmin = address?.toLowerCase() === adminAddress?.toLowerCase()
 
   const fetchIntents = useCallback(async () => {
-    if (!address) return
+    if (!address || !chainId) return
 
     try {
       setIsLoading(true)
 
-      const response = await fetch(`/api/transfer-history`)
+      const response = await fetch(`/api/transfer-history?chainId=${chainId}`)
 
       if (!response.ok) {
         throw new Error(`HTTP error: ${response.status} ${response.statusText}`)
@@ -165,7 +167,7 @@ export function IntentHistory() {
     } finally {
       setIsLoading(false)
     }
-  }, [address])
+  }, [address, chainId])
 
   useEffect(() => {
     if (isConnected && address) {
@@ -310,7 +312,7 @@ export function IntentHistory() {
                       {tCommon('amount')}
                     </span>
                     <p className="text-sm font-mono font-medium text-primary">
-                      {formatUnits(BigInt(intent.amount), 6)} USDC
+                      {formatUnits(BigInt(intent.amount), 6)} {currencySymbol}
                     </p>
                   </div>
                   <div className="space-y-1">
@@ -347,7 +349,7 @@ export function IntentHistory() {
                     className="space-y-1 cursor-pointer"
                     onClick={() => {
                       window.open(
-                        getTransactionExplorerUrl(intent.txHash),
+                        getTransactionExplorerUrl(intent.txHash, chainId),
                         '_blank',
                       )
                     }}>
@@ -358,7 +360,7 @@ export function IntentHistory() {
                       className="text-sm font-mono"
                       onClick={() => {
                         window.open(
-                          getTransactionExplorerUrl(intent.txHash),
+                          getTransactionExplorerUrl(intent.txHash, chainId),
                           '_blank',
                         )
                       }}>

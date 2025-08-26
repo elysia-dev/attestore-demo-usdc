@@ -3,8 +3,8 @@ import { FulfillmentResult, ProofResult } from '../Home'
 import FulfillmentResultComponent from '../FulfillmentResult'
 import { decodeEventLog, encodeAbiParameters, keccak256, toBytes } from 'viem'
 import { useContractWrite } from '@/hooks/useContractWrite'
-import { usePublicClient } from 'wagmi'
-import ADDRESSES from '@/lib/addresses'
+import { useAccount, usePublicClient } from 'wagmi'
+import { useAddresses } from '@/hooks/useAddresses'
 import { ESCROW_ABI } from '@/lib/abi'
 import { ErrorType } from '@/lib/errors'
 import { useContext, useState, useEffect, useRef } from 'react'
@@ -15,6 +15,7 @@ import * as Sentry from '@sentry/nextjs'
 import { cn, getTransactionExplorerUrl } from '@/lib/utils'
 import { WorkflowStep } from '../StepIndicator'
 import { useTranslations } from 'next-intl'
+import { getCurrencySymbol } from '@/constant'
 
 const formatProofForContract = (receiptData: any) => {
   if (!receiptData) {
@@ -154,6 +155,9 @@ export default function FulFill({
   const [elapsedTime, setElapsedTime] = useState(0)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const publicClient = usePublicClient()
+  const { chainId } = useAccount()
+  const addresses = useAddresses()
+  const currencySymbol = getCurrencySymbol(chainId || 0)
 
   // Manual check transaction status
   const checkTransactionStatus = async () => {
@@ -170,7 +174,7 @@ export default function FulFill({
           const intentFulfilledEvent = receipt.logs.find((log: any) => {
             return (
               log.topics[0] === INTENT_FULFILLED_TOPIC &&
-              log.address.toLowerCase() === ADDRESSES.ESCROW.toLowerCase()
+              log.address.toLowerCase() === addresses.ESCROW.toLowerCase()
             )
           })
 
@@ -244,7 +248,7 @@ export default function FulFill({
         const intentFulfilledEvent = receipt.logs.find((log: any) => {
           return (
             log.topics[0] === INTENT_FULFILLED_TOPIC &&
-            log.address.toLowerCase() === ADDRESSES.ESCROW.toLowerCase()
+            log.address.toLowerCase() === addresses.ESCROW.toLowerCase()
           )
         })
 
@@ -331,7 +335,7 @@ export default function FulFill({
       })
 
       const result = await fulfillIntentWrite({
-        address: ADDRESSES.ESCROW,
+        address: addresses.ESCROW,
         abi: ESCROW_ABI,
         functionName: 'fulfillIntent',
         args: [
@@ -364,7 +368,7 @@ export default function FulFill({
         },
       })
 
-      setError(`USDC transfer failed: ${errorMessage}`)
+      setError(`${currencySymbol} transfer failed: ${errorMessage}`)
       setFulfillmentResult({ success: false })
       setTransactionStatus('error')
     }
@@ -377,10 +381,14 @@ export default function FulFill({
         : transactionStatus === 'confirming'
           ? t('confirming')
           : isFulfillIntentLoading
-            ? t('transferringUSDC')
+            ? t('transferringUSDC', {
+                token: currencySymbol.toUpperCase(),
+              })
             : fulfillmentResult?.success
               ? t('transferComplete')
-              : t('transferUSDC')
+              : t('transferUSDC', {
+                  token: currencySymbol.toUpperCase(),
+                })
 
     if (
       !isFulfillIntentLoading &&
@@ -408,7 +416,9 @@ export default function FulFill({
   return (
     <>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold">{t('title')}</h2>
+        <h2 className="text-xl font-semibold">
+          {t('title', { token: currencySymbol.toUpperCase() })}
+        </h2>
       </div>
       {fulfillmentResult?.success && (
         <FulfillmentResultComponent fulfillmentResult={fulfillmentResult} />
@@ -456,7 +466,10 @@ export default function FulFill({
                       </p>
                       <div className="flex items-center justify-between mt-2">
                         <a
-                          href={getTransactionExplorerUrl(transactionHash)}
+                          href={getTransactionExplorerUrl(
+                            transactionHash,
+                            chainId,
+                          )}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
@@ -523,12 +536,16 @@ export default function FulFill({
             <div className="space-y-2">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <span className="text-primary">◆</span>
-                {t('clickTransferTitle')}
+                {t('clickTransferTitle', {
+                  token: currencySymbol.toUpperCase(),
+                })}
               </h3>
               <p className="text-sm text-muted-foreground ml-6">
                 {t('proofGeneratedSuccess')}
                 <br />
-                {t('transferUSDCDescription')}
+                {t('transferUSDCDescription', {
+                  token: currencySymbol.toUpperCase(),
+                })}
               </p>
             </div>
           </section>

@@ -1,15 +1,13 @@
 'use client'
 
-import { cn, getNetworkNameByChainId, truncateAddress } from '@/lib/utils'
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+import { cn } from '@/lib/utils'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { useAccount, useChainId } from 'wagmi'
-import { ConnectButton } from '@rainbow-me/rainbowkit'
 import Image from 'next/image'
-import { AddTokenButton } from './AddTokenButton'
 import { useTranslations } from 'next-intl'
 import LanguageToggle from './LanguageToggle'
 import CustomConnectButton from './utils/CustomConnectButton'
+import { NetworkSwitcher } from './ui/NetworkSwitcher'
 
 interface NavigationBarProps {
   className?: string
@@ -26,8 +24,6 @@ export default function NavigationBar({ className }: NavigationBarProps) {
   const view = searchParams.get('view')
   const [activeTab, setActiveTab] = useState<Tab>(Tab.SWAP)
   const [showNetwork, setShowNetwork] = useState(false)
-  const { isConnected } = useAccount()
-  const chainId = useChainId()
   const t = useTranslations('navigation')
 
   useEffect(() => {
@@ -63,7 +59,7 @@ export default function NavigationBar({ className }: NavigationBarProps) {
             onClick={() => (window.location.href = '/')}
           />
 
-          {/* Main navigation links - back to original style */}
+          {/* Main navigation links */}
           <div className="flex items-center gap-3 sm:gap-4 ml-2">
             <button
               onClick={() => {
@@ -102,6 +98,9 @@ export default function NavigationBar({ className }: NavigationBarProps) {
 
         {/* Right side - Wallet and Network info */}
         <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+          {/* Network Switcher */}
+          <NetworkSwitcher />
+
           {/* Language Toggle - Only on desktop */}
           <LanguageToggle />
 

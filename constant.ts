@@ -1,5 +1,5 @@
 import { base, baseSepolia } from 'viem/chains'
-import { anvil } from '@/lib/network'
+import { anvil, kairos, kaia } from '@/lib/network'
 import { keccak256, toBytes } from 'viem'
 import { ESCROW_ABI } from '@/lib/abi'
 
@@ -17,8 +17,11 @@ export const TOSS_ACCOUNT_NUMBER =
       : TOSS_ACCOUNT_NUMBER_LOCAL
 
 export const TOKEN_SYMBOL = 'KRW'
-export const USDC_SYMBOL = 'USDC'
 
+// Dynamic currency symbol based on chain ID
+export function getCurrencySymbol(chainId: number): string {
+  return chainId === kaia.id || chainId === kairos.id ? 'USDT' : 'USDC'
+}
 // Fixed depositId for frontend
 export const DEFAULT_DEPOSIT_ID = 1
 
@@ -29,36 +32,30 @@ export const TOSS_PLAY =
   'https://play.google.com/store/apps/details?id=viva.republica.toss'
 export const TOSS_APPLE = 'https://apps.apple.com/kr/app/id839333328'
 
-const FROM_BLOCK_LOCAL = BigInt(0)
-const FROM_BLOCK_BASE_SEPOLIA = BigInt(28962302)
-const FROM_BLOCK_BASE = BigInt(33575627)
-export const FROM_BLOCK =
-  process.env.NEXT_PUBLIC_CHAIN_NETWORK === 'local'
-    ? FROM_BLOCK_LOCAL
-    : process.env.NEXT_PUBLIC_CHAIN_NETWORK === 'test'
-      ? FROM_BLOCK_BASE_SEPOLIA
-      : FROM_BLOCK_BASE
-
 export const isLocal = process.env.NEXT_PUBLIC_CHAIN_NETWORK === 'local'
 export const isProduction =
   process.env.NEXT_PUBLIC_CHAIN_NETWORK === 'production'
 
-export const chain = (function () {
-  const chainNetwork = process.env.NEXT_PUBLIC_CHAIN_NETWORK
-  if (chainNetwork === 'local') {
-    return anvil
-  } else if (chainNetwork === 'test') {
-    return baseSepolia
-  } else {
-    return base
-  }
-})()
+export const NETWORK_CONFIG = {
+  production: {
+    allowedNetworks: ['base', 'kaia'] as const,
+    defaultNetwork: 'base' as const,
+  },
+  development: {
+    allowedNetworks: ['baseSepolia', 'kairos'] as const,
+    defaultNetwork: 'baseSepolia' as const,
+  },
+} as const
+
+export const getCurrentNetworkConfig = () => {
+  return isProduction ? NETWORK_CONFIG.production : NETWORK_CONFIG.development
+}
 
 export const getTossBankQRCode = (transferAmount: string) =>
   `supertoss://send?amount=${transferAmount}&bank=%ED%86%A0%EC%8A%A4%EB%B1%85%ED%81%AC&accountNo=${TOSS_ACCOUNT_NUMBER}&origin=qr`
 
 export const DECIMALS_CONVERSION_RATE = 18
-export const DECIMALS_USDC = 6
+export const DECIMALS_STABLE_COIN = 6
 
 // const INTENT_SIGNAL_TOPIC = keccak256(
 //   toBytes('IntentSignaled(address,address,address,uint256,uint256,uint256)'),

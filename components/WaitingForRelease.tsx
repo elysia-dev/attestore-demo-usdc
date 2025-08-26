@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { usePublicClient } from 'wagmi'
+import { usePublicClient, useAccount } from 'wagmi'
 import { FileCheck, ArrowRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import {
@@ -25,6 +25,7 @@ import {
 import { validateApiResponse } from '@/lib/validation'
 import { getStatusText } from './ui/intent'
 import StatusIcon from './ui/StatusIcon'
+import { getCurrencySymbol } from '@/constant'
 
 interface WaitingForReleaseProps {
   intentId: string
@@ -38,6 +39,8 @@ export function WaitingForRelease({
   handlePrevious,
 }: WaitingForReleaseProps) {
   const router = useRouter()
+  const { chainId } = useAccount()
+  const currencySymbol = getCurrencySymbol(chainId || 0)
   const t = useTranslations('waitingForRelease')
   const tCommon = useTranslations('common')
   const tIntentStatus = useTranslations('intentStatus')
@@ -51,7 +54,10 @@ export function WaitingForRelease({
 
       try {
         setIsLoading(true)
-        const response = await fetch(`/api/transfer-history/${intentId}`)
+        const url = chainId
+          ? `/api/transfer-history/${intentId}?chainId=${chainId}`
+          : `/api/transfer-history/${intentId}`
+        const response = await fetch(url)
 
         if (!response.ok) {
           throw new Error(
@@ -180,7 +186,7 @@ export function WaitingForRelease({
                     {tCommon('amount')}:
                   </span>
                   <span className="font-mono font-medium">
-                    {formatUnits(BigInt(intent.amount), 6)} USDC
+                    {formatUnits(BigInt(intent.amount), 6)} {currencySymbol}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
@@ -240,7 +246,9 @@ export function WaitingForRelease({
                   <div className="flex-1 space-y-2">
                     <p className="text-sm font-medium">{t('dontWantToWait')}</p>
                     <p className="text-sm text-muted-foreground">
-                      {t('manualProofDescription')}
+                      {t('manualProofDescription', {
+                        token: currencySymbol.toUpperCase(),
+                      })}
                     </p>
                   </div>
                 </div>

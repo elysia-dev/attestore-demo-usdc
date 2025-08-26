@@ -2,12 +2,16 @@ import { IntentDetail, DepositDetail } from '@/components/Home'
 import { useContext, useEffect, useState, useCallback } from 'react'
 import { useAccount, usePublicClient } from 'wagmi'
 import useDepositStore from '@/stores/useDepositStore'
-import ADDRESSES from '@/lib/addresses'
+import { useAddresses } from '@/hooks/useAddresses'
 import { ESCROW_ABI } from '@/lib/abi'
 import SwapInterface from './SwapInterface'
 import { ErrorContext } from '@/context/ErrorContext'
 import { ArrowIcon } from '@/components/icons/ArrowIcon'
-import { DEFAULT_DEPOSIT_ID, KRW_CURRENCY_CODE } from '@/constant'
+import {
+  getCurrencySymbol,
+  DEFAULT_DEPOSIT_ID,
+  KRW_CURRENCY_CODE,
+} from '@/constant'
 import { WorkflowStep } from '@/components/StepIndicator'
 import DepositManagement from './DepositManagement'
 import IntentManagement from './IntentManagement'
@@ -44,7 +48,8 @@ export default function Signal({
 }) {
   // Get data from Zustand store
   const { myDeposits, depositDetail } = useDepositStore()
-
+  const addresses = useAddresses()
+  const currencySymbol = getCurrencySymbol(chainId || 0)
   const [mode, setMode] = useState<SignalMode>(SignalMode.ONRAMP)
   const [accountNumber, setAccountNumber] = useState('')
   const [amount, setAmount] = useState('140')
@@ -64,12 +69,12 @@ export default function Signal({
       // Read conversion rate for depositId 1, TOSS_BANK_VERIFIER, and KRW currency
       // rate: 1380 * 1e18
       const rate = await publicClient.readContract({
-        address: ADDRESSES.ESCROW,
+        address: addresses.ESCROW,
         abi: ESCROW_ABI,
         functionName: 'depositCurrencyConversionRate',
         args: [
           BigInt(DEFAULT_DEPOSIT_ID),
-          ADDRESSES.TOSS_BANK_VERIFIER,
+          addresses.TOSS_BANK_VERIFIER,
           KRW_CURRENCY_CODE,
         ],
       })
@@ -138,8 +143,8 @@ export default function Signal({
   const tSwap = useTranslations('swap')
 
   const swapText = isOnramp
-    ? `${tSwap('swap')}(KRW->USDC)`
-    : `${tSwap('swap')}(USDC->KRW)`
+    ? `${tSwap('swap')}(KRW->${currencySymbol})`
+    : `${tSwap('swap')}(${currencySymbol}->KRW)`
   return (
     <>
       <div className="flex items-center justify-between mb-6">

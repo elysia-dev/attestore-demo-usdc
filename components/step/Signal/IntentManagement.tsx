@@ -1,14 +1,14 @@
 import { IntentDetail } from '@/components/Home'
-import { TOKEN_SYMBOL, USDC_SYMBOL } from '@/constant'
+import { getCurrencySymbol, TOKEN_SYMBOL } from '@/constant'
 import { useContractWrite } from '@/hooks/useContractWrite'
-import ADDRESSES from '@/lib/addresses'
+import { useAddresses } from '@/hooks/useAddresses'
 import { ESCROW_ABI } from '@/lib/abi'
 import { ErrorType } from '@/lib/errors'
 import { extractErrorMessage } from '@/components/utils/extractErrorMessage'
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { cn, getExplorerUrl, truncateAddress } from '@/lib/utils'
 import { erc20Abi, formatUnits } from 'viem'
-import { usePublicClient } from 'wagmi'
+import { useAccount, usePublicClient } from 'wagmi'
 import { ErrorContext } from '@/context/ErrorContext'
 import { useTranslations, useLocale } from 'next-intl'
 
@@ -27,11 +27,13 @@ const IntentManagement = ({
   setIntentId: (intentId: number) => void
   setSearchIntentId: (searchIntentId: number) => void
 }) => {
+  const { chainId } = useAccount()
   const publicClient = usePublicClient()
   const { setError } = useContext(ErrorContext)
   const t = useTranslations('intent')
   const locale = useLocale()
-
+  const addresses = useAddresses()
+  const currencySymbol = getCurrencySymbol(chainId || 0)
   const [receiverTokenBalance, setReceiverTokenBalance] = useState<
     bigint | undefined
   >(undefined)
@@ -41,14 +43,14 @@ const IntentManagement = ({
       if (!to) return
 
       const balance = await publicClient?.readContract({
-        address: ADDRESSES.USDC, // USDC token
+        address: addresses.USDC, // USDC token
         abi: erc20Abi,
         functionName: 'balanceOf',
         args: [to as `0x${string}`],
       })
       setReceiverTokenBalance(balance)
     },
-    [publicClient],
+    [publicClient, addresses],
   )
 
   useEffect(() => {
@@ -71,7 +73,7 @@ const IntentManagement = ({
 
     try {
       await cancelIntentWrite({
-        address: ADDRESSES.ESCROW,
+        address: addresses.ESCROW,
         abi: ESCROW_ABI,
         functionName: 'cancelIntent',
         args: [BigInt(intentId)],
@@ -124,7 +126,7 @@ const IntentManagement = ({
                     {t('amount')}
                   </p>
                   <p className="font-mono font-medium text-lg text-primary">
-                    {formatUnits(intentDetail.amount, 6)} USDC
+                    {formatUnits(intentDetail.amount, 6)} {currencySymbol}
                   </p>
                 </div>
                 <div className="text-right">
@@ -169,7 +171,7 @@ const IntentManagement = ({
                     {receiverTokenBalance
                       ? formatUnits(receiverTokenBalance, 6)
                       : '0'}{' '}
-                    USDC
+                    {currencySymbol}
                   </p>
                 </div>
                 <div className="text-right">
@@ -179,7 +181,7 @@ const IntentManagement = ({
                   <button
                     className="font-mono text-sm hover:text-primary transition-colors"
                     onClick={() => {
-                      const url = getExplorerUrl(intentDetail.to)
+                      const url = getExplorerUrl(intentDetail.to, chainId)
                       window.open(url, '_blank')
                     }}>
                     {intentDetail.to.slice(0, 8)}...

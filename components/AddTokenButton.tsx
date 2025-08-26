@@ -4,11 +4,27 @@ import React from 'react'
 import { Button } from './ui/button'
 import { Plus } from 'lucide-react'
 import { useChainId } from 'wagmi'
-import ADDRESSES from '@/lib/addresses'
+import { useAddresses } from '@/hooks/useAddresses'
+import { kaia, kairos } from '@/lib/network'
 
-const address = ADDRESSES.USDC
+const USDC_OPTIONS = {
+  symbol: 'USDC',
+  image:
+    'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png',
+}
+const USDT_OPTIONS = {
+  symbol: 'USDT',
+  image:
+    'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png',
+}
+
 export function AddTokenButton() {
   const [isAdding, setIsAdding] = React.useState(false)
+  const chainId = useChainId()
+  const addresses = useAddresses()
+
+  const tokenOptions =
+    chainId === kairos.id || chainId === kaia.id ? USDT_OPTIONS : USDC_OPTIONS
 
   const addToken = async () => {
     if (!window.ethereum) return
@@ -23,11 +39,10 @@ export function AddTokenButton() {
           params: {
             type: 'ERC20',
             options: {
-              address,
-              symbol: 'USDC',
+              address: addresses.USDC,
+              symbol: tokenOptions.symbol,
               decimals: 6,
-              image:
-                'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png',
+              image: tokenOptions.image,
             },
           },
         })
@@ -40,8 +55,8 @@ export function AddTokenButton() {
           ) {
             // Method not found
             alert(
-              'Your wallet does not support automatic token addition. Please add the USDC token manually using address: ' +
-                address,
+              `Your wallet does not support automatic token addition. Please add the ${tokenOptions.symbol} token manually using address: ` +
+                addresses.USDC,
             )
             return false
           }
@@ -70,9 +85,11 @@ export function AddTokenButton() {
       className="bg-white/10 border-white/20 hover:bg-white/20 text-white text-xs sm:text-sm disabled:opacity-50">
       <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
       <span className="hidden sm:inline">
-        {isAdding ? 'Adding...' : 'Add USDC'}
+        {isAdding ? 'Adding...' : `Add ${tokenOptions.symbol}`}
       </span>
-      <span className="sm:hidden">{isAdding ? '...' : 'USDC'}</span>
+      <span className="sm:hidden">
+        {isAdding ? '...' : tokenOptions.symbol}
+      </span>
     </Button>
   )
 }

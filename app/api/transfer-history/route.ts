@@ -1,9 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isProduction } from '@/constant'
+import { base, baseSepolia } from 'viem/chains'
+import { kairos, kaia } from '@/lib/network'
 
 const HISTORY_API_URL = isProduction
   ? process.env.HISTORY_API_URL_PROD
   : process.env.HISTORY_API_URL_TEST
+
+const getChainNameFromId = (chainId: number): string => {
+  switch (chainId) {
+    case base.id:
+      return 'base'
+    case baseSepolia.id:
+      return 'baseSepolia'
+    case kaia.id:
+      return 'kaia'
+    case kairos.id:
+      return 'kairos'
+    default:
+      return isProduction ? 'base' : 'baseSepolia'
+  }
+}
 
 export async function GET(request: NextRequest) {
   if (!HISTORY_API_URL) {
@@ -13,9 +30,15 @@ export async function GET(request: NextRequest) {
     )
   }
 
+  const { searchParams } = new URL(request.url)
+  const chainId = searchParams.get('chainId')
+  const chainName = chainId ? getChainNameFromId(parseInt(chainId)) : null
+
+  const whereClause = chainName ? `(where: {chainName: "${chainName}"})` : ''
+
   const query = `
     {
-      intentSignaleds {
+      intentSignaleds${whereClause} {
         items {
           intentId
           owner
@@ -26,10 +49,11 @@ export async function GET(request: NextRequest) {
           blockNumber
           txHash
           timestamp
+          chainName
         }
         totalCount
       }
-      intentFulfilleds {
+      intentFulfilleds${whereClause} {
         items {
           intentId
           owner
@@ -40,9 +64,10 @@ export async function GET(request: NextRequest) {
           to
           verifier
           timestamp
+          chainName
         }
       }
-      intentReleaseds {
+      intentReleaseds${whereClause} {
         items {
           txHash
           owner
@@ -52,15 +77,17 @@ export async function GET(request: NextRequest) {
           blockNumber
           amount
           timestamp
+          chainName
         }
       }
-      intentCancelleds {
+      intentCancelleds${whereClause} {
         items {
           intentId
           owner
           txHash
           blockNumber
           timestamp
+          chainName
         }
       }
     }`

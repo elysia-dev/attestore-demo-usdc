@@ -11,7 +11,7 @@ import React, { useEffect, useState, useRef, useContext } from 'react'
 
 import { useAccount, useChainId, usePublicClient } from 'wagmi'
 import useDepositStore from '@/stores/useDepositStore'
-import ADDRESSES from '@/lib/addresses'
+import { useAddresses } from '@/hooks/useAddresses'
 import { ESCROW_ABI } from '@/lib/abi'
 import { ErrorType } from '@/lib/errors'
 import Connect from './step/Connect'
@@ -109,12 +109,13 @@ export default function Home() {
   const searchParams = useSearchParams()
   const view = searchParams.get('view')
   const t = useTranslations('home')
+  const addresses = useAddresses()
 
   useEffect(() => {
     handleRefreshMyIntentId()
     if (address) {
       setCurrentAddress(address)
-      fetchDeposits(publicClient)
+      fetchDeposits(publicClient, addresses)
     }
   }, [isConnected, address, publicClient]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -180,7 +181,7 @@ export default function Home() {
       setIsLoading(true)
       // accountIntent 함수로 현재 사용자의 intentId 조회
       const userIntentId = await publicClient?.readContract({
-        address: ADDRESSES.ESCROW,
+        address: addresses.ESCROW,
         abi: ESCROW_ABI,
         functionName: 'accountIntent',
         args: [address],
@@ -208,7 +209,7 @@ export default function Home() {
     try {
       setIsLoading(true)
       const intentData = await publicClient?.readContract({
-        address: ADDRESSES.ESCROW,
+        address: addresses.ESCROW,
         abi: ESCROW_ABI,
         functionName: 'intents',
         args: [BigInt(targetIntentId)],
@@ -354,7 +355,8 @@ export default function Home() {
                 {/* Subtitle */}
                 {currentStep === WorkflowStep.CONNECT && (
                   <p className="text-center text-muted-foreground mb-8">
-                    Instant KRW to USDC swaps powered by zero-knowledge proofs
+                    Instant KRW to Stablecoin swaps powered by zero-knowledge
+                    proofs
                   </p>
                 )}
 

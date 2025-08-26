@@ -1,6 +1,10 @@
 import { formatUnits } from 'viem'
 import { IntentDetail } from '../Home'
-import { getTossBankQRCode, TOSS_ACCOUNT_NUMBER } from '@/constant'
+import {
+  getCurrencySymbol,
+  getTossBankQRCode,
+  TOSS_ACCOUNT_NUMBER,
+} from '@/constant'
 import { useContext, useState } from 'react'
 import { ErrorContext } from '@/context/ErrorContext'
 import QRCode from 'react-qr-code'
@@ -11,6 +15,7 @@ import { useTossLauncher } from '../../hooks/useTossLauncher'
 import ConfirmationModal from '../ui/ConfirmationModal'
 import { WorkflowStep } from '../StepIndicator'
 import { useTranslations } from 'next-intl'
+import { useAccount } from 'wagmi'
 
 export default function Transfer({
   intentId,
@@ -26,6 +31,8 @@ export default function Transfer({
   const { freeError } = useContext(ErrorContext)
   const [isVideoPopupOpen, setIsVideoPopupOpen] = useState(false)
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
+  const { chainId } = useAccount()
+  const currencySymbol = getCurrencySymbol(chainId || 0)
 
   const transferAmount = getKRWAmount({
     usdcAmount: intentDetail.amount,
@@ -150,8 +157,8 @@ export default function Transfer({
               </p>
               {/* <TransferMemoCopyButton /> */}
               <CopyTextButton
-                text={getTransferMemo(intentId)}
-                title={getTransferMemo(intentId)}
+                text={getTransferMemo(intentId, chainId)}
+                title={getTransferMemo(intentId, chainId)}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -159,7 +166,7 @@ export default function Transfer({
                 {tCommon('amount')}
               </p>
               <p className="text-sm font-medium">
-                {formatUnits(intentDetail?.amount, 6)} USDC
+                {formatUnits(intentDetail?.amount, 6)} {currencySymbol}
               </p>
             </div>
             <div className="flex items-center justify-between">

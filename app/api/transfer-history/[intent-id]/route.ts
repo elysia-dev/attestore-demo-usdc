@@ -1,9 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isProduction } from '@/constant'
+import { base, baseSepolia } from 'viem/chains'
+import { kairos, kaia } from '@/lib/network'
 
 const HISTORY_API_URL = isProduction
   ? process.env.HISTORY_API_URL_PROD
   : process.env.HISTORY_API_URL_TEST
+
+const getChainNameFromId = (chainId: number): string => {
+  switch (chainId) {
+    case base.id:
+      return 'base'
+    case baseSepolia.id:
+      return 'baseSepolia'
+    case kaia.id:
+      return 'kaia'
+    case kairos.id:
+      return 'kairos'
+    default:
+      return isProduction ? 'base' : 'baseSepolia'
+  }
+}
 
 export async function GET(
   request: NextRequest,
@@ -25,9 +42,17 @@ export async function GET(
     )
   }
 
+  const { searchParams } = new URL(request.url)
+  const chainId = searchParams.get('chainId')
+  const chainName = chainId ? getChainNameFromId(parseInt(chainId)) : null
+
+  const whereClause = chainName
+    ? `{intentId: "${intentId}", chainName: "${chainName}"}`
+    : `{intentId: "${intentId}"}`
+
   const query = `
     {
-      intentSignaleds(where: {intentId: "${intentId}"}) {
+      intentSignaleds(where: ${whereClause}) {
         items {
           intentId
           owner
@@ -38,10 +63,11 @@ export async function GET(
           blockNumber
           txHash
           timestamp
+          chainName
         }
         totalCount
       }
-      intentFulfilleds(where: {intentId: "${intentId}"}) {
+      intentFulfilleds(where: ${whereClause}) {
         items {
           intentId
           owner
@@ -52,9 +78,10 @@ export async function GET(
           to
           verifier
           timestamp
+          chainName
         }
       }
-      intentReleaseds(where: {intentId: "${intentId}"}) {
+      intentReleaseds(where: ${whereClause}) {
         items {
           txHash
           owner
@@ -64,15 +91,17 @@ export async function GET(
           blockNumber
           amount
           timestamp
+          chainName
         }
       }
-      intentCancelleds(where: {intentId: "${intentId}"}) {
+      intentCancelleds(where: ${whereClause}) {
         items {
           intentId
           owner
           txHash
           blockNumber
           timestamp
+          chainName
         }
       }
     }`

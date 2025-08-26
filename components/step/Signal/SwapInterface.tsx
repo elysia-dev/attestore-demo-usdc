@@ -1,5 +1,6 @@
 import { extractErrorMessage } from '@/components/utils/extractErrorMessage'
 import {
+  getCurrencySymbol,
   DEFAULT_DEPOSIT_ID,
   INTENT_SIGNAL_TOPIC,
   KRW_CURRENCY_CODE,
@@ -7,7 +8,7 @@ import {
 } from '@/constant'
 import { ErrorContext } from '@/context/ErrorContext'
 import { ESCROW_ABI } from '@/lib/abi'
-import ADDRESSES from '@/lib/addresses'
+import { useAddresses } from '@/hooks/useAddresses'
 import { ErrorType } from '@/lib/errors'
 import { useCallback, useContext, useEffect, useState } from 'react'
 import {
@@ -56,7 +57,7 @@ export default function SwapInterface({
   const tSwap = useTranslations('swap')
   const publicClient = usePublicClient()
   const [isSwapping, setIsSwapping] = useState(false)
-
+  const addresses = useAddresses()
   // show on input
   const [amountError, setAmountError] = useState<string | null>(null)
 
@@ -65,7 +66,8 @@ export default function SwapInterface({
   const { allDeposits } = useDepositStore()
   const defaultDeposit = allDeposits.find((d) => d.id === DEFAULT_DEPOSIT_ID)
 
-  const { address } = useAccount()
+  const { address, chainId } = useAccount()
+  const currencySymbol = getCurrencySymbol(chainId || 0)
   // Contract write hook for signalIntent
   const { writeAndWait: signalIntentWrite, isLoading: isSignalIntentLoading } =
     useContractWrite({
@@ -74,7 +76,7 @@ export default function SwapInterface({
           const intentSignaledEvent = receipt.logs.find((log: any) => {
             return (
               log.topics[0] === INTENT_SIGNAL_TOPIC &&
-              log.address.toLowerCase() === ADDRESSES.ESCROW.toLowerCase()
+              log.address.toLowerCase() === addresses.ESCROW.toLowerCase()
             )
           })
 
@@ -119,7 +121,7 @@ export default function SwapInterface({
           )
           return (
             log.topics[0] === depositCreatedTopic &&
-            log.address.toLowerCase() === ADDRESSES.ESCROW.toLowerCase()
+            log.address.toLowerCase() === addresses.ESCROW.toLowerCase()
           )
         })
 
@@ -144,10 +146,10 @@ export default function SwapInterface({
     if (!address || !publicClient) return false
 
     const allowance = await publicClient.readContract({
-      address: ADDRESSES.USDC,
+      address: addresses.USDC,
       abi: erc20Abi,
       functionName: 'allowance',
-      args: [address, ADDRESSES.ESCROW],
+      args: [address, addresses.ESCROW],
     })
 
     return allowance >= depositAmount
@@ -166,7 +168,7 @@ export default function SwapInterface({
     try {
       // 1. Check user token balance
       const balance = await publicClient?.readContract({
-        address: ADDRESSES.USDC,
+        address: addresses.USDC,
         abi: erc20Abi,
         functionName: 'balanceOf',
         args: [address],
@@ -179,6 +181,7 @@ export default function SwapInterface({
           tSwap('insufficientBalance', {
             balance: balance ? formatUnits(balance, 6) : '0',
             amount,
+            token: currencySymbol.toUpperCase(),
           }),
         )
         return
@@ -195,20 +198,20 @@ export default function SwapInterface({
 
       if (!hasAllowance) {
         // Ensure addresses are defined
-        if (!ADDRESSES.USDC || !ADDRESSES.ESCROW) {
+        if (!addresses.USDC || !addresses.ESCROW) {
           throw new Error('Contract addresses not properly configured')
         }
 
         try {
           // Validate args before sending
-          const approveArgs = [ADDRESSES.ESCROW, depositAmount]
+          const approveArgs = [addresses.ESCROW, depositAmount]
 
           if (!approveArgs[0] || approveArgs[1] === undefined) {
             throw new Error('Invalid approve arguments')
           }
 
           await approveWrite({
-            address: ADDRESSES.USDC as `0x${string}`,
+            address: addresses.USDC as `0x${string}`,
             abi: erc20Abi,
             functionName: 'approve',
             args: approveArgs as unknown as readonly [string, bigint],
@@ -247,14 +250,14 @@ export default function SwapInterface({
 
       try {
         await createDepositWrite({
-          address: ADDRESSES.ESCROW,
+          address: addresses.ESCROW,
           abi: ESCROW_ABI,
           functionName: 'createDeposit',
           args: [
-            ADDRESSES.USDC, // token
+            addresses.USDC, // token
             depositAmount, // amount
             { min: minIntentAmount, max: maxIntentAmount }, // intentAmountRange
-            [ADDRESSES.TOSS_BANK_VERIFIER], // verifiers
+            [addresses.TOSS_BANK_VERIFIER], // verifiers
             verifierData, // verifierData
             currencies, // currencies
           ],
@@ -297,19 +300,23 @@ export default function SwapInterface({
           : maxAmount
 
       if (usdcAmountBigInt < minAmount) {
-        return tSwap('amountTooLow', { min: formatUnits(minAmount, 6) })
+        return tSwap('amountTooLow', {
+          min: formatUnits(minAmount, 6),
+          token: currencySymbol.toUpperCase(),
+        })
       }
 
       if (usdcAmountBigInt > effectiveMax) {
         return tSwap('amountTooHigh', {
           max: formatUnits(effectiveMax, 6),
           remaining: formatUnits(defaultDeposit.remainingDeposits, 6),
+          token: currencySymbol.toUpperCase(),
         })
       }
 
       return null
     },
-    [defaultDeposit, tSwap],
+    [defaultDeposit, tSwap, currencySymbol],
   )
 
   useEffect(() => {
@@ -373,14 +380,14 @@ export default function SwapInterface({
       try {
         setIsSwapping(true)
         await signalIntentWrite({
-          address: ADDRESSES.ESCROW,
+          address: addresses.ESCROW,
           abi: ESCROW_ABI,
           functionName: 'signalIntent',
           args: [
             BigInt(DEFAULT_DEPOSIT_ID),
             parseUnits(usdcAmount, 6), // USDC has 6 decimals
             recipientAddress as `0x${string}`,
-            ADDRESSES.TOSS_BANK_VERIFIER,
+            addresses.TOSS_BANK_VERIFIER,
             KRW_CURRENCY_CODE,
           ],
         })
@@ -472,15 +479,29 @@ export default function SwapInterface({
           />
 
           <div className="flex items-center gap-2 min-w-fit">
-            <span className="font-medium">{isOnramp ? 'KRW' : 'USDC'}</span>
+            <span className="font-medium">
+              {isOnramp ? 'KRW' : currencySymbol}
+            </span>
             {!isOnramp && (
-              <Image
-                src="/base-usdc.png"
-                alt="USDC"
-                width={24}
-                height={24}
-                className="w-6 h-6"
-              />
+              <>
+                {currencySymbol.toUpperCase() === 'USDC' ? (
+                  <Image
+                    src="/base-usdc.png"
+                    alt="USDC"
+                    width={24}
+                    height={24}
+                    className="w-6 h-6"
+                  />
+                ) : (
+                  <Image
+                    src="/base-usdt.png"
+                    alt="USDT"
+                    width={24}
+                    height={24}
+                    className="w-6 h-6"
+                  />
+                )}
+              </>
             )}
           </div>
         </div>
@@ -509,7 +530,7 @@ export default function SwapInterface({
                   6,
                 ),
               })}{' '}
-              USDC
+              {currencySymbol}
             </span>
           )}
         </div>
@@ -530,17 +551,26 @@ export default function SwapInterface({
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-2 min-w-fit">
                   <span className="font-medium">
-                    {isOnramp ? 'USDC' : 'KRW'}
+                    {isOnramp ? currencySymbol : 'KRW'}
                   </span>
-                  {isOnramp && (
-                    <Image
-                      src="/base-usdc.png"
-                      alt="USDC"
-                      width={24}
-                      height={24}
-                      className="w-6 h-6"
-                    />
-                  )}
+                  {isOnramp &&
+                    (currencySymbol.toUpperCase() === 'USDC' ? (
+                      <Image
+                        src="/base-usdc.png"
+                        alt="USDC"
+                        width={24}
+                        height={24}
+                        className="w-6 h-6"
+                      />
+                    ) : (
+                      <Image
+                        src="/base-usdt.png"
+                        alt="USDT"
+                        width={24}
+                        height={24}
+                        className="w-6 h-6"
+                      />
+                    ))}
                 </div>
               </div>
             }
@@ -585,7 +615,12 @@ export default function SwapInterface({
         </div>
       )}
 
-      {!!conversionRate && <ConversionRate conversionRate={conversionRate} />}
+      {!!conversionRate && (
+        <ConversionRate
+          conversionRate={conversionRate}
+          currencySymbol={currencySymbol}
+        />
+      )}
       <ActionButton
         isSwapping={isSwapping}
         isSignalIntentLoading={isSignalIntentLoading}
@@ -595,6 +630,7 @@ export default function SwapInterface({
         accountNumber={accountNumber}
         handleSwap={handleSwap}
         amountError={amountError}
+        currencySymbol={currencySymbol}
       />
     </div>
   )
@@ -622,7 +658,13 @@ const PayingUsing = () => {
   )
 }
 
-const ConversionRate = ({ conversionRate }: { conversionRate: bigint }) => {
+const ConversionRate = ({
+  conversionRate,
+  currencySymbol,
+}: {
+  conversionRate: bigint
+  currencySymbol: string
+}) => {
   return (
     <div className="text-center text-sm text-muted-foreground">
       1 KRW ={' '}
@@ -630,7 +672,7 @@ const ConversionRate = ({ conversionRate }: { conversionRate: bigint }) => {
         minimumFractionDigits: 0,
         maximumFractionDigits: 6,
       })}{' '}
-      USDC
+      {currencySymbol}
     </div>
   )
 }
@@ -644,6 +686,7 @@ const ActionButton = ({
   accountNumber,
   handleSwap,
   amountError,
+  currencySymbol,
 }: {
   isSwapping: boolean
   isSignalIntentLoading: boolean
@@ -653,6 +696,7 @@ const ActionButton = ({
   accountNumber: string
   handleSwap: () => void
   amountError: string | null
+  currencySymbol: string
 }) => {
   const t = useTranslations('common')
   const tSwap = useTranslations('swap')
@@ -673,8 +717,8 @@ const ActionButton = ({
       {isSwapping || isSignalIntentLoading
         ? t('processing')
         : isOnramp
-          ? tSwap('buyUSDC')
-          : tSwap('sellUSDC')}
+          ? tSwap('buyUSDC', { token: currencySymbol.toUpperCase() })
+          : tSwap('sellUSDC', { token: currencySymbol.toUpperCase() })}
     </button>
   )
 }
