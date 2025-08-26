@@ -113,6 +113,10 @@ export function NetworkSwitcher({ className }: NetworkSwitcherProps) {
     }
   }
 
+  if (!isConnected) {
+    return null
+  }
+
   return (
     <div className={cn('relative', className)}>
       <button
