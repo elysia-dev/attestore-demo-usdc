@@ -229,7 +229,7 @@ export default function Transfer({
         onConfirm={checkAndGoNext}
         name={`이현민(모임통장)`}
         transferAmount={transferAmount}
-        memo={getTransferMemo(intentId)}
+        memo={getTransferMemo(intentId, chainId)}
         address={`토스뱅크 ${TOSS_ACCOUNT_NUMBER}`}
       />
     </section>
