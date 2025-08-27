@@ -22,7 +22,7 @@ export const usePrivyWallet = () => {
     const linkedWallet = wallets.find((wallet) => wallet.linked === true)
     const userWallet = user?.wallet
 
-    // connect wallet address
+    // TODO: check this logic
     const walletAddress = smartWalletClient
       ? smartWalletClient.account?.address
       : linkedWallet?.address
