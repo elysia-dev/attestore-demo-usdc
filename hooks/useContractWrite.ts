@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { useWriteContract, usePublicClient } from 'wagmi'
-import { Abi, Address, TransactionReceipt } from 'viem'
+import { Abi, Address, encodeFunctionData, TransactionReceipt } from 'viem'
 import { extractErrorMessage } from '@/components/utils/extractErrorMessage'
 import { captureWeb3Error, trackTransaction } from '@/lib/sentry-utils'
 import * as Sentry from '@sentry/nextjs'
-
+import { useSendTransaction } from '@privy-io/react-auth'
+import { usePublicClient } from 'wagmi'
+import { usePrivyWallet } from './usePrivyWallet'
 interface UseContractWriteOptions {
   onSuccess?: (receipt: TransactionReceipt) => void
   onError?: (error: Error) => void
@@ -13,9 +14,10 @@ interface UseContractWriteOptions {
 export function useContractWrite(options?: UseContractWriteOptions) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  const { writeContractAsync } = useWriteContract()
   const publicClient = usePublicClient()
+  const { sendTransaction: privySendTransaction } = useSendTransaction()
+
+  const { smartWalletClient, walletAddress } = usePrivyWallet()
 
   const writeAndWait = async ({
     address,
@@ -43,20 +45,46 @@ export function useContractWrite(options?: UseContractWriteOptions) {
           setIsLoading(true)
           setError(null)
 
-          const hash = await writeContractAsync({
-            address,
-            abi,
-            functionName,
-            args,
-          })
+          const hash = await (async function () {
+            if (smartWalletClient) {
+              const hash = await smartWalletClient.sendTransaction({
+                to: address,
+                data: encodeFunctionData({
+                  abi,
+                  functionName,
+                  args,
+                }),
+              })
+              return hash
+            } else {
+              const { hash } = await privySendTransaction(
+                {
+                  to: address,
+                  data: encodeFunctionData({
+                    abi,
+                    functionName,
+                    args,
+                  }),
+                },
+                {
+                  address: walletAddress || undefined,
+                },
+              )
+              return hash
+            }
+          })()
 
           trackTransaction(hash, 'pending', { functionName, address })
 
+          if (!publicClient) {
+            console.warn('Public client not available, cannot wait for receipt')
+            return { hash }
+          }
+
           // 2. 트랜잭션 완료 대기
-          const receipt = await publicClient?.waitForTransactionReceipt({
+          const receipt = await publicClient.waitForTransactionReceipt({
             hash,
           })
-
           console.log(
             `✅ Transaction confirmed in block: ${receipt?.blockNumber}`,
           )
