@@ -6,8 +6,8 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import LanguageToggle from './LanguageToggle'
-import CustomConnectButton from './utils/CustomConnectButton'
 import { NetworkSwitcher } from './ui/NetworkSwitcher'
+import ConnectWallet from './utils/ConnectWallet'
 
 interface NavigationBarProps {
   className?: string
@@ -105,7 +105,7 @@ export default function NavigationBar({ className }: NavigationBarProps) {
           <LanguageToggle />
 
           {/* Connect Button with better mobile handling */}
-          <CustomConnectButton />
+          <ConnectWallet />
         </div>
       </div>
     </nav>

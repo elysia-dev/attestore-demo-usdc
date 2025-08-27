@@ -3,11 +3,10 @@
 import { useState } from 'react'
 import { useAccount, useDisconnect, useChainId } from 'wagmi'
 import { useTranslations } from 'next-intl'
-import { Button } from './button'
 import { emojiAvatarForAddress } from '@/lib/emojiAvatarForAddress'
-import Image from 'next/image'
 import { getNetworkNameByChainId, truncateAddress } from '@/lib/utils'
-import { Copy, ExternalLink, X } from 'lucide-react'
+import { Copy, X } from 'lucide-react'
+import { usePrivy } from '@privy-io/react-auth'
 
 interface CustomAccountModalProps {
   isOpen: boolean
@@ -18,6 +17,7 @@ const CustomAccountModal = ({ isOpen, onClose }: CustomAccountModalProps) => {
   const t = useTranslations('accountModal')
   const { address, isConnected } = useAccount()
   const { disconnect } = useDisconnect()
+  const { logout } = usePrivy()
   const chainId = useChainId()
   const account = useAccount()
   const { emoji, color } = emojiAvatarForAddress(account.address ?? '')
@@ -26,6 +26,7 @@ const CustomAccountModal = ({ isOpen, onClose }: CustomAccountModalProps) => {
   if (!isOpen || !isConnected || !address) return null
 
   const handleDisconnect = () => {
+    logout()
     disconnect()
     onClose()
   }

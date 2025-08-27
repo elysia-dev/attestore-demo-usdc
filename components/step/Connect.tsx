@@ -1,7 +1,8 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
-import CustomConnectButton from '../utils/CustomConnectButton'
+import { usePrivy } from '@privy-io/react-auth'
+import ConnectWallet from '../utils/ConnectWallet'
 
 export default function Connect() {
   const t = useTranslations('connect')
@@ -9,9 +10,7 @@ export default function Connect() {
   return (
     <section className="space-y-6">
       <div className="text-center space-y-4">
-        <div className="flex justify-center">
-          <CustomConnectButton />
-        </div>
+        <ConnectWallet />
       </div>
 
       {/* Application Description */}

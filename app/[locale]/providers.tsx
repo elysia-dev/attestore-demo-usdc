@@ -9,6 +9,7 @@ import { wagmiConfig } from '@/lib/wagmi'
 import { PrivyProvider } from '@privy-io/react-auth'
 import { privyConfig } from '@/lib/privy'
 import { PRIVY_APP_ID } from '@/constant'
+import { SmartWalletsProvider } from '@privy-io/react-auth/smart-wallets'
 
 const queryClient = new QueryClient()
 
@@ -32,11 +33,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ErrorProvider>
       <PrivyProvider appId={PRIVY_APP_ID} config={privyConfig}>
-        <QueryClientProvider client={queryClient}>
-          <WagmiProvider config={wagmiConfig}>
-            <ProvidersWithTracking>{children}</ProvidersWithTracking>
-          </WagmiProvider>
-        </QueryClientProvider>
+        <SmartWalletsProvider>
+          <QueryClientProvider client={queryClient}>
+            <WagmiProvider config={wagmiConfig}>
+              <ProvidersWithTracking>{children}</ProvidersWithTracking>
+            </WagmiProvider>
+          </QueryClientProvider>
+        </SmartWalletsProvider>
       </PrivyProvider>
     </ErrorProvider>
   )
