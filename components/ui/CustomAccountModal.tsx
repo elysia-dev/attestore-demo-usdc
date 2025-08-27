@@ -1,12 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { useAccount, useDisconnect, useChainId } from 'wagmi'
+import { useDisconnect, useChainId } from 'wagmi'
 import { useTranslations } from 'next-intl'
 import { emojiAvatarForAddress } from '@/lib/emojiAvatarForAddress'
 import { getNetworkNameByChainId, truncateAddress } from '@/lib/utils'
 import { Copy, X } from 'lucide-react'
 import { usePrivy } from '@privy-io/react-auth'
+import { usePrivyWallet } from '@/hooks/usePrivyWallet'
 
 interface CustomAccountModalProps {
   isOpen: boolean
@@ -15,15 +16,14 @@ interface CustomAccountModalProps {
 
 const CustomAccountModal = ({ isOpen, onClose }: CustomAccountModalProps) => {
   const t = useTranslations('accountModal')
-  const { address, isConnected } = useAccount()
+  const { walletAddress, authenticated } = usePrivyWallet()
   const { disconnect } = useDisconnect()
   const { logout } = usePrivy()
   const chainId = useChainId()
-  const account = useAccount()
-  const { emoji, color } = emojiAvatarForAddress(account.address ?? '')
+  const { emoji, color } = emojiAvatarForAddress(walletAddress ?? '')
   const [copied, setCopied] = useState(false)
 
-  if (!isOpen || !isConnected || !address) return null
+  if (!isOpen || !authenticated || !walletAddress) return null
 
   const handleDisconnect = () => {
     logout()
@@ -32,8 +32,8 @@ const CustomAccountModal = ({ isOpen, onClose }: CustomAccountModalProps) => {
   }
 
   const handleCopyAddress = () => {
-    if (address) {
-      navigator.clipboard.writeText(address)
+    if (walletAddress) {
+      navigator.clipboard.writeText(walletAddress)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     }
@@ -69,7 +69,9 @@ const CustomAccountModal = ({ isOpen, onClose }: CustomAccountModalProps) => {
               {emoji}
             </span>
             <div className="text-center space-y-1">
-              <p className="font-medium text-sm">{truncateAddress(address)}</p>
+              <p className="font-medium text-sm">
+                {truncateAddress(walletAddress)}
+              </p>
               <div className="flex items-center justify-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-green-500" />
                 <p className="text-xs text-muted-foreground">

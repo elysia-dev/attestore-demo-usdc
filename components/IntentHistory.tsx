@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { useAccount } from 'wagmi'
 import { formatUnits } from 'viem'
 import {
   cn,
@@ -24,6 +23,7 @@ import { validateApiResponse } from '@/lib/validation'
 import StatusIcon from './ui/StatusIcon'
 import { getStatusText } from './ui/intent'
 import { getCurrencySymbol } from '@/constant'
+import { usePrivyWallet } from '@/hooks/usePrivyWallet'
 
 // make current intents using events history
 const generateIntentsByHistory = ({
@@ -84,9 +84,8 @@ export function IntentHistory() {
   const tCommon = useTranslations('common')
   const tIntentStatus = useTranslations('intentStatus')
 
-  const { address, isConnected, chainId } = useAccount()
+  const { walletAddress, authenticated, chainId } = usePrivyWallet()
   const currencySymbol = getCurrencySymbol(chainId || 0)
-
   const [allIntents, setAllIntents] = useState<Intent[]>([])
   const [filter, setFilter] = useState<Filter>(Filter.ALL)
   const [isLoading, setIsLoading] = useState(false)
@@ -100,9 +99,9 @@ export function IntentHistory() {
       return allIntents
     }
     return allIntents.filter(
-      (intent) => intent.owner.toLowerCase() === address?.toLowerCase(),
+      (intent) => intent.owner.toLowerCase() === walletAddress?.toLowerCase(),
     )
-  }, [allIntents, address, filter])
+  }, [allIntents, walletAddress, filter])
 
   const { releaseFunds, isLoading: isReleasing } = useReleaseFunds({
     onSuccess: () => {
@@ -115,10 +114,10 @@ export function IntentHistory() {
   })
 
   const adminAddress = process.env.NEXT_PUBLIC_ADMIN_ADDRESS
-  const isAdmin = address?.toLowerCase() === adminAddress?.toLowerCase()
+  const isAdmin = walletAddress?.toLowerCase() === adminAddress?.toLowerCase()
 
   const fetchIntents = useCallback(async () => {
-    if (!address || !chainId) return
+    if (!walletAddress) return
 
     try {
       setIsLoading(true)
@@ -167,13 +166,13 @@ export function IntentHistory() {
     } finally {
       setIsLoading(false)
     }
-  }, [address, chainId])
+  }, [walletAddress])
 
   useEffect(() => {
-    if (isConnected && address) {
+    if (authenticated && walletAddress) {
       fetchIntents()
     }
-  }, [isConnected, address, fetchIntents])
+  }, [authenticated, walletAddress, fetchIntents])
 
   const handleReleaseFunds = async (intentId: string) => {
     setProcessingIntentId(intentId)
@@ -204,7 +203,7 @@ export function IntentHistory() {
     return true
   }
 
-  if (!isConnected) {
+  if (!walletAddress) {
     return (
       <div className="bg-card/50 rounded-[24px] p-8 backdrop-blur-xl border border-border/50 text-center">
         <p className="text-muted-foreground">{t('connectWalletMessage')}</p>

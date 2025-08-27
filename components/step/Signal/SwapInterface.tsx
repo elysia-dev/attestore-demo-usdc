@@ -20,11 +20,12 @@ import {
   toBytes,
 } from 'viem'
 import { useContractWrite } from '@/hooks/useContractWrite'
-import { useAccount, usePublicClient } from 'wagmi'
+import { usePublicClient } from 'wagmi'
 import { calculateConvertedAmount } from '@/lib/tokenConversoin'
 import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 import useDepositStore from '@/stores/useDepositStore'
+import { usePrivyWallet } from '@/hooks/usePrivyWallet'
 
 interface SwapInterfaceProps {
   amount: string
@@ -64,9 +65,9 @@ export default function SwapInterface({
   // show on below. it is for api call error
   const { setError } = useContext(ErrorContext)
   const { allDeposits } = useDepositStore()
+  const { walletAddress: address, chainId } = usePrivyWallet()
   const defaultDeposit = allDeposits.find((d) => d.id === DEFAULT_DEPOSIT_ID)
 
-  const { address, chainId } = useAccount()
   const currencySymbol = getCurrencySymbol(chainId || 0)
   // Contract write hook for signalIntent
   const { writeAndWait: signalIntentWrite, isLoading: isSignalIntentLoading } =
@@ -171,7 +172,7 @@ export default function SwapInterface({
         address: addresses.USDC,
         abi: erc20Abi,
         functionName: 'balanceOf',
-        args: [address],
+        args: [address as `0x${string}`],
       })
 
       const depositAmount = parseUnits(amount, 6) // USDC has 6 decimals

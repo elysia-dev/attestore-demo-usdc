@@ -1,6 +1,6 @@
 import { IntentDetail, DepositDetail } from '@/components/Home'
 import { useContext, useEffect, useState, useCallback } from 'react'
-import { useAccount, usePublicClient } from 'wagmi'
+import { usePublicClient } from 'wagmi'
 import useDepositStore from '@/stores/useDepositStore'
 import { useAddresses } from '@/hooks/useAddresses'
 import { ESCROW_ABI } from '@/lib/abi'
@@ -17,6 +17,7 @@ import DepositManagement from './DepositManagement'
 import IntentManagement from './IntentManagement'
 import { calculateConvertedAmount } from '@/lib/tokenConversoin'
 import { useTranslations } from 'next-intl'
+import { usePrivyWallet } from '@/hooks/usePrivyWallet'
 
 export enum SignalMode {
   ONRAMP = 'onramp',
@@ -31,8 +32,6 @@ export default function Signal({
   setSearchIntentId,
   handleRefreshMyIntentId,
   setCurrentStep,
-  chainId,
-  isConnected,
 }: {
   intentId: number | null
   searchIntentId: number | null
@@ -41,21 +40,21 @@ export default function Signal({
   setSearchIntentId: (searchIntentId: number) => void
   handleRefreshMyIntentId: () => void
   setCurrentStep: (step: WorkflowStep) => void
-  chainId: number
-  isConnected: boolean
   deposits?: DepositDetail[] // Optional for backward compatibility
   isLoadingDeposits?: boolean // Optional for backward compatibility
 }) {
   // Get data from Zustand store
   const { myDeposits, depositDetail } = useDepositStore()
-  const addresses = useAddresses()
+  const { walletAddress: address, chainId } = usePrivyWallet()
   const currencySymbol = getCurrencySymbol(chainId || 0)
+
   const [mode, setMode] = useState<SignalMode>(SignalMode.ONRAMP)
   const [accountNumber, setAccountNumber] = useState('')
   const [amount, setAmount] = useState('140')
   const [conversionRate, setConversionRate] = useState<bigint | null>(null)
   const [recipientAddress, setRecipientAddress] = useState('')
   const tCommon = useTranslations('common')
+  const addresses = useAddresses()
 
   const depositId = depositDetail?.id || myDeposits[myDeposits.length - 1]?.id
 
@@ -87,10 +86,10 @@ export default function Signal({
 
   // Fetch conversion rate when component mounts or when connected
   useEffect(() => {
-    if (isConnected) {
+    if (address) {
       fetchConversionRate()
     }
-  }, [isConnected, fetchConversionRate])
+  }, [address, fetchConversionRate])
 
   const isOnramp = mode === SignalMode.ONRAMP
   const renderSignal = () => {

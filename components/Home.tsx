@@ -9,7 +9,7 @@ declare global {
 
 import React, { useEffect, useState, useRef, useContext } from 'react'
 
-import { useAccount, useChainId, usePublicClient } from 'wagmi'
+import { useChainId, usePublicClient } from 'wagmi'
 import useDepositStore from '@/stores/useDepositStore'
 import { useAddresses } from '@/hooks/useAddresses'
 import { ESCROW_ABI } from '@/lib/abi'
@@ -26,6 +26,7 @@ import ErrorMessage from './ErrorMessage'
 import { testData } from '@/data'
 import { useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
+import { usePrivyWallet } from '@/hooks/usePrivyWallet'
 
 export type FulfillmentResult = {
   success: boolean
@@ -102,7 +103,7 @@ export type ProofResult = {
 }
 
 export default function Home() {
-  const { address, isConnected } = useAccount()
+  const { walletAddress: address } = usePrivyWallet()
   const chainId = useChainId()
   const publicClient = usePublicClient()
   const errorRef = useRef<HTMLDivElement>(null)
@@ -117,7 +118,7 @@ export default function Home() {
       setCurrentAddress(address)
       fetchDeposits(publicClient, addresses)
     }
-  }, [isConnected, address, publicClient]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [address, publicClient]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const [currentStep, setCurrentStep] = useState<WorkflowStep>(
     WorkflowStep.CONNECT,
@@ -160,9 +161,9 @@ export default function Home() {
 
   // 지갑 연결 상태가 변경될 때 단계 업데이트
   useEffect(() => {
-    if (isConnected && currentStep === WorkflowStep.CONNECT) {
+    if (address && currentStep === WorkflowStep.CONNECT) {
       setCurrentStep(WorkflowStep.SIGNAL)
-    } else if (!isConnected) {
+    } else if (!address) {
       setCurrentStep(WorkflowStep.CONNECT)
       setIntentId(null)
       setProofResult(null)
@@ -172,7 +173,7 @@ export default function Home() {
       setSearchIntentId(null)
       setIntentDetail(null)
     }
-  }, [isConnected, currentStep])
+  }, [address, currentStep])
 
   // 내 intentId 조회 함수 (address 기반)
   const handleRefreshMyIntentId = async () => {
@@ -275,8 +276,6 @@ export default function Home() {
             setSearchIntentId={setSearchIntentId}
             handleRefreshMyIntentId={handleRefreshMyIntentId}
             setCurrentStep={setCurrentStep}
-            chainId={chainId}
-            isConnected={isConnected}
           />
         )
 
@@ -352,21 +351,25 @@ export default function Home() {
               <IntentHistory />
             </div>
           ) : (
-            <div className="w-full max-w-md">
+            <>
               {/* Subtitle */}
               {currentStep === WorkflowStep.CONNECT && (
                 <p className="text-center text-muted-foreground mb-8">
-                  Instant KRW to Stablecoin swaps powered by zero-knowledge
-                  proofs
+                  Instant KRW to USDC swaps powered by zero-knowledge proofs
                 </p>
               )}
 
               {/* Step Indicator */}
-              {isConnected && (
+              {address && (
                 <div className="sm:my-12 my-4">
                   <StepIndicator currentStep={currentStep} />
                 </div>
               )}
+
+              {/* Card */}
+              <div className="bg-card/80 rounded-[32px] p-6 backdrop-blur-xl border border-border/50 shadow-2xl glow">
+                {renderStepContent()}
+              </div>
 
               {/* Card */}
               <div className="bg-card--filterless rounded-[32px] p-6 border border-border/50 shadow-2xl glow">
@@ -379,7 +382,7 @@ export default function Home() {
                   {t('securedByZK')}
                 </p>
               </div>
-            </div>
+            </>
           )}
         </div>
 
