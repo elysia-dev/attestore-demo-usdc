@@ -75,7 +75,8 @@ export function getKRWAmount({
   return Math.ceil(Number(amount) * Number(rate))
 }
 
-export const getNetworkNameByChainId = (chainId: number, short = false) => {
+export const getNetworkNameByChainId = (chainId?: number, short = false) => {
+  if (!chainId) return 'Unknown Network'
   switch (chainId) {
     case 1:
       return 'Ethereum'
@@ -94,7 +95,7 @@ export const getNetworkNameByChainId = (chainId: number, short = false) => {
     case 8217:
       return 'Kaia'
     default:
-      return `Chain ID: ${chainId}`
+      return `Wrong Network`
   }
 }
 

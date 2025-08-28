@@ -1,6 +1,8 @@
-import { usePrivy, useWallets } from '@privy-io/react-auth'
+import { baseChainId, isLocal, isProduction } from '@/constant'
+import { ConnectedWallet, usePrivy, useWallets } from '@privy-io/react-auth'
 import { useSmartWallets } from '@privy-io/react-auth/smart-wallets'
 import { useMemo } from 'react'
+import { useChainId } from 'wagmi'
 
 export const usePrivyWallet = () => {
   const { authenticated, user } = usePrivy()
@@ -28,12 +30,31 @@ export const usePrivyWallet = () => {
       : linkedWallet?.address
         ? linkedWallet?.address
         : userWallet?.address
+
+    // is smart wallet -> get chainId based environment
+    // is external wallet -> get chainId from connected wallet
+    const getChainIdFromConnectedWallet = (wallet?: ConnectedWallet) => {
+      if (!wallet) return undefined
+      // "eip155:42161"
+      const chainId = wallet.chainId
+      try {
+        return Number(chainId.split(':')[1])
+      } catch (error) {
+        return undefined
+      }
+    }
+    // TODO: check this logic
+    const chainId = smartWalletClient
+      ? baseChainId
+      : getChainIdFromConnectedWallet(linkedWallet)
+
     return {
       authenticated,
       user,
       wallet: linkedWallet,
       smartWalletClient,
       walletAddress,
+      chainId,
     }
   }, [authenticated, user, smartWalletClient, wallets])
 
