@@ -1,13 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { useDisconnect, useChainId } from 'wagmi'
+import { useDisconnect, useChainId, useBalance } from 'wagmi'
 import { useTranslations } from 'next-intl'
 import { emojiAvatarForAddress } from '@/lib/emojiAvatarForAddress'
 import { getNetworkNameByChainId, truncateAddress } from '@/lib/utils'
 import { Copy, X } from 'lucide-react'
 import { usePrivy } from '@privy-io/react-auth'
 import { usePrivyWallet } from '@/hooks/usePrivyWallet'
+import ADDRESSES from '@/lib/addresses'
 
 interface CustomAccountModalProps {
   isOpen: boolean
@@ -16,12 +17,31 @@ interface CustomAccountModalProps {
 
 const CustomAccountModal = ({ isOpen, onClose }: CustomAccountModalProps) => {
   const t = useTranslations('accountModal')
-  const { walletAddress, authenticated } = usePrivyWallet()
+  const { walletAddress, authenticated, user, smartWalletClient } =
+    usePrivyWallet()
   const { disconnect } = useDisconnect()
   const { logout } = usePrivy()
   const chainId = useChainId()
   const { emoji, color } = emojiAvatarForAddress(walletAddress ?? '')
   const [copied, setCopied] = useState(false)
+  const { data: balance } = useBalance({
+    address: walletAddress as `0x${string}`,
+    chainId: chainId,
+    token: ADDRESSES.USDC,
+  })
+  const getBalanceString = (balance: {
+    formatted: string
+    symbol: string
+    value: bigint
+    decimals: number
+  }) => {
+    const n = Number(balance.formatted)
+    const formatted = n.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+    return `${formatted} ${balance.symbol}`
+  }
 
   if (!isOpen || !authenticated || !walletAddress) return null
 
@@ -79,6 +99,13 @@ const CustomAccountModal = ({ isOpen, onClose }: CustomAccountModalProps) => {
                 </p>
               </div>
             </div>
+            {balance && (
+              <div className="flex items-center gap-2">
+                <p className="text-xs text-muted-foreground">
+                  {getBalanceString(balance)}
+                </p>
+              </div>
+            )}
             <button
               onClick={handleCopyAddress}
               className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/30 hover:bg-secondary/50 transition-colors text-xs">
