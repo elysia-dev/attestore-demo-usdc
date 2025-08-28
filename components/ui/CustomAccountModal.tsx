@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl'
 import { emojiAvatarForAddress } from '@/lib/emojiAvatarForAddress'
 import { getNetworkNameByChainId, truncateAddress } from '@/lib/utils'
 import { Copy, X } from 'lucide-react'
-import { usePrivy } from '@privy-io/react-auth'
+import { usePrivy, useWallets } from '@privy-io/react-auth'
 import { usePrivyWallet } from '@/hooks/usePrivyWallet'
 import ADDRESSES from '@/lib/addresses'
 
@@ -17,11 +17,17 @@ interface CustomAccountModalProps {
 
 const CustomAccountModal = ({ isOpen, onClose }: CustomAccountModalProps) => {
   const t = useTranslations('accountModal')
-  const { walletAddress, authenticated, user, smartWalletClient } =
-    usePrivyWallet()
+  const {
+    walletAddress,
+    authenticated,
+    user,
+    smartWalletClient,
+    wallet,
+    chainId,
+  } = usePrivyWallet()
   const { disconnect } = useDisconnect()
+  const { wallets } = useWallets()
   const { logout } = usePrivy()
-  const chainId = useChainId()
   const { emoji, color } = emojiAvatarForAddress(walletAddress ?? '')
   const [copied, setCopied] = useState(false)
   const { data: balance } = useBalance({

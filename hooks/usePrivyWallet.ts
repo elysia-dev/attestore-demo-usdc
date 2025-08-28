@@ -1,4 +1,4 @@
-import { baseChainId, isLocal, isProduction } from '@/constant'
+import { ALLOWED_CHAIN_ID, isLocal, isProduction } from '@/constant'
 import { ConnectedWallet, usePrivy, useWallets } from '@privy-io/react-auth'
 import { useSmartWallets } from '@privy-io/react-auth/smart-wallets'
 import { useMemo } from 'react'
@@ -45,8 +45,10 @@ export const usePrivyWallet = () => {
     }
     // TODO: check this logic
     const chainId = smartWalletClient
-      ? baseChainId
+      ? ALLOWED_CHAIN_ID
       : getChainIdFromConnectedWallet(linkedWallet)
+
+    const isCorrectNetwork = chainId === ALLOWED_CHAIN_ID
 
     return {
       authenticated,
@@ -55,6 +57,7 @@ export const usePrivyWallet = () => {
       smartWalletClient,
       walletAddress,
       chainId,
+      isCorrectNetwork,
     }
   }, [authenticated, user, smartWalletClient, wallets])
 

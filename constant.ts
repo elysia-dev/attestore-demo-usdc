@@ -74,7 +74,7 @@ export const PRIVY_APP_ID = 'cmembr83y0031jo0bx9bc08ko'
 export const PRIVY_CLIENT_ID =
   'client-WY6PqNJw3ouz1pnqEUkh4z8x68JFLBMnhr6nhivEVhPBt'
 
-export const baseChainId = isLocal
+export const ALLOWED_CHAIN_ID = isLocal
   ? anvil.id
   : isProduction
     ? base.id
