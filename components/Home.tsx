@@ -371,11 +371,6 @@ export default function Home() {
                 {renderStepContent()}
               </div>
 
-              {/* Card */}
-              <div className="bg-card--filterless rounded-[32px] p-6 border border-border/50 shadow-2xl glow">
-                {renderStepContent()}
-              </div>
-
               {/* Footer text */}
               <div className="hidden sm:flex justify-center mt-4">
                 <p className="text-center text-muted-foreground text-sm">

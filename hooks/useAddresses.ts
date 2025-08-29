@@ -1,4 +1,3 @@
-import { useChainId } from 'wagmi'
 import { baseSepolia, base } from 'viem/chains'
 import { kairos, kaia, anvil } from '@/lib/network'
 import {
@@ -27,25 +26,15 @@ const CHAIN_ADDRESSES: Record<number, AddressSet> = {
 }
 
 export function useAddresses(): AddressSet {
-  const chainId = useChainId()
-
-  // Get addresses for current chain
-  const addresses = CHAIN_ADDRESSES[chainId]
-
-  if (!addresses) {
-    // Fallback based on environment - only local returns LOCALNET_ADDRESSES
-    const CHAIN_NETWORK = process.env.NEXT_PUBLIC_CHAIN_NETWORK
-
-    if (CHAIN_NETWORK === 'local') {
-      return LOCALNET_ADDRESSES
-    } else if (CHAIN_NETWORK === 'test') {
-      return BASE_SEPOLIA_ADDRESSES
-    } else {
-      return BASE_ADDRESSES
-    }
+  // Fallback based on environment - only local returns LOCALNET_ADDRESSES
+  const CHAIN_NETWORK = process.env.NEXT_PUBLIC_CHAIN_NETWORK
+  if (CHAIN_NETWORK === 'local') {
+    return LOCALNET_ADDRESSES
+  } else if (CHAIN_NETWORK === 'test') {
+    return BASE_SEPOLIA_ADDRESSES
+  } else {
+    return BASE_ADDRESSES
   }
-
-  return addresses
 }
 
 export function isSupportedChain(chainId: number): boolean {

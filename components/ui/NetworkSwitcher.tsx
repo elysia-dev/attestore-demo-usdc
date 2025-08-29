@@ -3,8 +3,9 @@
 import { useState } from 'react'
 import { useAccount, useSwitchChain } from 'wagmi'
 import { getCurrentNetworkConfig } from '@/constant'
-import { cn } from '@/lib/utils'
+import { cn, getNetworkNameByChainId } from '@/lib/utils'
 import { base, baseSepolia, kaia, kairos } from 'viem/chains'
+import { usePrivyWallet } from '@/hooks/usePrivyWallet'
 
 interface NetworkSwitcherProps {
   className?: string
@@ -13,7 +14,14 @@ interface NetworkSwitcherProps {
 export function NetworkSwitcher({ className }: NetworkSwitcherProps) {
   const [isOpen, setIsOpen] = useState(false)
   const { chain, isConnected } = useAccount()
-  const { switchChain } = useSwitchChain()
+  const { chainId, wallet } = usePrivyWallet()
+  console.log('chain', chain)
+  console.log('chainId from privy', chainId)
+  // const { switchChain } = useSwitchChain()
+  const handleSwitchNetwork = async (chainId: number) => {
+    if (!wallet) return
+    await wallet.switchChain(chainId)
+  }
   const networkConfig = getCurrentNetworkConfig()
 
   const networkMap: Record<string, { id: number; name: string; icon: string }> =
@@ -41,19 +49,22 @@ export function NetworkSwitcher({ className }: NetworkSwitcherProps) {
     }
 
   const isUnsupportedNetwork =
-    chain &&
+    chainId &&
     !networkConfig.allowedNetworks.some(
-      (network) => networkMap[network]?.id === chain.id,
+      (network) => networkMap[network]?.id === chainId,
     )
 
   const handleNetworkSwitch = async (networkKey: string) => {
+    console.log('!!!!!!!!!!!!!!!!handlenetworkswitch!!!!!!!!!!!!!!!!!!')
+    console.log('networkkey', networkKey)
     try {
       const targetChainId = networkMap[networkKey]?.id
+      console.log('targetChainId', targetChainId)
       if (!targetChainId) return
 
       if (typeof window !== 'undefined' && (window as any).ethereum) {
         try {
-          await switchChain({ chainId: targetChainId })
+          await handleSwitchNetwork(targetChainId)
         } catch (switchError: any) {
           if (switchError.code === 4902) {
             const network = networkMap[networkKey]
@@ -74,7 +85,7 @@ export function NetworkSwitcher({ className }: NetworkSwitcherProps) {
           }
         }
       } else {
-        await switchChain({ chainId: targetChainId })
+        await handleSwitchNetwork(targetChainId)
       }
 
       setIsOpen(false)
@@ -113,7 +124,7 @@ export function NetworkSwitcher({ className }: NetworkSwitcherProps) {
     }
   }
 
-  if (!isConnected) {
+  if (!chainId) {
     return null
   }
 
@@ -125,18 +136,22 @@ export function NetworkSwitcher({ className }: NetworkSwitcherProps) {
         <span>
           {isUnsupportedNetwork
             ? '⚠️'
-            : chain?.id === base.id || chain?.id === baseSepolia.id
+            : chainId === base.id || chainId === baseSepolia.id
               ? '🔵'
-              : chain?.id === kairos.id || chain?.id === kaia.id
+              : chainId === kairos.id || chainId === kaia.id
                 ? '🟡'
                 : '⚠️'}
         </span>
         <span className="hidden sm:inline">
           {isUnsupportedNetwork
-            ? `${chain?.name || 'Unknown'}`
-            : chain?.name || 'Unknown'}
+            ? `${getNetworkNameByChainId(chainId) || 'Unknown'}`
+            : chainId === kairos.id || chainId === kaia.id
+              ? 'Kairos Testnet'
+              : chainId === base.id || chainId === baseSepolia.id
+                ? 'Base'
+                : 'Unknown'}
         </span>
-        {isConnected && chain && (
+        {chainId && (
           <span
             className={cn(
               'text-xs',
@@ -169,7 +184,7 @@ export function NetworkSwitcher({ className }: NetworkSwitcherProps) {
             )}
             {networkConfig.allowedNetworks.map((networkKey) => {
               const network = networkMap[networkKey]
-              const isActive = network?.id === chain?.id
+              const isActive = network?.id === chainId
 
               return (
                 <button

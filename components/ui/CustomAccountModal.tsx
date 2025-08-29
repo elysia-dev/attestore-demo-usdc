@@ -8,7 +8,7 @@ import { getNetworkNameByChainId, truncateAddress } from '@/lib/utils'
 import { Copy, X } from 'lucide-react'
 import { usePrivy, useWallets } from '@privy-io/react-auth'
 import { usePrivyWallet } from '@/hooks/usePrivyWallet'
-import ADDRESSES from '@/lib/addresses'
+import { useAddresses } from '@/hooks/useAddresses'
 
 interface CustomAccountModalProps {
   isOpen: boolean
@@ -16,6 +16,7 @@ interface CustomAccountModalProps {
 }
 
 const CustomAccountModal = ({ isOpen, onClose }: CustomAccountModalProps) => {
+  const addresses = useAddresses()
   const t = useTranslations('accountModal')
   const {
     walletAddress,
@@ -33,7 +34,7 @@ const CustomAccountModal = ({ isOpen, onClose }: CustomAccountModalProps) => {
   const { data: balance } = useBalance({
     address: walletAddress as `0x${string}`,
     chainId: chainId,
-    token: ADDRESSES.USDC,
+    token: addresses.USDC,
   })
   const getBalanceString = (balance: {
     formatted: string
