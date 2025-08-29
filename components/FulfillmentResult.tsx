@@ -2,7 +2,7 @@ import { formatUnits } from 'viem'
 import { FulfillmentResult } from './Home'
 import { getCurrencySymbol } from '@/constant'
 import { useTranslations } from 'next-intl'
-import { useAccount } from 'wagmi'
+import { usePrivyWallet } from '@/hooks/usePrivyWallet'
 
 export default function FulfillmentResultComponent({
   fulfillmentResult,
@@ -10,7 +10,7 @@ export default function FulfillmentResultComponent({
   fulfillmentResult: FulfillmentResult
 }) {
   const t = useTranslations('fulfillmentResult')
-  const { chainId } = useAccount()
+  const { chainId } = usePrivyWallet()
   const currencySymbol = getCurrencySymbol(chainId || 0)
 
   return (

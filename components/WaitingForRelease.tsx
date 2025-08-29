@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { usePublicClient, useAccount } from 'wagmi'
 import { FileCheck, ArrowRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import {
@@ -26,6 +25,7 @@ import { validateApiResponse } from '@/lib/validation'
 import { getStatusText } from './ui/intent'
 import StatusIcon from './ui/StatusIcon'
 import { getCurrencySymbol } from '@/constant'
+import { usePrivyWallet } from '@/hooks/usePrivyWallet'
 
 interface WaitingForReleaseProps {
   intentId: string
@@ -39,7 +39,7 @@ export function WaitingForRelease({
   handlePrevious,
 }: WaitingForReleaseProps) {
   const router = useRouter()
-  const { chainId } = useAccount()
+  const { chainId } = usePrivyWallet()
   const currencySymbol = getCurrencySymbol(chainId || 0)
   const t = useTranslations('waitingForRelease')
   const tCommon = useTranslations('common')

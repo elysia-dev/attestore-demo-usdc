@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useDisconnect, useChainId, useBalance } from 'wagmi'
+import { useDisconnect, useBalance } from 'wagmi'
 import { useTranslations } from 'next-intl'
 import { emojiAvatarForAddress } from '@/lib/emojiAvatarForAddress'
 import { getNetworkNameByChainId, truncateAddress } from '@/lib/utils'

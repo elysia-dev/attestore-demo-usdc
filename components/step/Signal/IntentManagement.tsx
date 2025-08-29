@@ -8,7 +8,7 @@ import { extractErrorMessage } from '@/components/utils/extractErrorMessage'
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { cn, getExplorerUrl, truncateAddress } from '@/lib/utils'
 import { erc20Abi, formatUnits } from 'viem'
-import { useAccount, usePublicClient } from 'wagmi'
+import { usePublicClient } from 'wagmi'
 import { ErrorContext } from '@/context/ErrorContext'
 import { useTranslations, useLocale } from 'next-intl'
 
@@ -27,7 +27,7 @@ const IntentManagement = ({
   setIntentId: (intentId: number) => void
   setSearchIntentId: (searchIntentId: number) => void
 }) => {
-  const { chainId } = useAccount()
+  const { chainId } = usePrivyWallet()
   const publicClient = usePublicClient()
   const { setError } = useContext(ErrorContext)
   const t = useTranslations('intent')

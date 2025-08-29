@@ -2,9 +2,9 @@
 import React from 'react'
 import { Button } from './ui/button'
 import { Plus } from 'lucide-react'
-import { useChainId } from 'wagmi'
 import { useAddresses } from '@/hooks/useAddresses'
 import { kaia, kairos } from '@/lib/network'
+import { usePrivyWallet } from '@/hooks/usePrivyWallet'
 
 const USDC_OPTIONS = {
   symbol: 'USDC',
@@ -19,7 +19,7 @@ const USDT_OPTIONS = {
 
 export function AddTokenButton() {
   const [isAdding, setIsAdding] = React.useState(false)
-  const chainId = useChainId()
+  const { chainId } = usePrivyWallet()
   const addresses = useAddresses()
 
   const tokenOptions =

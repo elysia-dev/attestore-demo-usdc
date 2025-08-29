@@ -97,7 +97,6 @@ export type ProofResult = {
 
 export default function Home() {
   const { walletAddress: address } = usePrivyWallet()
-  const chainId = useChainId()
   const publicClient = usePublicClient()
   const errorRef = useRef<HTMLDivElement>(null)
   const searchParams = useSearchParams()

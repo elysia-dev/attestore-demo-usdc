@@ -12,7 +12,7 @@ import { extractErrorMessage } from '@/components/utils/extractErrorMessage'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import useDepositStore from '@/stores/useDepositStore'
-import { useAccount } from 'wagmi'
+import { usePrivyWallet } from '@/hooks/usePrivyWallet'
 
 const DepositManagement = ({
   depositId,
@@ -26,7 +26,7 @@ const DepositManagement = ({
   const { setError } = useContext(ErrorContext)
   const addresses = useAddresses()
   const { setDepositDetail } = useDepositStore()
-  const { chainId } = useAccount()
+  const { chainId } = usePrivyWallet()
   const currencySymbol = getCurrencySymbol(chainId || 0)
 
   const {

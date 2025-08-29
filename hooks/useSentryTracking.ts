@@ -1,13 +1,12 @@
 'use client'
 import { useEffect } from 'react'
-import { useAccount, useChainId } from 'wagmi'
 import { setWalletContext, trackUserAction } from '@/lib/sentry-utils'
 import * as Sentry from '@sentry/nextjs'
 import { usePrivyWallet } from './usePrivyWallet'
 
 export function useSentryTracking() {
   const { walletAddress, authenticated } = usePrivyWallet()
-  const chainId = useChainId()
+  const { chainId } = usePrivyWallet()
 
   // 지갑 연결 상태 추적
   useEffect(() => {

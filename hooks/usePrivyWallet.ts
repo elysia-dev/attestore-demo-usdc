@@ -44,11 +44,9 @@ export const usePrivyWallet = () => {
       }
     }
     // TODO: check this logic
-    const chainId = smartWalletClient
-      ? ALLOWED_CHAIN_ID
-      : getChainIdFromConnectedWallet(linkedWallet)
-
-    const isCorrectNetwork = chainId === ALLOWED_CHAIN_ID
+    const chainId =
+      (smartWalletClient?.chain as any)?.id ||
+      getChainIdFromConnectedWallet(linkedWallet)
 
     return {
       authenticated,

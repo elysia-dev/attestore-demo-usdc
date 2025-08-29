@@ -15,7 +15,6 @@ import { useTossLauncher } from '../../hooks/useTossLauncher'
 import ConfirmationModal from '../ui/ConfirmationModal'
 import { WorkflowStep } from '../StepIndicator'
 import { useTranslations } from 'next-intl'
-import { useAccount } from 'wagmi'
 
 export default function Transfer({
   intentId,
@@ -31,7 +30,7 @@ export default function Transfer({
   const { freeError } = useContext(ErrorContext)
   const [isVideoPopupOpen, setIsVideoPopupOpen] = useState(false)
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
-  const { chainId } = useAccount()
+  const { chainId } = usePrivyWallet()
   const currencySymbol = getCurrencySymbol(chainId || 0)
 
   const transferAmount = getKRWAmount({

@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useAccount, useSwitchChain } from 'wagmi'
 import { getCurrentNetworkConfig } from '@/constant'
 import { cn, getNetworkNameByChainId } from '@/lib/utils'
 import { base, baseSepolia, kaia, kairos } from 'viem/chains'
@@ -13,14 +12,17 @@ interface NetworkSwitcherProps {
 
 export function NetworkSwitcher({ className }: NetworkSwitcherProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const { chain, isConnected } = useAccount()
-  const { chainId, wallet } = usePrivyWallet()
-  console.log('chain', chain)
-  console.log('chainId from privy', chainId)
-  // const { switchChain } = useSwitchChain()
+  const { chainId, wallet, smartWalletClient } = usePrivyWallet()
   const handleSwitchNetwork = async (chainId: number) => {
-    if (!wallet) return
-    await wallet.switchChain(chainId)
+    if (smartWalletClient) {
+      await smartWalletClient.switchChain({
+        id: chainId,
+      })
+      return
+    } else if (wallet) {
+      await wallet.switchChain(chainId)
+      return
+    }
   }
   const networkConfig = getCurrentNetworkConfig()
 

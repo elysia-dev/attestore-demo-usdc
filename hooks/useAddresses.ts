@@ -26,15 +26,15 @@ const CHAIN_ADDRESSES: Record<number, AddressSet> = {
 }
 
 export function useAddresses(): AddressSet {
-  // Fallback based on environment - only local returns LOCALNET_ADDRESSES
-  const CHAIN_NETWORK = process.env.NEXT_PUBLIC_CHAIN_NETWORK
-  if (CHAIN_NETWORK === 'local') {
-    return LOCALNET_ADDRESSES
-  } else if (CHAIN_NETWORK === 'test') {
-    return BASE_SEPOLIA_ADDRESSES
-  } else {
+  const { chainId } = usePrivyWallet()
+  const addresses = CHAIN_ADDRESSES[chainId]
+
+  if (!addresses) {
+    // Fallback based on environment - only local returns LOCALNET_ADDRESSES
     return BASE_ADDRESSES
   }
+
+  return addresses
 }
 
 export function isSupportedChain(chainId: number): boolean {
