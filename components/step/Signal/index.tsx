@@ -82,7 +82,7 @@ export default function Signal({
     } catch (error) {
       console.error('Failed to fetch conversion rate:', error)
     }
-  }, [publicClient])
+  }, [publicClient, addresses])
 
   // Fetch conversion rate when component mounts or when connected
   useEffect(() => {

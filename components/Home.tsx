@@ -177,7 +177,7 @@ export default function Home() {
         address: addresses.ESCROW,
         abi: ESCROW_ABI,
         functionName: 'accountIntent',
-        args: [address],
+        args: [address as `0x${string}`],
       })
 
       if (userIntentId && Number(userIntentId) > 0) {

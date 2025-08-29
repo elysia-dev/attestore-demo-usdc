@@ -1,8 +1,6 @@
-import { ALLOWED_CHAIN_ID, isLocal, isProduction } from '@/constant'
 import { ConnectedWallet, usePrivy, useWallets } from '@privy-io/react-auth'
 import { useSmartWallets } from '@privy-io/react-auth/smart-wallets'
 import { useMemo } from 'react'
-import { useChainId } from 'wagmi'
 
 export const usePrivyWallet = () => {
   const { authenticated, user } = usePrivy()
@@ -21,6 +19,8 @@ export const usePrivyWallet = () => {
         walletAddress: null,
       }
     }
+    // the first connected wallet:
+    // for external wallet: there's only one wallet so we can use the first one as only one
     const linkedWallet = wallets.find((wallet) => wallet.linked === true)
     const userWallet = user?.wallet
 
@@ -55,7 +55,6 @@ export const usePrivyWallet = () => {
       smartWalletClient,
       walletAddress,
       chainId,
-      isCorrectNetwork,
     }
   }, [authenticated, user, smartWalletClient, wallets])
 

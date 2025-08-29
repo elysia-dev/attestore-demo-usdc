@@ -16,6 +16,7 @@ import { cn, getTransactionExplorerUrl } from '@/lib/utils'
 import { WorkflowStep } from '../StepIndicator'
 import { useTranslations } from 'next-intl'
 import { getCurrencySymbol } from '@/constant'
+import { usePrivyWallet } from '@/hooks/usePrivyWallet'
 
 const formatProofForContract = (receiptData: any) => {
   if (!receiptData) {

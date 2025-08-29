@@ -15,6 +15,7 @@ import { useTossLauncher } from '../../hooks/useTossLauncher'
 import ConfirmationModal from '../ui/ConfirmationModal'
 import { WorkflowStep } from '../StepIndicator'
 import { useTranslations } from 'next-intl'
+import { usePrivyWallet } from '@/hooks/usePrivyWallet'
 
 export default function Transfer({
   intentId,

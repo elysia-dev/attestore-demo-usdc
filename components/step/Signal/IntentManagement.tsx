@@ -11,6 +11,7 @@ import { erc20Abi, formatUnits } from 'viem'
 import { usePublicClient } from 'wagmi'
 import { ErrorContext } from '@/context/ErrorContext'
 import { useTranslations, useLocale } from 'next-intl'
+import { usePrivyWallet } from '@/hooks/usePrivyWallet'
 
 const IntentManagement = ({
   intentId,

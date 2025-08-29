@@ -7,6 +7,7 @@ import {
   KAIROS_ADDRESSES,
   KAIA_ADDRESSES,
 } from '@/lib/addresses'
+import { usePrivyWallet } from './usePrivyWallet'
 
 // Define address set interface
 interface AddressSet {
@@ -58,7 +59,6 @@ export function getSupportedChains(): number[] {
 // Helper function to get addresses by chain ID (for API routes)
 export function getAddressesByChainId(chainId: number): AddressSet | null {
   const addresses = CHAIN_ADDRESSES[chainId]
-
   if (!addresses) {
     // Return null if chain is not supported
     return null
