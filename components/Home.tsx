@@ -1,15 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
-
-declare global {
-  interface Window {
-    ethereum?: any
-  }
-}
-
 import React, { useEffect, useState, useRef, useContext } from 'react'
 
-import { useChainId, usePublicClient } from 'wagmi'
+import { usePublicClient } from 'wagmi'
 import useDepositStore from '@/stores/useDepositStore'
 import { useAddresses } from '@/hooks/useAddresses'
 import { ESCROW_ABI } from '@/lib/abi'

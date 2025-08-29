@@ -1,5 +1,4 @@
 'use client'
-
 import React from 'react'
 import { Button } from './ui/button'
 import { Plus } from 'lucide-react'
@@ -33,7 +32,7 @@ export function AddTokenButton() {
       setIsAdding(true)
 
       // Try to add the token
-      const result = await window.ethereum
+      const result = await (window as any).ethereum
         .request({
           method: 'wallet_watchAsset',
           params: {
