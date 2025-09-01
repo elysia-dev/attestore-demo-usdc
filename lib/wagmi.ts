@@ -14,7 +14,7 @@ if (typeof window !== 'undefined') {
   config = getDefaultConfig({
     appName: 'Zenie',
     projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '',
-    chains: [anvil, base, baseSepolia, kairos, kaia],
+    chains: [kaia, kairos, base, baseSepolia, anvil],
     wallets: [
       {
         groupName: 'Recommended',
