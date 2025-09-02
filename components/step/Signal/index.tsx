@@ -52,7 +52,7 @@ export default function Signal({
   const currencySymbol = getCurrencySymbol(chainId || 0)
   const [mode, setMode] = useState<SignalMode>(SignalMode.ONRAMP)
   const [accountNumber, setAccountNumber] = useState('')
-  const [amount, setAmount] = useState('140')
+  const [amount, setAmount] = useState('1000')
   const [conversionRate, setConversionRate] = useState<bigint | null>(null)
   const [recipientAddress, setRecipientAddress] = useState('')
   const tCommon = useTranslations('common')
