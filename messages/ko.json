@@ -144,6 +144,12 @@
     "lookupIntentFirst": "먼저 스왑 ID를 조회해주세요. (이전 클릭)",
     "clickToCopy": "복사하려면 클릭"
   },
+  "transferWithPayment": {
+    "title": "결제",
+    "expectedReceiveAmount": "예상 수령 금액",
+    "paymentTitle": "금액 결제 안내",
+    "paymentDescription": "아래와 같이 결제가 진행됩니다."
+  },
   "confirmationModal": {
     "title": "송금 확인",
     "question": "KRW 송금이 완료되었나요?",
@@ -256,5 +262,58 @@
     "amount": "금액",
     "transaction": "트랜잭션",
     "goToMain": "메인으로 이동"
+  },
+  "paymentErrors": {
+    "PAY_PROCESS_CANCELED": "결제를 취소하셨습니다.",
+    "PAY_PROCESS_ABORTED": "결제가 중단되었습니다.",
+    "REJECT_CARD_PAYMENT": "한도 초과 또는 잔액 부족으로 결제가 실패했습니다.",
+    "INVALID_REJECT_CARD": "카드 사용이 거절되었습니다. 카드사에 문의해주세요.",
+    "REJECT_CARD_COMPANY": "카드사에서 결제를 거절했습니다.",
+    "INVALID_STOPPED_CARD": "정지된 카드입니다.",
+    "INVALID_CARD_NUMBER": "카드 번호를 다시 확인해주세요.",
+    "INVALID_CARD_EXPIRATION": "카드 유효기간을 다시 확인해주세요.",
+    "EXCEED_MAX_AUTH_COUNT": "최대 인증 횟수를 초과했습니다.",
+    "EXCEED_MAX_PAYMENT_AMOUNT": "일일 결제 한도를 초과했습니다.",
+    "DUPLICATED_ORDER_ID": "이미 승인 및 취소가 진행된 중복된 주문번호 입니다.",
+    "default": "결제 처리 중 오류가 발생했습니다."
+  },
+  "paymentFail": {
+    "title": "결제 실패",
+    "subtitle": "결제를 완료할 수 없습니다",
+    "errorInfo": "오류 정보",
+    "errorCode": "오류 코드",
+    "orderNumber": "주문 번호",
+    "intentId": "Intent ID",
+    "nextSteps": "다음 단계",
+    "nextStep1": "카드 정보를 다시 확인해 주세요",
+    "nextStep2": "카드 잔액이 충분한지 확인해 주세요",
+    "nextStep3": "문제가 지속되면 다른 결제 수단을 이용해 주세요",
+    "backToMain": "메인으로 돌아가기",
+    "tryAgain": "다시 시도하기"
+  },
+  "paymentSuccess": {
+    "title": "결제 성공",
+    "subtitle": "결제가 성공적으로 처리되었습니다",
+    "paymentInfo": "결제 정보",
+    "paymentKey": "Payment Key",
+    "orderId": "주문 아이디",
+    "amount": "금액",
+    "intentId": "Intent ID",
+    "verifying": "결제 승인을 확인하고 있습니다...",
+    "verificationResult": "결제 검증 결과",
+    "successMessage": "✅ 결제가 성공적으로 승인되었습니다!",
+    "paymentMethod": "결제 방법",
+    "approvalTime": "승인 시간",
+    "paymentAmount": "결제 금액",
+    "paymentStatus": "결제 상태",
+    "statusDone": "완료",
+    "cardNumber": "카드 번호",
+    "approvalNumber": "승인 번호",
+    "errorMessage": "❌ {error}",
+    "errorCode": "Error Code",
+    "backToMain": "메인으로 돌아가기",
+    "missingPaymentInfo": "필수 결제 정보가 누락되었습니다.",
+    "paymentApprovalFailed": "결제 승인에 실패했습니다.",
+    "verificationError": "결제 검증 중 오류가 발생했습니다."
   }
 }

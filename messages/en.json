@@ -144,6 +144,12 @@
     "lookupIntentFirst": "Please lookup Swap ID first. (click previous)",
     "clickToCopy": "Click to copy"
   },
+  "transferWithPayment": {
+    "title": "Transfer with payment",
+    "expectedReceiveAmount": "Expected Receive Amount",
+    "paymentTitle": "Payment Instruction",
+    "paymentDescription": "The payment will be processed as follows."
+  },
   "confirmationModal": {
     "title": "Transfer Confirmation",
     "question": "Did your KRW transfer completed?",
@@ -256,5 +262,58 @@
     "amount": "Amount",
     "transaction": "Transaction",
     "goToMain": "Go to Main"
+  },
+  "paymentErrors": {
+    "PAY_PROCESS_CANCELED": "Payment has been canceled.",
+    "PAY_PROCESS_ABORTED": "Payment has been aborted.",
+    "REJECT_CARD_PAYMENT": "Payment failed due to limit exceeded or insufficient balance.",
+    "INVALID_REJECT_CARD": "Card usage has been rejected. Please contact your card company.",
+    "REJECT_CARD_COMPANY": "Payment was rejected by the card company.",
+    "INVALID_STOPPED_CARD": "This card has been stopped.",
+    "INVALID_CARD_NUMBER": "Please check your card number again.",
+    "INVALID_CARD_EXPIRATION": "Please check your card expiration date again.",
+    "EXCEED_MAX_AUTH_COUNT": "Maximum authentication attempts exceeded.",
+    "EXCEED_MAX_PAYMENT_AMOUNT": "Daily payment limit exceeded.",
+    "DUPLICATED_ORDER_ID": "This is a duplicate order number that has already been approved and canceled.",
+    "default": "An error occurred during payment processing."
+  },
+  "paymentFail": {
+    "title": "Payment Failed",
+    "subtitle": "Unable to complete payment",
+    "errorInfo": "Error Information",
+    "errorCode": "Error Code",
+    "orderNumber": "Order Number",
+    "intentId": "Intent ID",
+    "nextSteps": "Next Steps",
+    "nextStep1": "Please check your card information again",
+    "nextStep2": "Please check if your card has sufficient balance",
+    "nextStep3": "If the problem persists, please use another payment method",
+    "backToMain": "Back to Main",
+    "tryAgain": "Try Again"
+  },
+  "paymentSuccess": {
+    "title": "Payment Success",
+    "subtitle": "Payment has been processed successfully",
+    "paymentInfo": "Payment Information",
+    "paymentKey": "Payment Key",
+    "orderId": "Order ID",
+    "amount": "Amount",
+    "intentId": "Intent ID",
+    "verifying": "Verifying payment approval...",
+    "verificationResult": "Payment Verification Result",
+    "successMessage": "✅ Payment has been successfully approved!",
+    "paymentMethod": "Payment Method",
+    "approvalTime": "Approval Time",
+    "paymentAmount": "Payment Amount",
+    "paymentStatus": "Payment Status",
+    "statusDone": "Completed",
+    "cardNumber": "Card Number",
+    "approvalNumber": "Approval Number",
+    "errorMessage": "❌ {error}",
+    "errorCode": "Error Code",
+    "backToMain": "Back to Main",
+    "missingPaymentInfo": "Required payment information is missing.",
+    "paymentApprovalFailed": "Payment approval failed.",
+    "verificationError": "An error occurred during payment verification."
   }
 }
