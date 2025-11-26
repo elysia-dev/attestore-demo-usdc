@@ -16,6 +16,7 @@ import ConfirmationModal from '../ui/ConfirmationModal'
 import { WorkflowStep } from '../StepIndicator'
 import { useTranslations } from 'next-intl'
 import { useAccount } from 'wagmi'
+import { useSearchParams } from 'next/navigation'
 
 export default function Transfer({
   intentId,
@@ -32,7 +33,9 @@ export default function Transfer({
   const [isVideoPopupOpen, setIsVideoPopupOpen] = useState(false)
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
   const { chainId } = useAccount()
-  const currencySymbol = getCurrencySymbol(chainId || 0)
+  const searchParams = useSearchParams()
+  const token = searchParams.get('token')
+  const currencySymbol = getCurrencySymbol(chainId || 0, token || '')
 
   const transferAmount = getKRWAmount({
     usdcAmount: intentDetail.amount,

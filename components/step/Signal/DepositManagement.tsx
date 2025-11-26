@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import useDepositStore from '@/stores/useDepositStore'
 import { useAccount } from 'wagmi'
+import { useSearchParams } from 'next/navigation'
 
 const DepositManagement = ({
   depositId,
@@ -27,7 +28,9 @@ const DepositManagement = ({
   const addresses = useAddresses()
   const { setDepositDetail } = useDepositStore()
   const { chainId } = useAccount()
-  const currencySymbol = getCurrencySymbol(chainId || 0)
+  const searchParams = useSearchParams()
+  const token = searchParams.get('token')
+  const currencySymbol = getCurrencySymbol(chainId || 0, token || '')
 
   const {
     writeAndWait: withdrawDepositWrite,

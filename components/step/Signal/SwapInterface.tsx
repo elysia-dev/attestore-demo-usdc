@@ -25,6 +25,7 @@ import { calculateConvertedAmount } from '@/lib/tokenConversoin'
 import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 import useDepositStore from '@/stores/useDepositStore'
+import { useSearchParams } from 'next/navigation'
 
 interface SwapInterfaceProps {
   amount: string
@@ -60,6 +61,8 @@ export default function SwapInterface({
   const addresses = useAddresses()
   // show on input
   const [amountError, setAmountError] = useState<string | null>(null)
+  const searchParams = useSearchParams()
+  const token = searchParams.get('token')
 
   // show on below. it is for api call error
   const { setError } = useContext(ErrorContext)
@@ -67,7 +70,7 @@ export default function SwapInterface({
   const defaultDeposit = allDeposits.find((d) => d.id === DEFAULT_DEPOSIT_ID)
 
   const { address, chainId } = useAccount()
-  const currencySymbol = getCurrencySymbol(chainId || 0)
+  const currencySymbol = getCurrencySymbol(chainId || 0, token || '')
   // Contract write hook for signalIntent
   const { writeAndWait: signalIntentWrite, isLoading: isSignalIntentLoading } =
     useContractWrite({
@@ -484,22 +487,34 @@ export default function SwapInterface({
             </span>
             {!isOnramp && (
               <>
-                {currencySymbol.toUpperCase() === 'USDC' ? (
+                {token === 'elusd' ? (
                   <Image
-                    src="/base-usdc.png"
-                    alt="USDC"
+                    src="/elusd.svg"
+                    alt="ELUSD"
                     width={24}
                     height={24}
                     className="w-6 h-6"
                   />
                 ) : (
-                  <Image
-                    src="/base-usdt.png"
-                    alt="USDT"
-                    width={24}
-                    height={24}
-                    className="w-6 h-6"
-                  />
+                  <>
+                    {currencySymbol.toUpperCase() === 'USDC' ? (
+                      <Image
+                        src="/base-usdc.png"
+                        alt="USDC"
+                        width={24}
+                        height={24}
+                        className="w-6 h-6"
+                      />
+                    ) : (
+                      <Image
+                        src="/base-usdt.png"
+                        alt="USDT"
+                        width={24}
+                        height={24}
+                        className="w-6 h-6"
+                      />
+                    )}
+                  </>
                 )}
               </>
             )}
@@ -554,7 +569,15 @@ export default function SwapInterface({
                     {isOnramp ? currencySymbol : 'KRW'}
                   </span>
                   {isOnramp &&
-                    (currencySymbol.toUpperCase() === 'USDC' ? (
+                    (token === 'elusd' ? (
+                      <Image
+                        src="/elusd.svg"
+                        alt="ELUSD"
+                        width={24}
+                        height={24}
+                        className="w-6 h-6"
+                      />
+                    ) : currencySymbol.toUpperCase() === 'USDC' ? (
                       <Image
                         src="/base-usdc.png"
                         alt="USDC"

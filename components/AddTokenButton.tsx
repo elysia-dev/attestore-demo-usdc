@@ -6,6 +6,7 @@ import { Plus } from 'lucide-react'
 import { useChainId } from 'wagmi'
 import { useAddresses } from '@/hooks/useAddresses'
 import { kaia, kairos } from '@/lib/network'
+import { useSearchParams } from 'next/navigation'
 
 const USDC_OPTIONS = {
   symbol: 'USDC',
@@ -17,14 +18,25 @@ const USDT_OPTIONS = {
   image:
     'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png',
 }
+const ELUSD_OPTIONS = {
+  symbol: 'ELUSD',
+  image: '/elusd.svg',
+}
 
 export function AddTokenButton() {
   const [isAdding, setIsAdding] = React.useState(false)
   const chainId = useChainId()
   const addresses = useAddresses()
+  const searchParams = useSearchParams()
+  const token = searchParams.get('token')
 
-  const tokenOptions =
-    chainId === kairos.id || chainId === kaia.id ? USDT_OPTIONS : USDC_OPTIONS
+  const isElusd = token === 'elusd'
+
+  const tokenOptions = isElusd
+    ? ELUSD_OPTIONS
+    : chainId === kairos.id || chainId === kaia.id
+      ? USDT_OPTIONS
+      : USDC_OPTIONS
 
   const addToken = async () => {
     if (!window.ethereum) return

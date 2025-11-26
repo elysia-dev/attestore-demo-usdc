@@ -17,6 +17,7 @@ import DepositManagement from './DepositManagement'
 import IntentManagement from './IntentManagement'
 import { calculateConvertedAmount } from '@/lib/tokenConversoin'
 import { useTranslations } from 'next-intl'
+import { useSearchParams } from 'next/navigation'
 
 export enum SignalMode {
   ONRAMP = 'onramp',
@@ -49,7 +50,9 @@ export default function Signal({
   // Get data from Zustand store
   const { myDeposits, depositDetail } = useDepositStore()
   const addresses = useAddresses()
-  const currencySymbol = getCurrencySymbol(chainId || 0)
+  const searchParams = useSearchParams()
+  const token = searchParams.get('token')
+  const currencySymbol = getCurrencySymbol(chainId || 0, token || '')
   const [mode, setMode] = useState<SignalMode>(SignalMode.ONRAMP)
   const [accountNumber, setAccountNumber] = useState('')
   const [amount, setAmount] = useState('1000')

@@ -3,6 +3,7 @@ import { FulfillmentResult } from './Home'
 import { getCurrencySymbol } from '@/constant'
 import { useTranslations } from 'next-intl'
 import { useAccount } from 'wagmi'
+import { useSearchParams } from 'next/navigation'
 
 export default function FulfillmentResultComponent({
   fulfillmentResult,
@@ -10,8 +11,10 @@ export default function FulfillmentResultComponent({
   fulfillmentResult: FulfillmentResult
 }) {
   const t = useTranslations('fulfillmentResult')
+  const searchParams = useSearchParams()
+  const token = searchParams.get('token')
   const { chainId } = useAccount()
-  const currencySymbol = getCurrencySymbol(chainId || 0)
+  const currencySymbol = getCurrencySymbol(chainId || 0, token || '')
 
   return (
     <section className="space-y-6">

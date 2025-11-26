@@ -16,6 +16,7 @@ import { cn, getTransactionExplorerUrl } from '@/lib/utils'
 import { WorkflowStep } from '../StepIndicator'
 import { useTranslations } from 'next-intl'
 import { getCurrencySymbol } from '@/constant'
+import { useSearchParams } from 'next/navigation'
 
 const formatProofForContract = (receiptData: any) => {
   if (!receiptData) {
@@ -157,7 +158,9 @@ export default function FulFill({
   const publicClient = usePublicClient()
   const { chainId } = useAccount()
   const addresses = useAddresses()
-  const currencySymbol = getCurrencySymbol(chainId || 0)
+  const searchParams = useSearchParams()
+  const token = searchParams.get('token')
+  const currencySymbol = getCurrencySymbol(chainId || 0, token || '')
 
   // Manual check transaction status
   const checkTransactionStatus = async () => {

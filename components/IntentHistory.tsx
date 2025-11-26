@@ -24,6 +24,7 @@ import { validateApiResponse } from '@/lib/validation'
 import StatusIcon from './ui/StatusIcon'
 import { getStatusText } from './ui/intent'
 import { getCurrencySymbol } from '@/constant'
+import { useSearchParams } from 'next/navigation'
 
 // make current intents using events history
 const generateIntentsByHistory = ({
@@ -85,7 +86,9 @@ export function IntentHistory() {
   const tIntentStatus = useTranslations('intentStatus')
 
   const { address, isConnected, chainId } = useAccount()
-  const currencySymbol = getCurrencySymbol(chainId || 0)
+  const searchParams = useSearchParams()
+  const token = searchParams.get('token')
+  const currencySymbol = getCurrencySymbol(chainId || 0, token || '')
 
   const [allIntents, setAllIntents] = useState<Intent[]>([])
   const [filter, setFilter] = useState<Filter>(Filter.ALL)

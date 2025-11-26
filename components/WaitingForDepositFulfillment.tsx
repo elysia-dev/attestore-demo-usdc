@@ -18,6 +18,7 @@ import { useTranslations } from 'next-intl'
 import { getCurrencySymbol } from '@/constant'
 import { useAddresses } from '@/hooks/useAddresses'
 import { useAccount } from 'wagmi'
+import { useSearchParams } from 'next/navigation'
 
 interface WaitingForDepositFulfillmentProps {
   depositId: string
@@ -43,7 +44,9 @@ export function WaitingForDepositFulfillment({
   const [elapsedTime, setElapsedTime] = useState(0)
   const addresses = useAddresses()
   const { chainId } = useAccount()
-  const currencySymbol = getCurrencySymbol(chainId || 0)
+  const searchParams = useSearchParams()
+  const token = searchParams.get('token')
+  const currencySymbol = getCurrencySymbol(chainId || 0, token || '')
 
   // Check for DepositClosed event (which indicates all funds have been processed)
   useEffect(() => {

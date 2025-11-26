@@ -11,6 +11,7 @@ import { erc20Abi, formatUnits } from 'viem'
 import { useAccount, usePublicClient } from 'wagmi'
 import { ErrorContext } from '@/context/ErrorContext'
 import { useTranslations, useLocale } from 'next-intl'
+import { useSearchParams } from 'next/navigation'
 
 const IntentManagement = ({
   intentId,
@@ -33,7 +34,9 @@ const IntentManagement = ({
   const t = useTranslations('intent')
   const locale = useLocale()
   const addresses = useAddresses()
-  const currencySymbol = getCurrencySymbol(chainId || 0)
+  const searchParams = useSearchParams()
+  const token = searchParams.get('token')
+  const currencySymbol = getCurrencySymbol(chainId || 0, token || '')
   const [receiverTokenBalance, setReceiverTokenBalance] = useState<
     bigint | undefined
   >(undefined)

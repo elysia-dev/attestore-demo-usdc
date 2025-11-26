@@ -26,6 +26,7 @@ import { validateApiResponse } from '@/lib/validation'
 import { getStatusText } from './ui/intent'
 import StatusIcon from './ui/StatusIcon'
 import { getCurrencySymbol } from '@/constant'
+import { useSearchParams } from 'next/navigation'
 
 interface WaitingForReleaseProps {
   intentId: string
@@ -40,7 +41,9 @@ export function WaitingForRelease({
 }: WaitingForReleaseProps) {
   const router = useRouter()
   const { chainId } = useAccount()
-  const currencySymbol = getCurrencySymbol(chainId || 0)
+  const searchParams = useSearchParams()
+  const token = searchParams.get('token')
+  const currencySymbol = getCurrencySymbol(chainId || 0, token || '')
   const t = useTranslations('waitingForRelease')
   const tCommon = useTranslations('common')
   const tIntentStatus = useTranslations('intentStatus')

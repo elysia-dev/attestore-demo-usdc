@@ -19,8 +19,12 @@ export const TOSS_ACCOUNT_NUMBER =
 export const TOKEN_SYMBOL = 'KRW'
 
 // Dynamic currency symbol based on chain ID
-export function getCurrencySymbol(chainId: number): string {
-  return chainId === kaia.id || chainId === kairos.id ? 'USDT' : 'USDC'
+export function getCurrencySymbol(chainId: number, token: string): string {
+  return token === 'elusd'
+    ? 'ELUSD'
+    : chainId === kaia.id || chainId === kairos.id
+      ? 'USDT'
+      : 'USDC'
 }
 // Fixed depositId for frontend
 export const DEFAULT_DEPOSIT_ID = 1
