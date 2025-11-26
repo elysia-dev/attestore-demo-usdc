@@ -1,7 +1,7 @@
 import { formatUnits } from 'viem'
 import { FulfillmentResult } from './Home'
 import { getCurrencySymbol } from '@/constant'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { useAccount } from 'wagmi'
 import { useSearchParams } from 'next/navigation'
 
@@ -11,6 +11,7 @@ export default function FulfillmentResultComponent({
   fulfillmentResult: FulfillmentResult
 }) {
   const t = useTranslations('fulfillmentResult')
+  const locale = useLocale()
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
   const { chainId } = useAccount()
@@ -68,7 +69,8 @@ export default function FulfillmentResultComponent({
       </section>
       <button
         onClick={() => {
-          window.location.href = '/'
+          const url = token ? `/${locale}?token=${token}` : `/${locale}`
+          window.location.href = url
         }}
         className="w-full bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 hover:shadow-lg">
         {t('goToMain')}
