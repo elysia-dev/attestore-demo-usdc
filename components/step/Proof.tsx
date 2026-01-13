@@ -58,9 +58,12 @@ const validateIssueDate = (date: string, t: any): string | undefined => {
   const month = parseInt(date.substring(4, 6))
   const day = parseInt(date.substring(6, 8))
 
+  const minValidYear = 2025
+  const maxValidYear = 2026
+
   // Basic date validation
-  if (year !== 2025) {
-    return t('yearMust2025')
+  if (year < minValidYear || year > maxValidYear) {
+    return t('yearMustBetween', { min: minValidYear, max: maxValidYear })
   }
 
   if (month < 1 || month > 12) {

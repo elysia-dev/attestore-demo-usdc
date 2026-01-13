@@ -171,7 +171,7 @@
     "certificateNumberPlaceholder": "인증서 번호를 입력하세요 (예: 1234-ABCD-ABCDABCD)",
     "issueDateRequired": "발급 날짜가 필요합니다",
     "issueDateFormat": "발급 날짜는 YYYYMMDD 형식이어야 합니다 (예: 20250626)",
-    "yearMust2025": "연도는 2025여야 합니다",
+    "yearMustBetween": "연도는 {min}부터 {max} 사이여야 합니다",
     "monthRange": "월은 01부터 12 사이여야 합니다",
     "dayRange": "일은 01부터 31 사이여야 합니다",
     "certificateNumberRequired": "인증서 번호가 필요합니다",

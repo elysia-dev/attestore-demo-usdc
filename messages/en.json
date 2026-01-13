@@ -171,7 +171,7 @@
     "certificateNumberPlaceholder": "Enter certificate number (e.g., 1234-ABCD-ABCDABCD)",
     "issueDateRequired": "Issue date is required",
     "issueDateFormat": "Issue date should be in format: YYYYMMDD (e.g., 20250626)",
-    "yearMust2025": "Year must be 2025",
+    "yearMustBetween": "Year must be between {min} and {max}",
     "monthRange": "Month must be between 01 and 12",
     "dayRange": "Day must be between 01 and 31",
     "certificateNumberRequired": "Certificate number is required",
