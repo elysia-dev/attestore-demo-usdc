@@ -55,40 +55,16 @@ export default function PaymentSuccessPage() {
       setIsVerifying(true)
 
       try {
-        const secretKey = process.env.NEXT_PUBLIC_API_SECRET_KEY || ''
-        const encodedSecretKey = Buffer.from(secretKey + ':').toString('base64')
-
-        // 먼저 결제 조회를 시도하고, 실패하면 결제 승인을 시도합니다
-        let response = await fetch(
-          `https://api.tosspayments.com/v1/payments/${paymentKey}`,
-          {
-            method: 'GET',
-            headers: {
-              Authorization: `Basic ${encodedSecretKey}`,
-            },
-          },
-        )
-        let data = await response.json()
-
-        // 결제 상태가 IN_PROGRESS이면 결제 승인 시도
-        if (response.ok && data.status === 'IN_PROGRESS') {
-          response = await fetch(
-            'https://api.tosspayments.com/v1/payments/confirm',
-            {
-              method: 'POST',
-              headers: {
-                Authorization: `Basic ${encodedSecretKey}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                paymentKey: paymentKey,
-                orderId: orderId,
-                amount: parseInt(amount),
-              }),
-            },
-          )
-          data = await response.json()
-        }
+        const response = await fetch('/api/payment/confirm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            paymentKey,
+            orderId,
+            amount: parseInt(amount),
+          }),
+        })
+        const data = await response.json()
 
         if (response.ok) {
           setVerificationResult({
