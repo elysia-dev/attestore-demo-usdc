@@ -1,9 +1,15 @@
 import { useState } from 'react'
-import { useWriteContract, usePublicClient } from 'wagmi'
+import {
+  useWriteContract,
+  usePublicClient,
+  useAccount,
+  useWalletClient,
+} from 'wagmi'
 import { Abi, Address, TransactionReceipt } from 'viem'
 import { extractErrorMessage } from '@/components/utils/extractErrorMessage'
 import { captureWeb3Error, trackTransaction } from '@/lib/sentry-utils'
 import * as Sentry from '@sentry/nextjs'
+import { kaia, kairos } from '@/lib/network'
 
 interface UseContractWriteOptions {
   onSuccess?: (receipt: TransactionReceipt) => void
@@ -16,6 +22,11 @@ export function useContractWrite(options?: UseContractWriteOptions) {
 
   const { writeContractAsync } = useWriteContract()
   const publicClient = usePublicClient()
+  const { chainId } = useAccount()
+  const { data: walletClient } = useWalletClient()
+
+  const isKaiaNetwork = chainId === kaia.id || chainId === kairos.id
+  const shouldUseFeeDelegation = isKaiaNetwork
 
   const writeAndWait = async ({
     address,
@@ -43,12 +54,61 @@ export function useContractWrite(options?: UseContractWriteOptions) {
           setIsLoading(true)
           setError(null)
 
-          const hash = await writeContractAsync({
-            address,
-            abi,
-            functionName,
-            args,
-          })
+          let hash: `0x${string}`
+
+          if (shouldUseFeeDelegation && address && walletClient) {
+            try {
+              // BigInt to string
+              const serializeArgs = (args: readonly unknown[] | undefined) => {
+                if (!args) return args
+                return args.map((arg) =>
+                  typeof arg === 'bigint' ? arg.toString() : arg,
+                )
+              }
+
+              // Server-side fee delegation processing
+              const response = await fetch('/api/kaia/fee-delegation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  address,
+                  abi,
+                  functionName,
+                  args: serializeArgs(args),
+                  chainId,
+                  userAddress: walletClient.account.address,
+                }),
+              })
+
+              if (!response.ok) {
+                throw new Error('Fee delegation failed')
+              }
+
+              const { txHash } = await response.json()
+              hash = txHash
+              console.log('✅ Fee delegated transaction successful:', hash)
+            } catch (feeDelegationError) {
+              console.warn(
+                '⚠️ Fee delegation failed, falling back to regular transaction:',
+                feeDelegationError,
+              )
+              // Fallback to regular transaction if fee delegation fails
+              hash = await writeContractAsync({
+                address,
+                abi,
+                functionName,
+                args,
+              })
+            }
+          } else {
+            // Regular transaction
+            hash = await writeContractAsync({
+              address,
+              abi,
+              functionName,
+              args,
+            })
+          }
 
           trackTransaction(hash, 'pending', { functionName, address })
 
